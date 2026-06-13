@@ -311,7 +311,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <hr class="res-divider">
         <div class="res-row" style="background:#f5f0e8;padding:5px 8px;border-radius:5px;margin:2px 0;">
           <span class="label" style="color:#7c4a1e;font-weight:600;">🏦 Base fija cajero</span>
-          <span class="value" style="color:#7c4a1e;">$200,000</span>
+          <span class="value" style="color:#7c4a1e;" id="rBaseFija">$200,000</span>
         </div>
         <div class="res-row" style="font-size:.7rem;color:var(--gris4);padding:0 8px;">
           <span>La base no se entrega — siempre queda en caja</span>
@@ -796,6 +796,10 @@ function entrar(admin){
   var tN=turno==='manana'?'☀ Mañana':turno==='tarde'?'🌙 Tarde':'⬛ Completo';
   document.getElementById('hdrSub').textContent=pN+' · '+fecha;
   document.getElementById('turnoBadge').textContent=tN+' — '+cajero+(cajeroAux?' & '+cajeroAux:'');
+  // Base fija según punto
+  var BASE_FIJA={autopista:200000,boquia:200000,tebaida:260000,km25:200000,km18:200000,penon:200000,colseguros:200000};
+  var baseEl=document.getElementById('rBaseFija');
+  if(baseEl) baseEl.textContent='$'+(BASE_FIJA[punto]||200000).toLocaleString('es-CO');
   if(isAdmin) showAdminUI();
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
@@ -871,7 +875,7 @@ function cargarRecomendados(){
   // Buscar turnos cerrados de ese punto, mismo turno, en esas fechas
   var promises = fechas.map(function(f){
     var key = f+'_'+sesion.punto+'_'+sesion.turno;
-    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.true&limit=1')
+    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.true&eliminado=eq.false&limit=1')
       .catch(function(){return[];});
   });
   Promise.all(promises).then(function(results){
@@ -927,14 +931,14 @@ function cargarInventario(){
         // Turno actual
         sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+turnoKey+'&limit=1').catch(function(){return[];}),
         // Último turno cerrado del mismo punto en fechas ANTERIORES
-        sbGet('turnos_caja','punto=eq.'+sesion.punto+'&cerrado=eq.true&fecha=lt.'+sesion.fecha+'&order=fecha.desc,turno.desc&limit=1').catch(function(){return[];}),
+        sbGet('turnos_caja','punto=eq.'+sesion.punto+'&cerrado=eq.true&eliminado=eq.false&fecha=lt.'+sesion.fecha+'&order=fecha.desc,turno.desc&limit=1').catch(function(){return[];}),
         // Si es tarde o completo: buscar AM del mismo día
         (sesion.turno==='tarde'||sesion.turno==='completo')
-          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_manana&cerrado=eq.true&limit=1').catch(function(){return[];})
+          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_manana&cerrado=eq.true&eliminado=eq.false&limit=1').catch(function(){return[];})
           : Promise.resolve([]),
         // Si es completo: también buscar tarde del mismo día
         sesion.turno==='completo'
-          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_tarde&cerrado=eq.true&limit=1').catch(function(){return[];})
+          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_tarde&cerrado=eq.true&eliminado=eq.false&limit=1').catch(function(){return[];})
           : Promise.resolve([])
       ]).then(function(res){
         var saved   = res[0].length ? res[0][0] : null;
@@ -2253,9 +2257,9 @@ function buscarFaltantes(){
       turnos.forEach(function(t){
         var tv=(t.snapshot||[]).reduce(function(s,r){return s+(r.total_venta||0);},0);
         var rap=(t.snapshot||[]).reduce(function(s,r){return s+(r.rappi_venta||0);},0);
-        var gas=t.gastos||0; var dig=t.digital||0;
+        var gas=t.gastos||0; var dat=t.datafono_val||0; var tra=t.transferencia_val||0;
         var desc=t.descuentos_val||0;
-        var ef=tv-gas-dig-rap-desc;
+        var ef=tv-gas-dat-tra-rap-desc;
         var ent=t.entregado||0;
         var dif=ent-ef;
         if(dif>=0) return; // sin faltante
@@ -2696,8 +2700,8 @@ function abrirDashboard(){
         turnosPunto.forEach(function(t){
           var tv=(t.snapshot||[]).reduce(function(s,r){return s+(r.total_venta||0);},0);
           var rap=(t.snapshot||[]).reduce(function(s,r){return s+(r.rappi_venta||0);},0);
-          var gas=t.gastos||0; var dig=t.digital||0; var desc=t.descuentos_val||0;
-          var ef=tv-gas-dig-rap-desc; var ent=t.entregado||0; var dif=ent-ef;
+          var gas=t.gastos||0; var dat=t.datafono_val||0; var tra=t.transferencia_val||0; var desc=t.descuentos_val||0;
+          var ef=tv-gas-dat-tra-rap-desc; var ent=t.entregado||0; var dif=ent-ef;
           totalPunto+=tv; gastosPunto+=gas; difPunto+=dif;
           totalVentasDia+=tv; totalGastosDia+=gas;
           if(dif<0) totalFaltantesDia+=Math.abs(dif);
