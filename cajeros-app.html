@@ -162,13 +162,13 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       <label>Punto de Venta</label>
       <select id="selPunto">
         <option value="">— Selecciona el punto —</option>
-        <option value="autopista">Autopista</option>
-        <option value="boquia">Boquia</option>
-        <option value="tebaida">Tebaida</option>
-        <option value="km25">KM 25</option>
-        <option value="km18">KM 18</option>
-        <option value="penon">Peñón</option>
-        <option value="colseguros">Colseguros</option>
+        <option value="autopista">Autopista del Café, Circasia</option>
+        <option value="boquia">Boquia, Salento</option>
+        <option value="tebaida">La Tebaida (Herradura)</option>
+        <option value="km25">Km 25, Dagua (Principal)</option>
+        <option value="km18">Km 18, Cali</option>
+        <option value="penon">El Peñón, Cali</option>
+        <option value="colseguros">Colseguros (Autopista)</option>
       </select>
     </div>
     <div class="grid2">
@@ -187,11 +187,25 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       </div>
     </div>
     <div class="field">
-      <label>Nombre del Cajero</label>
-      <input type="text" id="selCajero" placeholder="Tu nombre completo">
+      <label>Nombre y Código</label>
+      <select id="selCajero" onchange="onLoginCajeroChange()" style="width:100%;padding:10px 13px;border:1.5px solid var(--gris2);border-radius:7px;font-family:'Inter',sans-serif;font-size:.88rem;background:var(--gris1);color:var(--negro);appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%238a7a68\' stroke-width=\'1.8\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer;">
+        <option value="">— Elige tu nombre —</option>
+        <option value="C1|Laura Barrera">Laura Barrera (C1)</option>
+        <option value="C2|Sebastian Perez">Sebastian Perez (C2)</option>
+        <option value="C3|Yennifer Castillo">Yennifer Castillo (C3)</option>
+        <option value="C4|Andrea Gonzales">Andrea Gonzales (C4)</option>
+        <option value="C5|Julian Diaz">Julian Diaz (C5)</option>
+        <option value="C6|Luz Suarez">Luz Suarez (C6)</option>
+        <option value="C1|Jesika Imbajoa">Jesika Imbajoa (C1)</option>
+        <option value="C2|Sandra Rivera">Sandra Rivera (C2)</option>
+        <option value="C3|Yolima Uribe">Yolima Uribe (C3)</option>
+        <option value="C1|Vanessa Gallego">Vanessa Gallego (C1)</option>
+        <option value="C2|Jimena Caldas">Jimena Caldas (C2)</option>
+      </select>
     </div>
-    <div id="cajerosList"></div>
-    <button type="button" onclick="agregarCajeroExtra()" style="width:100%;padding:7px;background:transparent;border:1.5px dashed var(--gris3);border-radius:7px;color:var(--gris4);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;margin-bottom:10px;">＋ Agregar cajero al turno</button>
+    <div id="cajerosExtrasLogin"></div>
+    <button type="button" onclick="agregarCajeroLoginExtra()" style="width:100%;padding:7px;background:transparent;border:1.5px dashed var(--gris3);border-radius:7px;color:var(--gris4);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;margin-bottom:10px;">＋ Agregar cajero al turno</button>
+    <div id="cajerosList" style="display:none;"></div>
     <button class="btn-login" id="btnEntrar">Entrar a mi turno →</button>
     <div class="admin-link"><button id="btnAdminLogin">⚙ Entrar como Administrador</button></div>
   </div>
@@ -780,19 +794,20 @@ function actualizarBadgeTimer(){
 function entrar(admin){
   var punto=document.getElementById('selPunto').value;
   var turno=document.getElementById('selTurno').value;
-  var cajero=document.getElementById('selCajero').value.trim();
-  var extras=cajerosExtras.filter(function(x){return x&&x.trim();});
-  var cajeroAux=extras.join(', ');
+  var cajeroVal=document.getElementById('selCajero').value;
+  var cajero=cajeroVal?cajeroVal.split('|')[1]||cajeroVal:'';
+  var extrasNombres=cajerosLoginExtras.filter(function(v){return v;}).map(function(v){return v.split('|')[1]||v;});
+  var cajeroAux=extrasNombres.join(', ');
   var fecha=document.getElementById('selFecha').value;
   if(!punto){alert('Selecciona el punto de venta.');return;}
   if(!turno){alert('Selecciona el turno.');return;}
-  if(!cajero){alert('Ingresa tu nombre.');return;}
+  if(!cajero){alert('Elige tu nombre.');return;}
   if(!fecha){alert('Selecciona la fecha.');return;}
   sesion={punto:punto,turno:turno,cajero:cajero,cajeroAux:cajeroAux,fecha:fecha};
   cajerosExtras=[];
   renderCajerosExtras();
   isAdmin=admin;
-  var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'}[punto];
+  var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'}[punto];
   var tN=turno==='manana'?'☀ Mañana':turno==='tarde'?'🌙 Tarde':'⬛ Completo';
   document.getElementById('hdrSub').textContent=pN+' · '+fecha;
   document.getElementById('turnoBadge').textContent=tN+' — '+cajero+(cajeroAux?' & '+cajeroAux:'');
@@ -1854,7 +1869,7 @@ function abrirCierre(){
   var rappiTotal=invRows.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
   var ef=tv-gas-dat-tra-desc-rappiTotal;
   var dif=ent-ef;
-  var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'}[sesion.punto];
+  var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'}[sesion.punto];
   var tN=sesion.turno==='manana'?'☀ Mañana':sesion.turno==='tarde'?'🌙 Tarde':'⬛ Completo';
   var nota=document.getElementById('inNota').value;
   var difTxt=dif===0?'✔ Cuadra exacto':dif<0?'⚠ Falta '+fmt(Math.abs(dif)):'⚠ Sobran '+fmt(dif);
@@ -1882,7 +1897,7 @@ function imprimirPedido(){
   var conPedido=invRows.filter(function(r){return r.pedido!==null&&r.pedido!==undefined&&r.pedido!==''&&Number(r.pedido)>0;});
   if(!conPedido.length){alert('⚠ No hay productos con pedido registrado.\\n\\nIngresa las cantidades en la columna "Pedido" antes de imprimir.');return;}
 
-  var pNombre={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'}[sesion.punto]||sesion.punto;
+  var pNombre={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'}[sesion.punto]||sesion.punto;
   var tNombre=sesion.turno==='manana'?'Mañana ☀':sesion.turno==='tarde'?'Tarde 🌙':'Completo ⬛';
   var ahora=new Date();
   var horaStr=ahora.getHours().toString().padStart(2,'0')+':'+ahora.getMinutes().toString().padStart(2,'0');
@@ -2065,7 +2080,7 @@ function confirmarCierre(){
 // ── IMPRIMIR ─────────────────────────────────────
 function imprimirTurno(){
   if(!sesion)return;
-  var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'}[sesion.punto];
+  var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'}[sesion.punto];
   var tN=sesion.turno==='manana'?'☀ Mañana':sesion.turno==='tarde'?'🌙 Tarde':'⬛ Completo';
   var tv=invRows.reduce(function(s,r){return s+r.total_venta;},0);
   var rappiTotal=invRows.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
@@ -2307,7 +2322,7 @@ function buscarFaltantes(){
         porCajero[key].total+=r.faltante;
       });
 
-      var pN={autopista:'Autopista',boquia:'Boquia',tebaida:'Tebaida',km25:'KM 25',km18:'KM 18',penon:'Peñón',colseguros:'Colseguros'};
+      var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
       var tN={manana:'Caja Mañana',tarde:'Caja Tarde',completo:'Caja Completa'};
 
       res.innerHTML='';
@@ -2481,7 +2496,7 @@ function abrirPapelera(){
         res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;text-align:center;padding:12px;">La papelera está vacía.</p>';
         return;
       }
-      var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'};
+      var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'};
       var tN={manana:'☀ Mañana',tarde:'🌙 Tarde',completo:'⬛ Completo'};
       res.innerHTML='';
       turnos.forEach(function(t){
@@ -2574,7 +2589,7 @@ function exportarDetalleExcel(){
   var hasta=document.getElementById('histFecha').value;
   var desde=document.getElementById('histDesde')?document.getElementById('histDesde').value||hasta:hasta;
   if(!hasta){alert('Selecciona un rango de fechas en el historial.');return;}
-  var pN={autopista:'Autopista',boquia:'Boquia',tebaida:'Tebaida',km25:'KM 25',km18:'KM 18',penon:'Peñón',colseguros:'Colseguros'};
+  var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
   var tN={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
   setSyncStatus('sync','⟳ Generando Excel...');
   sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&eliminado=eq.false&order=fecha.asc,punto.asc,turno.asc')
@@ -2607,7 +2622,7 @@ function exportarResumenMensual(){
   var ultimoDia=new Date(anio,mes,0).getDate();
   var hasta=anio+'-'+mesStr+'-'+String(ultimoDia).padStart(2,'0');
   var meses=['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  var pN={autopista:'Autopista',boquia:'Boquia',tebaida:'Tebaida',km25:'KM 25',km18:'KM 18',penon:'Peñón',colseguros:'Colseguros'};
+  var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
   var tN={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
   var status=document.getElementById('resumenStatus');
   status.textContent='⟳ Cargando datos...';
@@ -2762,7 +2777,7 @@ function buscarHistorial(){
         res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;padding:12px 0;text-align:center;">No hay turnos cerrados para esta fecha.</p>';
         return;
       }
-      var pN={autopista:'Autopista',boquia:'Boquia',tebaida:'Tebaida',km25:'KM 25',km18:'KM 18',penon:'Peñón',colseguros:'Colseguros'};
+      var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
       var tN={manana:'☀ Mañana',tarde:'🌙 Tarde',completo:'⬛ Completo'};
       res.innerHTML='';
 
@@ -2838,7 +2853,7 @@ function exportarTurnoExcel(turnoKey){
     .then(function(res){
       if(!res.length){alert('No se encontró el turno.');return;}
       var t=res[0];
-      var pN={autopista:'Autopista',boquia:'Boquia',tebaida:'Tebaida',km25:'KM 25',km18:'KM 18',penon:'Peñón',colseguros:'Colseguros'};
+      var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
       var tN={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
       cargarSheetJS(function(){
         var wb=XLSX.utils.book_new();
@@ -2938,7 +2953,7 @@ function calcEditTotales(){
 
 function abrirEditarTurno(t){
   turnoEditando = JSON.parse(JSON.stringify(t));
-  var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',km25:'Vaca KM 25',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'};
+  var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'};
   var tN={manana:'☀ Mañana',tarde:'🌙 Tarde',completo:'⬛ Completo'};
   document.getElementById('editTurnoTitle').textContent='✏ Editar: '+(pN[t.punto]||t.punto)+' — '+(tN[t.turno]||t.turno);
   document.getElementById('editTurnoSub').textContent=t.fecha+' · Cajero: '+(t.cajero||'—')+(t.cajero_aux?' & '+t.cajero_aux:'');
@@ -3242,6 +3257,54 @@ function guardarEdicionTurno(){
 var hoy = new Date().toLocaleDateString('en-CA', {timeZone:'America/Bogota'});
 document.getElementById('selFecha').value = hoy;
 document.getElementById('histFecha') && (document.getElementById('histFecha').value = hoy);
+
+var CAJEROS_LISTA=[
+  {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
+  {val:'C2|Sebastian Perez',txt:'Sebastian Perez (C2)'},
+  {val:'C3|Yennifer Castillo',txt:'Yennifer Castillo (C3)'},
+  {val:'C4|Andrea Gonzales',txt:'Andrea Gonzales (C4)'},
+  {val:'C5|Julian Diaz',txt:'Julian Diaz (C5)'},
+  {val:'C6|Luz Suarez',txt:'Luz Suarez (C6)'},
+  {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)'},
+  {val:'C2|Sandra Rivera',txt:'Sandra Rivera (C2)'},
+  {val:'C3|Yolima Uribe',txt:'Yolima Uribe (C3)'},
+  {val:'C1|Vanessa Gallego',txt:'Vanessa Gallego (C1)'},
+  {val:'C2|Jimena Caldas',txt:'Jimena Caldas (C2)'}
+];
+
+var cajerosLoginExtras=[];
+
+function onLoginCajeroChange(){}
+
+function agregarCajeroLoginExtra(){
+  cajerosLoginExtras.push('');
+  renderCajerosLoginExtras();
+}
+
+function renderCajerosLoginExtras(){
+  var cont=document.getElementById('cajerosExtrasLogin');
+  cont.innerHTML='';
+  cajerosLoginExtras.forEach(function(val,i){
+    var wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;gap:6px;margin-bottom:8px;align-items:center;';
+    var sel=document.createElement('select');
+    sel.style.cssText='flex:1;padding:10px 13px;border:1.5px solid var(--gris2);border-radius:7px;font-family:Inter,sans-serif;font-size:.88rem;background:var(--gris1);color:var(--negro);';
+    sel.innerHTML='<option value="">— Elige cajero —</option>';
+    CAJEROS_LISTA.forEach(function(c){
+      var opt=document.createElement('option');
+      opt.value=c.val; opt.textContent=c.txt;
+      if(c.val===val) opt.selected=true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change',(function(idx){return function(){cajerosLoginExtras[idx]=this.value;};})(i));
+    var btnX=document.createElement('button');
+    btnX.type='button'; btnX.textContent='✕';
+    btnX.style.cssText='padding:8px 12px;border:1.5px solid var(--gris2);border-radius:7px;background:transparent;color:#aaa;cursor:pointer;font-size:.85rem;flex-shrink:0;';
+    btnX.addEventListener('click',(function(idx){return function(){cajerosLoginExtras.splice(idx,1);renderCajerosLoginExtras();};})(i));
+    wrap.appendChild(sel); wrap.appendChild(btnX);
+    cont.appendChild(wrap);
+  });
+}
 </script>
 </body>
 </html>
