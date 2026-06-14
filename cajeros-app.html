@@ -1638,6 +1638,15 @@ function openAdmin(){
     var v=prompt('🔒 Clave de administrador:');
     if(!esAdmin(v)){if(v!==null)alert('Clave incorrecta.');return;}
     isAdmin=true; showAdminUI();
+    // Desbloquear campos que pudieron quedar bloqueados por sesión de cajero
+    var inDat=document.getElementById('inDatafono'); if(inDat){inDat.readOnly=false;inDat.style.background='';}
+    var inTra=document.getElementById('inTransferencia'); if(inTra){inTra.readOnly=false;inTra.style.background='';}
+    var inDesc=document.getElementById('inDescuentos'); if(inDesc){inDesc.readOnly=false;inDesc.style.background='';}
+    var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
+    var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
+    var btnGas=document.getElementById('btnAddGasto'); if(btnGas) btnGas.style.display='';
+    // Reconstruir tabla con permisos de admin
+    if(invRows.length) buildTable();
   }
   setSyncStatus('sync','⟳ Cargando...');
   sbGet('productos_caja','order=orden.asc,id.asc').then(function(prods){
