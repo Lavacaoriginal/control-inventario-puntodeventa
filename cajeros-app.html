@@ -1386,10 +1386,9 @@ function mkInp(r,field,borderColor){
 }
 
 function calcFila(r){
-  // Si el turno está cerrado, los valores ya vienen correctos del snapshot guardado
-  // (pueden haber sido corregidos por admin desde el historial - no recalcular)
-  if(window._turnoCerrado){
-    // Solo recalcular entrante desde array si es necesario para mostrar
+  // Si el turno está cerrado y no es admin: no recalcular (respetar snapshot guardado)
+  // Si es admin: siempre recalcular para que sus ediciones se reflejen en tiempo real
+  if(window._turnoCerrado&&!isAdmin){
     if(r.entradas&&r.entradas.length){
       r.entrante=r.entradas.reduce(function(s,v){return s+v;},0);
     }
@@ -1568,13 +1567,17 @@ function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(guardar,1200);}
 
 function guardar(){
   if(!sesion)return;
-  if(window._turnoCerrado){setSyncStatus('ok','✓');return;}
+  // Admin siempre puede guardar aunque el turno esté cerrado
+  if(window._turnoCerrado && !isAdmin){setSyncStatus('ok','✓');return;}
   setSyncStatus('sync','⟳ Guardando...');
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
   var snap=invRows.map(function(r){return {id:r.id,name:r.name,precio:r.precio,ant:r.ant,entradas:r.entradas||[],entrante:r.entrante,dev:r.dev,rappi:r.rappi,inv_final:r.inv_final,pedido:r.pedido,disponible:r.disponible,vendido:r.vendido,rappi_venta:r.rappi_venta||0,total_venta:r.total_venta};});
-  // PATCH con filtro cerrado=eq.false — si otro dispositivo cerró el turno,
-  // Supabase no actualiza ninguna fila y lo detectamos por el header content-range
-  fetch(SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.false',{
+  // Admin editando turno cerrado: PATCH sin filtro cerrado=eq.false
+  // Cajero: filtro cerrado=eq.false para detectar cierre externo por otro dispositivo
+  var patchUrl=(window._turnoCerrado&&isAdmin)
+    ?SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)
+    :SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.false';
+  fetch(patchUrl,{
     method:'PATCH',
     headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
     body:JSON.stringify({
@@ -2941,6 +2944,7 @@ function calcEditTotales(){
     var disp=(r.ant||0)+(r.entrante||0)-(r.dev||0);
     r.disponible=disp;
     r.vendido=r.inv_final!==null&&r.inv_final!==undefined?Math.max(0,disp-(r.inv_final||0)):0;
+    r.rappi_venta=(r.rappi||0)*(r.precio||0);
     r.total_venta=r.vendido*(r.precio||0);
     // Actualizar celdas en tiempo real
     var el=document.getElementById('eVend-'+i); if(el) el.textContent=r.vendido||'—';
@@ -3003,6 +3007,7 @@ function abrirEditarTurno(t){
     var disp=(r.ant||0)+(r.entrante||0)-(r.dev||0);
     r.disponible=disp;
     r.vendido=r.inv_final!==null&&r.inv_final!==undefined?Math.max(0,disp-(r.inv_final||0)):0;
+    r.rappi_venta=(r.rappi||0)*(r.precio||0);
     r.total_venta=r.vendido*(r.precio||0);
     var tr=document.createElement('tr');
     tr.style.borderBottom='1px solid var(--gris2)';
@@ -3186,7 +3191,7 @@ function guardarEdicionTurno(){
     r.disponible=disp;
     r.rappi_venta=(r.rappi||0)*(r.precio||0);
     r.vendido=r.inv_final!==null&&r.inv_final!==undefined?Math.max(0,disp-(r.inv_final||0)):0;
-    r.total_venta=(r.vendido+(r.rappi||0))*(r.precio||0);
+    r.total_venta=r.vendido*(r.precio||0);
   });
   var dat=parseFloat(document.getElementById('editDatafono').value)||0;
   var tra=parseFloat(document.getElementById('editTransferencia').value)||0;
@@ -3282,17 +3287,17 @@ document.getElementById('selFecha').value = hoy;
 document.getElementById('histFecha') && (document.getElementById('histFecha').value = hoy);
 
 var CAJEROS_LISTA=[
-  {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
-  {val:'C2|Sebastian Perez',txt:'Sebastian Perez (C2)'},
-  {val:'C3|Yennifer Castillo',txt:'Yennifer Castillo (C3)'},
   {val:'C4|Andrea Gonzales',txt:'Andrea Gonzales (C4)'},
-  {val:'C5|Julian Diaz',txt:'Julian Diaz (C5)'},
-  {val:'C6|Luz Suarez',txt:'Luz Suarez (C6)'},
+  {val:'C3|Yennifer Castillo',txt:'Yennifer Castillo (C3)'},
   {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)'},
+  {val:'C2|Jimena Caldas',txt:'Jimena Caldas (C2)'},
+  {val:'C5|Julian Diaz',txt:'Julian Diaz (C5)'},
+  {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
+  {val:'C6|Luz Suarez',txt:'Luz Suarez (C6)'},
   {val:'C2|Sandra Rivera',txt:'Sandra Rivera (C2)'},
-  {val:'C3|Yolima Uribe',txt:'Yolima Uribe (C3)'},
   {val:'C1|Vanessa Gallego',txt:'Vanessa Gallego (C1)'},
-  {val:'C2|Jimena Caldas',txt:'Jimena Caldas (C2)'}
+  {val:'C3|Yolima Uribe',txt:'Yolima Uribe (C3)'},
+  {val:'C2|Sebastian Perez',txt:'Sebastian Perez (C2)'}
 ];
 
 var cajerosLoginExtras=[];
