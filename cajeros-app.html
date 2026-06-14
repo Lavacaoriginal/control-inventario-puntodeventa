@@ -1057,9 +1057,23 @@ function cargarInventario(){
             var btnGas=document.getElementById('btnAddGasto'); if(btnGas) btnGas.style.display='none';
             var btnCerrar=document.getElementById('btnCerrar'); if(btnCerrar) btnCerrar.style.display='none';
             setTimeout(function(){alert('⚠️ Este turno ya fue cerrado. Solo puedes consultarlo.');},800);
+          } else {
+            // Admin: siempre desbloquear aunque turno cerrado
+            var inDat=document.getElementById('inDatafono'); if(inDat){inDat.readOnly=false;inDat.style.background='';}
+            var inTra=document.getElementById('inTransferencia'); if(inTra){inTra.readOnly=false;inTra.style.background='';}
+            var inDesc=document.getElementById('inDescuentos'); if(inDesc){inDesc.readOnly=false;inDesc.style.background='';}
+            var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
+            var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
           }
         } else {
           window._turnoCerrado=false;
+          // Asegurar que los campos estén desbloqueados
+          var inDat=document.getElementById('inDatafono'); if(inDat){inDat.readOnly=false;inDat.style.background='';}
+          var inTra=document.getElementById('inTransferencia'); if(inTra){inTra.readOnly=false;inTra.style.background='';}
+          var inDesc=document.getElementById('inDescuentos'); if(inDesc){inDesc.readOnly=false;inDesc.style.background='';}
+          var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
+          var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
+          var btnGas=document.getElementById('btnAddGasto'); if(btnGas) btnGas.style.display='';
         }
         // Mostrar/ocultar btnCerrar según estado del turno
         var btnCerrarEl=document.getElementById('btnCerrar');
