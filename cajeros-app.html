@@ -1124,6 +1124,24 @@ function cargarInventario(){
         buildTable(); renderAllEntries(); recalc();
         cargarRecomendados();
         clearInterval(syncCheckTimer);
+        // Verificar cada 45s si el turno fue cerrado por otro dispositivo
+        if(!window._turnoCerrado){
+          syncCheckTimer=setInterval(function(){
+            if(!sesion||window._turnoCerrado){clearInterval(syncCheckTimer);return;}
+            var k=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
+            sbGet('turnos_caja','turno_key=eq.'+k+'&select=cerrado&limit=1').then(function(arr){
+              if(arr&&arr.length&&arr[0].cerrado===true){
+                window._turnoCerrado=true;
+                clearInterval(syncCheckTimer);
+                clearTimeout(saveTimer);
+                buildTable();
+                var btnC=document.getElementById('btnCerrar'); if(btnC) btnC.style.display='none';
+                setSyncStatus('ok','🔒 Cerrado');
+                alert('⚠️ Este turno fue cerrado por otro dispositivo.\nEl inventario queda en modo solo lectura.');
+              }
+            }).catch(function(){});
+          },1800000);
+        }
         // Nota del compañero solo si es turno nuevo (no existe guardado aún)
         if(!saved&&antTurno&&antTurno.nota_siguiente&&antTurno.nota_siguiente.trim()){
           setTimeout(function(){mostrarNotaCompañero(antTurno.nota_siguiente);},600);
@@ -1605,8 +1623,15 @@ function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(guardar,1200);}
 function recargarInventario(){
   if(!sesion) return;
   if(!confirm('¿Recargar inventario desde la base de datos?\n\nSe actualizarán los datos sin perder lo que ya guardaste.')) return;
-  setSyncStatus('sync','⟳ Recargando...');
-  cargarInventario();
+  // Guardar primero para no perder cambios no sincronizados
+  clearTimeout(saveTimer);
+  setSyncStatus('sync','⟳ Guardando antes de recargar...');
+  // Dar tiempo al último autoSave de completarse antes de recargar
+  guardar();
+  setTimeout(function(){
+    setSyncStatus('sync','⟳ Recargando...');
+    cargarInventario();
+  }, 1500);
 }
 
 function guardar(){
@@ -2112,7 +2137,7 @@ function confirmarCierre(){
   });
   if(erroresConf.length){alert('❌ Hay productos con inventario final mayor al disponible. Corrige antes de cerrar.');return;}
   var entConf=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
-  if(isAdmin && (!entregas.length||entConf<=0)){alert('❌ Registra al menos una entrega de dinero antes de cerrar.');return;}
+  if(!entregas.length||entConf<=0){alert('❌ Registra al menos una entrega de dinero antes de cerrar.');return;}
   document.getElementById('cierreModal').classList.remove('open');
   setSyncStatus('sync','⟳ Cerrando...');
   // Marcar como cerrado ANTES del fetch para que autoSave no interfiera
@@ -2335,7 +2360,7 @@ function buscarFaltantes(){
   var res=document.getElementById('faltResultados');
   res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;text-align:center;padding:12px;">Buscando...</p>';
 
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&eliminado=eq.false&order=fecha.asc')
+  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.asc')
     .then(function(turnos){
       // Calcular faltante de cada turno y expandir por cajero
       var conFaltante=[];
@@ -2662,7 +2687,7 @@ function exportarDetalleExcel(){
   var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km25_pan:'KM25 Panadería',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
   var tN={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
   setSyncStatus('sync','⟳ Generando Excel...');
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&eliminado=eq.false&order=fecha.asc,punto.asc,turno.asc')
+  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.asc,punto.asc,turno.asc')
     .then(function(turnos){
       cargarSheetJS(function(){
         var rows=[['Fecha','Punto','Turno','Cajero','Auxiliar','Total Ventas','Gastos','Datáfono','Transferencia','Descuentos','Rappi','Efectivo a Entregar','Total Entregado','Diferencia','Observaciones']];
@@ -2697,7 +2722,7 @@ function exportarResumenMensual(){
   var status=document.getElementById('resumenStatus');
   status.textContent='⟳ Cargando datos...';
   setSyncStatus('sync','⟳ Generando resumen...');
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&eliminado=eq.false&order=fecha.asc,punto.asc,turno.asc')
+  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.asc,punto.asc,turno.asc')
     .then(function(turnos){
       cargarSheetJS(function(){
         var wb=XLSX.utils.book_new();
@@ -2841,7 +2866,7 @@ function buscarHistorial(){
   if(!hasta){alert('Selecciona una fecha.');return;}
   var res=document.getElementById('histResultados');
   res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;">Buscando...</p>';
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&eliminado=eq.false&order=fecha.desc,punto.asc,turno.asc')
+  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.desc,punto.asc,turno.asc')
     .then(function(turnos){
       if(!turnos.length){
         res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;padding:12px 0;text-align:center;">No hay turnos cerrados para esta fecha.</p>';
@@ -3302,7 +3327,7 @@ function guardarEdicionTurno(){
             var disp=(sr.ant||0)+(sr.entrante||0)-(sr.dev||0);
             sr.disponible=disp;
             sr.vendido=sr.inv_final!==null&&sr.inv_final!==undefined?Math.max(0,disp-(sr.inv_final||0)):0;
-            sr.total_venta=(sr.vendido+(sr.rappi||0))*(sr.precio||0);
+            sr.total_venta=sr.vendido*(sr.precio||0);
             sr.rappi_venta=(sr.rappi||0)*(sr.precio||0);
           }
           return sr;
