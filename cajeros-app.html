@@ -1020,25 +1020,34 @@ function cargarInventario(){
         if(saved && saved.snapshot && saved.snapshot.length){
           invRows=saved.snapshot.map(function(sv){
             var p=productos.find(function(x){return x.id===sv.id;})||{id:sv.id,name:sv.name,precio:sv.precio||0};
-            // Opción B: si el turno NO está cerrado, siempre tomar ant del turno anterior
-            // Así las correcciones del historial se reflejan automáticamente
             var antVal;
             if(!saved.cerrado && invAnt[sv.id]!==undefined){
-              antVal=invAnt[sv.id]; // Turno abierto: usar ant actualizado del anterior
+              antVal=invAnt[sv.id];
             } else {
-              antVal=sv.ant!==null&&sv.ant!==undefined?sv.ant:0; // Turno cerrado: respetar snapshot
+              antVal=sv.ant!==null&&sv.ant!==undefined?sv.ant:0;
             }
             return {id:p.id,name:p.name,precio:getPrecio(p,sesion.punto)||sv.precio||0,precios:p.precios||{},
               ant:antVal,
               entradas:sv.entradas&&sv.entradas.length?sv.entradas:(sv.entrante?[sv.entrante]:[]),
               entrante:sv.entrante,dev:sv.dev,rappi:sv.rappi||null,inv_final:sv.inv_final,pedido:sv.pedido||null,
-              // Turno cerrado: usar valores guardados (pueden haber sido corregidos por admin)
-              // Turno abierto: dejar en 0 para que recalc() los calcule
               disponible: saved.cerrado ? (sv.disponible||0) : 0,
               vendido:    saved.cerrado ? (sv.vendido||0)    : 0,
               rappi_venta:saved.cerrado ? (sv.rappi_venta||0): 0,
               total_venta:saved.cerrado ? (sv.total_venta||0): 0};
           });
+          // ── Agregar productos nuevos que no estaban en el snapshot ──
+          // Si se agregaron productos al catálogo después de que este punto ya tenía turnos,
+          // nunca aparecerían porque el snapshot no los incluye. Se fusionan al final.
+          if(!saved.cerrado){
+            var snapIds=invRows.map(function(r){return r.id;});
+            var nuevos=productosPunto.filter(function(p){return snapIds.indexOf(p.id)===-1;});
+            nuevos.forEach(function(p){
+              var antVal=invAnt[p.id]!==undefined?invAnt[p.id]:0;
+              invRows.push({id:p.id,name:p.name,precio:getPrecio(p,sesion.punto),precios:p.precios||{},
+                ant:antVal,entradas:[],entrante:null,dev:null,rappi:null,inv_final:null,pedido:null,
+                disponible:0,vendido:0,rappi_venta:0,total_venta:0});
+            });
+          }
         } else {
           // Turno nuevo: usar productosPunto con inv_final del turno anterior
           invRows=productosPunto.map(function(p){
@@ -1818,7 +1827,7 @@ function renderProdAdmin(){
       var chk=document.createElement('input'); chk.type='checkbox';
       chk.checked=(p.puntos||[]).indexOf(pt.id)!==-1;
       chk.addEventListener('change',(function(prod,ptId){return function(){
-        if(!prod.puntos) prod.puntos=TODOS_PUNTOS.map(function(x){return x.id;});
+        if(!prod.puntos) prod.puntos=[];
         if(this.checked){
           if(prod.puntos.indexOf(ptId)===-1) prod.puntos.push(ptId);
         } else {
@@ -1843,7 +1852,7 @@ function addProdAdmin(){
   var precio=parseFloat(document.getElementById('newProdPrecio').value)||0;
   if(!name){alert('Escribe el nombre del producto.');return;}
   var id='vta_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-  productos.push({id:id,name:name,precio:precio,precios:{abc:precio,kpp:precio},_new:true});
+  productos.push({id:id,name:name,precio:precio,precios:{abc:precio,kpp:precio},puntos:[],_new:true});
   document.getElementById('newProdName').value='';
   document.getElementById('newProdPrecio').value='';
   renderProdAdmin();
@@ -1872,7 +1881,7 @@ function saveAdmin(){
     var data={name:p.name,precio:p.precio,orden:i,updated_at:new Date().toISOString()};
     if(p._new){
       data.id=p.id;
-      data.puntos=p.puntos||['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros'];
+      data.puntos=p.puntos||[];
       data.precios=p.precios||{};
       return fetch(SB_URL+'/rest/v1/productos_caja',{
         method:'POST',
@@ -1883,7 +1892,7 @@ function saveAdmin(){
       return fetch(SB_URL+'/rest/v1/productos_caja?id=eq.'+p.id,{
         method:'PATCH',
         headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),
-        body:JSON.stringify({precio:p.precio,precios:p.precios||{},puntos:p.puntos||['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros'],orden:i,updated_at:new Date().toISOString()})
+        body:JSON.stringify({precio:p.precio,precios:p.precios||{},puntos:Array.isArray(p.puntos)?p.puntos:['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros'],orden:i,updated_at:new Date().toISOString()})
       }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t);});});
     }
   });
