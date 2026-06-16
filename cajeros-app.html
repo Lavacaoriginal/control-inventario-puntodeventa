@@ -971,11 +971,12 @@ function cargarInventario(){
           var prc2=p.precios;
           if(typeof prc2==='string'){try{prc2=JSON.parse(prc2);}catch(e){prc2=null;}}
           return {id:p.id,name:p.name,precio:p.precio||0,precios:prc2||{},
-            puntos:Array.isArray(pts)&&pts.length?pts:['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros']};
+            puntos:Array.isArray(pts)?pts:[]};
         });
       // Filtrar solo productos que aplican para este punto
+      // Si puntos está vacío o no existe: NO mostrar (el admin debe asignar explícitamente)
       var productosPunto=productos.filter(function(p){
-        if(!p.puntos||p.puntos.length===0) return true;
+        if(!p.puntos||p.puntos.length===0) return false;
         return p.puntos.indexOf(sesion.punto)!==-1;
       });
       var turnoKey=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
@@ -1910,7 +1911,7 @@ function saveAdmin(){
           var prc=p.precios;
           if(typeof prc==='string'){try{prc=JSON.parse(prc);}catch(e){prc=null;}}
           return {id:p.id,name:p.name,precio:p.precio||0,precios:prc||{},
-            puntos:Array.isArray(pts)&&pts.length?pts:['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros']};
+            puntos:Array.isArray(pts)?pts:[]};
         });
       invRows.forEach(function(r){
         var p=productos.find(function(x){return x.id===r.id;});
