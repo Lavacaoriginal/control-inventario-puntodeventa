@@ -559,7 +559,25 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
     <div class="modal-sub">Corrige nombres o agrega cajeros</div>
     <div class="modal-field">
       <label>Cajero Principal</label>
-      <input type="text" id="editCajeroPrincipal" placeholder="Nombre completo">
+      <select id="editCajeroPrincipal" style="width:100%;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:'Inter',sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%238a7a68\' stroke-width=\'1.8\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer;">
+        <option value="">— Selecciona cajero —</option>
+        <option value="Andrea Gonzales">Andrea Gonzales (C4)</option>
+        <option value="Catalina Tabares">Catalina Tabares (C3)</option>
+        <option value="Daniela Nieto">Daniela Nieto (C1)</option>
+        <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
+        <option value="Jimena Caldas">Jimena Caldas (C2)</option>
+        <option value="Julian Diaz">Julian Diaz (C5)</option>
+        <option value="Karen Ipiales">Karen Ipiales (C2)</option>
+        <option value="Laura Barrera">Laura Barrera (C1)</option>
+        <option value="Leidy Meneses">Leidy Meneses (AO2)</option>
+        <option value="Luz Suarez">Luz Suarez (C6)</option>
+        <option value="Milena Ruiz">Milena Ruiz (C4)</option>
+        <option value="Sandra Rivera">Sandra Rivera (C2)</option>
+        <option value="Sebastian Perez">Sebastian Perez (C2)</option>
+        <option value="Vanessa Gallego">Vanessa Gallego (C1)</option>
+        <option value="Yennifer Castillo">Yennifer Castillo (C3)</option>
+        <option value="Yolima Uribe">Yolima Uribe (C3)</option>
+      </select>
     </div>
     <div id="editCajerosExtras"></div>
     <button type="button" onclick="agregarEditCajero()" style="width:100%;padding:7px;background:transparent;border:1.5px dashed var(--gris3);border-radius:7px;color:var(--gris4);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;margin-bottom:12px;">＋ Agregar cajero</button>
@@ -2292,10 +2310,12 @@ function renderEditCajerosExtras(){
     var div=document.createElement('div');
     div.className='modal-field';
     div.style.display='flex'; div.style.gap='6px';
-    var inp=document.createElement('input'); inp.type='text';
-    inp.value=nombre; inp.placeholder='Nombre cajero '+(i+2);
-    inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);';
-    inp.addEventListener('input',(function(idx){return function(){editCajerosExtras[idx]=this.value.trim();};})(i));
+    var inp=document.createElement('select');
+    inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;cursor:pointer;';
+    var optsAux=[['','— Selecciona cajero —'],['Andrea Gonzales','Andrea Gonzales (C4)'],['Catalina Tabares','Catalina Tabares (C3)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (AO2)'],['Luz Suarez','Luz Suarez (C6)'],['Milena Ruiz','Milena Ruiz (C4)'],['Sandra Rivera','Sandra Rivera (C2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C3)']];
+    optsAux.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];inp.appendChild(opt);});
+    inp.value=nombre;
+    inp.addEventListener('change',(function(idx){return function(){editCajerosExtras[idx]=this.value;};})(i));
     var btnX=document.createElement('button'); btnX.type='button'; btnX.textContent='✕';
     btnX.style.cssText='padding:0 10px;border:1.5px solid var(--gris2);border-radius:6px;background:transparent;color:#aaa;cursor:pointer;';
     btnX.addEventListener('click',(function(idx){return function(){editCajerosExtras.splice(idx,1);renderEditCajerosExtras();};})(i));
@@ -2317,7 +2337,7 @@ function agregarEditCajero(){
 function guardarEditCajero(){
   var principal=document.getElementById('editCajeroPrincipal').value.trim();
   if(!principal){alert('El nombre del cajero principal no puede estar vacío.');return;}
-  var extras=editCajerosExtras.filter(function(x){return x&&x.trim();});
+  var extras=editCajerosExtras.filter(function(x){return x&&x.trim()&&x.trim()!==principal;});
   var aux=extras.join(', ');
   sesion.cajero=principal;
   sesion.cajeroAux=aux;
