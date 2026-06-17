@@ -282,7 +282,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inDatafono" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            oninput="recalc();autoSave();">
+            oninput="var prev=parseFloat(this.dataset.prev)||0;recalc();autoSave();enviarAlertaDigital('datafono',parseFloat(this.value)||0,prev);this.dataset.prev=this.value;">
         </div>
       </div>
       <div class="res-block">
@@ -291,7 +291,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inTransferencia" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            oninput="recalc();autoSave();">
+            oninput="var prev=parseFloat(this.dataset.prev)||0;recalc();autoSave();enviarAlertaDigital('transferencia',parseFloat(this.value)||0,prev);this.dataset.prev=this.value;">
         </div>
       </div>
       <div class="res-block">
@@ -632,29 +632,78 @@ var TG_TOKEN='8883479055:AAGeQbg3rGXteziI-zCVe1BbmZVQl9_3saU';
 var TG_CHAT='-1003918514968';
 var _tgTimer={};  // debounce por entrega para no enviar mientras escribe
 
-function enviarAlertaTelegram(entrega, idx){
-  // Debounce: esperar 3s desde que el admin termina de escribir el valor
-  clearTimeout(_tgTimer[idx]);
-  _tgTimer[idx]=setTimeout(function(){
-    if(!sesion || !entrega.valor || entrega.valor<=0) return;
-    var pN={autopista:'Autopista — Circasia',boquia:'Boquia — Salento',tebaida:'La Tebaida',
-      km25:'Km 25 Dagua (Principal)',km25_pan:'Km 25 Dagua (Panadería)',
-      km18:'Km 18 — Cali',penon:'El Peñón — Cali',colseguros:'Colseguros — Cali'}[sesion.punto]||sesion.punto;
-    var tN=sesion.turno==='manana'?'☀️ Mañana':sesion.turno==='tarde'?'🌙 Tarde':'⬛ Completo';
-    var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-    var msg='\ud83d\udcb0 *ENTREGA REGISTRADA*\n'
-      +'\ud83d\udccd '+pN+'\n'
-      +'\ud83d\udd50 Turno '+tN+' \u2014 '+hora+'\n'
-      +'\ud83d\udc64 Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n'
-      +(entrega.desc?'\ud83d\udccb Recibe: '+entrega.desc+'\n':'')
-      +'\ud83d\udcb5 Valor: *$'+entrega.valor.toLocaleString('es-CO')+'*'
-      +(entrega.esFinal?'\n\u2705 _Entrega final_':'');
-    fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'Markdown'})
-    }).catch(function(e){console.warn('Telegram error:',e);});
-  }, 3000);
+function tgPunto(){
+  return {autopista:'Autopista - Circasia',boquia:'Boquia - Salento',tebaida:'La Tebaida',
+    km25:'Km 25 Dagua (Principal)',km25_pan:'Km 25 Dagua (Panaderia)',
+    km18:'Km 18 - Cali',penon:'El Penon - Cali',colseguros:'Colseguros - Cali'}[sesion.punto]||sesion.punto;
+}
+function tgTurno(){
+  return sesion.turno==='manana'?'Manana':sesion.turno==='tarde'?'Tarde':'Completo';
+}
+function tgCabecera(){
+  var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
+  return tgPunto()+' | Turno '+tgTurno()+' | '+hora+'\n'
+    +'Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
+}
+function tgEnviar(msg){
+  fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'Markdown'})
+  }).catch(function(e){console.warn('Telegram:',e);});
+}
+function enviarAlertaTelegram(entrega, idx, valorAnterior){
+  clearTimeout(_tgTimer['e_'+idx]);
+  _tgTimer['e_'+idx]=setTimeout(function(){
+    if(!sesion||!entrega.valor||entrega.valor<=0) return;
+    var esEdicion=(valorAnterior!==undefined&&valorAnterior>0&&valorAnterior!==entrega.valor);
+    var titulo=esEdicion?'*ENTREGA MODIFICADA*':'*ENTREGA REGISTRADA*';
+    var msg=titulo+'\n'+tgCabecera()
+      +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
+      +'*$'+entrega.valor.toLocaleString('es-CO')+'*'
+      +(entrega.desc?'\nRecibe: '+entrega.desc:'')
+      +(entrega.esFinal?'\n_Entrega final_':'');
+    tgEnviar(msg);
+  },3000);
+}
+function enviarAlertaEliminacion(entrega){
+  if(!sesion||!entrega.valor||entrega.valor<=0) return;
+  var msg='*ENTREGA ELIMINADA*\n'+tgCabecera()
+    +'Valor: $'+entrega.valor.toLocaleString('es-CO')
+    +(entrega.desc?'\nEra de: '+entrega.desc:'');
+  tgEnviar(msg);
+}
+function enviarAlertaDigital(tipo, valor, valorAnterior){
+  clearTimeout(_tgTimer['d_'+tipo]);
+  _tgTimer['d_'+tipo]=setTimeout(function(){
+    if(!sesion||!valor||valor<=0) return;
+    var esEdicion=(valorAnterior!==undefined&&valorAnterior>0&&valorAnterior!==valor);
+    var nom=tipo==='datafono'?'DATAFONO':'TRANSFERENCIA';
+    var titulo=esEdicion?'*'+nom+' MODIFICADO*':'*'+nom+' REGISTRADO*';
+    var msg=titulo+'\n'+tgCabecera()
+      +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
+      +'*$'+valor.toLocaleString('es-CO')+'*';
+    tgEnviar(msg);
+  },3000);
+}
+function enviarResumenCierre(){
+  if(!sesion) return;
+  var rappiTotal=invRows.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
+  var gasTotal=gastos.reduce(function(s,g){return s+(g.valor||0);},0);
+  var descTotal=parseFloat(document.getElementById('inDescuentos').value)||0;
+  var datTotal=parseFloat(document.getElementById('inDatafono').value)||0;
+  var traTotal=parseFloat(document.getElementById('inTransferencia').value)||0;
+  var entTotal=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
+  var ventaTotal=invRows.reduce(function(s,r){return s+(r.total_venta||0);},0);
+  var msg='*CIERRE DE TURNO*\n'+tgCabecera()
+    +'\n*Resumen:*\n'
+    +'Ventas totales: *$'+ventaTotal.toLocaleString('es-CO')+'*\n'
+    +'Rappi: *$'+rappiTotal.toLocaleString('es-CO')+'*\n'
+    +(gasTotal>0?'Gastos: *$'+gasTotal.toLocaleString('es-CO')+'*\n':'')
+    +(datTotal>0?'Datafono: *$'+datTotal.toLocaleString('es-CO')+'*\n':'')
+    +(traTotal>0?'Transferencia: *$'+traTotal.toLocaleString('es-CO')+'*\n':'')
+    +(descTotal>0?'Descuentos: *$'+descTotal.toLocaleString('es-CO')+'*\n':'')
+    +'Total entregado: *$'+entTotal.toLocaleString('es-CO')+'*';
+  tgEnviar(msg);
 }
 var PASS_ADMIN = '150884';
 var PASS_ADMIN2 = '@lacteos2026';
@@ -1555,6 +1604,7 @@ function addEntry(tipo){
 
 function removeEntry(tipo,idx){
   var arr=tipo==='gastos'?gastos:entregas;
+  if(tipo==='entregas') enviarAlertaEliminacion(arr[idx]);
   arr.splice(idx,1);
   renderEntries(tipo); recalc(); autoSave();
 }
@@ -1598,7 +1648,7 @@ function renderEntries(tipo){
       var inVal=document.createElement('input'); inVal.type='number'; inVal.min='0';
       inVal.placeholder='$0'; inVal.value=e.valor||''; inVal.style.textAlign='right';
       inVal.style.cssText='flex:1;text-align:right;padding:5px 7px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.82rem;background:var(--gris1);min-width:75px;';
-      inVal.addEventListener('input',(function(entry,idx){return function(){entry.valor=parseFloat(this.value)||0;recalc();autoSave();if(tipo==='entregas') enviarAlertaTelegram(entry,idx);};})(e,i));
+      inVal.addEventListener('input',(function(entry,idx){return function(){var prev=entry.valor;entry.valor=parseFloat(this.value)||0;recalc();autoSave();if(tipo==='entregas') enviarAlertaTelegram(entry,idx,prev);};})(e,i));
       inVal.addEventListener('wheel',function(ev){ev.preventDefault();},{passive:false});
       row.appendChild(inVal);
       // Checkbox "Entrega final" solo para entregas
@@ -2225,6 +2275,7 @@ function confirmarCierre(){
     entrega_final:entregaFinal||(entregas.length>0&&entregas.reduce(function(s,e){return s+(e.valor||0);},0)>0),
     cerrado:true,updated_at:new Date().toISOString()
   };
+  enviarResumenCierre();
   sbUpsert('turnos_caja',payload).then(function(){
     setSyncStatus('ok','✓ Cerrado');
     alert('✅ Turno cerrado correctamente.');
