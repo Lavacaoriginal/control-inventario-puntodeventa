@@ -282,7 +282,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inDatafono" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            oninput="var prev=parseFloat(this.dataset.prev)||0;recalc();autoSave();enviarAlertaDigital('datafono',parseFloat(this.value)||0,prev);this.dataset.prev=this.value;">
+            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_datafono']);_tgTimer['d_datafono']=setTimeout(function(){if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;var fin=parseFloat(el.value)||0;if(fin>0)enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);},6000);" onblur="clearTimeout(_tgTimer['d_datafono']);if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;var fin=parseFloat(this.value)||0;if(fin>0)enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);">
         </div>
       </div>
       <div class="res-block">
@@ -291,7 +291,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inTransferencia" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            oninput="var prev=parseFloat(this.dataset.prev)||0;recalc();autoSave();enviarAlertaDigital('transferencia',parseFloat(this.value)||0,prev);this.dataset.prev=this.value;">
+            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_transferencia']);_tgTimer['d_transferencia']=setTimeout(function(){if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;var fin=parseFloat(el.value)||0;if(fin>0)enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);},6000);" onblur="clearTimeout(_tgTimer['d_transferencia']);if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;var fin=parseFloat(this.value)||0;if(fin>0)enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);">
         </div>
       </div>
       <div class="res-block">
@@ -628,7 +628,7 @@ var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var HEADS = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 
 // ── TELEGRAM ALERTAS ─────────────────────────────────────────────────────────
-var TG_TOKEN='8883479055:AAG_7RbYfsVUf_om52Fd3maZKAqP04poakw';
+var TG_TOKEN='8883479055:AAGeQbg3rGXteziI-zCVe1BbmZVQl9_3saU';
 var TG_CHAT='-1003918514968';
 var _tgTimer={};  // debounce por entrega para no enviar mientras escribe
 
@@ -652,18 +652,15 @@ function tgEnviar(msg){
   }).catch(function(e){console.warn('Telegram:',e);});
 }
 function enviarAlertaTelegram(entrega, idx, valorAnterior){
-  clearTimeout(_tgTimer['e_'+idx]);
-  _tgTimer['e_'+idx]=setTimeout(function(){
-    if(!sesion||!entrega.valor||entrega.valor<=0) return;
-    var esEdicion=(valorAnterior!==undefined&&valorAnterior>0&&valorAnterior!==entrega.valor);
-    var titulo=esEdicion?'*ENTREGA MODIFICADA*':'*ENTREGA REGISTRADA*';
-    var msg=titulo+'\n'+tgCabecera()
-      +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
-      +'*$'+entrega.valor.toLocaleString('es-CO')+'*'
-      +(entrega.desc?'\nRecibe: '+entrega.desc:'')
-      +(entrega.esFinal?'\n_Entrega final_':'');
-    tgEnviar(msg);
-  },3000);
+  if(!sesion||!entrega.valor||entrega.valor<=0) return;
+  var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
+  var titulo=esEdicion?'*ENTREGA MODIFICADA*':'*ENTREGA REGISTRADA*';
+  var msg=titulo+'\n'+tgCabecera()
+    +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
+    +'*$'+entrega.valor.toLocaleString('es-CO')+'*'
+    +(entrega.desc?'\nRecibe: '+entrega.desc:'')
+    +(entrega.esFinal?'\n_Entrega final_':'');
+  tgEnviar(msg);
 }
 function enviarAlertaEliminacion(entrega){
   if(!sesion||!entrega.valor||entrega.valor<=0) return;
@@ -673,17 +670,14 @@ function enviarAlertaEliminacion(entrega){
   tgEnviar(msg);
 }
 function enviarAlertaDigital(tipo, valor, valorAnterior){
-  clearTimeout(_tgTimer['d_'+tipo]);
-  _tgTimer['d_'+tipo]=setTimeout(function(){
-    if(!sesion||!valor||valor<=0) return;
-    var esEdicion=(valorAnterior!==undefined&&valorAnterior>0&&valorAnterior!==valor);
-    var nom=tipo==='datafono'?'DATAFONO':'TRANSFERENCIA';
-    var titulo=esEdicion?'*'+nom+' MODIFICADO*':'*'+nom+' REGISTRADO*';
-    var msg=titulo+'\n'+tgCabecera()
-      +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
-      +'*$'+valor.toLocaleString('es-CO')+'*';
-    tgEnviar(msg);
-  },3000);
+  if(!sesion||!valor||valor<=0) return;
+  var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
+  var nom=tipo==='datafono'?'DATAFONO':'TRANSFERENCIA';
+  var titulo=esEdicion?'*'+nom+' MODIFICADO*':'*'+nom+' REGISTRADO*';
+  var msg=titulo+'\n'+tgCabecera()
+    +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
+    +'*$'+valor.toLocaleString('es-CO')+'*';
+  tgEnviar(msg);
 }
 function enviarResumenCierre(){
   if(!sesion) return;
@@ -1648,7 +1642,37 @@ function renderEntries(tipo){
       var inVal=document.createElement('input'); inVal.type='number'; inVal.min='0';
       inVal.placeholder='$0'; inVal.value=e.valor||''; inVal.style.textAlign='right';
       inVal.style.cssText='flex:1;text-align:right;padding:5px 7px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.82rem;background:var(--gris1);min-width:75px;';
-      inVal.addEventListener('input',(function(entry,idx){return function(){var prev=entry.valor;entry.valor=parseFloat(this.value)||0;recalc();autoSave();if(tipo==='entregas') enviarAlertaTelegram(entry,idx,prev);};})(e,i));
+      // Guardar valor original al entrar al campo (focus)
+      inVal.addEventListener('focus',(function(entry){return function(){
+        this.dataset.valorOrig=entry.valor||0;
+        this.dataset.tgSent='0';
+      };})(e));
+      // Actualizar datos + timer de 6s como respaldo si no sale del campo
+      inVal.addEventListener('input',(function(entry,idx){return function(){
+        entry.valor=parseFloat(this.value)||0;recalc();autoSave();
+        if(tipo==='entregas'){
+          var el=this;
+          clearTimeout(_tgTimer['e_'+idx]);
+          _tgTimer['e_'+idx]=setTimeout(function(){
+            if(el.dataset.tgSent==='1') return;
+            el.dataset.tgSent='1';
+            var valorOrig=parseFloat(el.dataset.valorOrig)||0;
+            var valorFinal=entry.valor;
+            if(valorFinal>0) enviarAlertaTelegram(entry,idx,valorOrig>0&&valorOrig!==valorFinal?valorOrig:undefined);
+          },6000);
+        }
+      };})(e,i));
+      // Enviar al salir del campo (blur) — inmediato, cancela el timer
+      if(tipo==='entregas'){
+        inVal.addEventListener('blur',(function(entry,idx){return function(){
+          clearTimeout(_tgTimer['e_'+idx]);
+          if(this.dataset.tgSent==='1') return;
+          this.dataset.tgSent='1';
+          var valorOrig=parseFloat(this.dataset.valorOrig)||0;
+          var valorFinal=entry.valor;
+          if(valorFinal>0) enviarAlertaTelegram(entry,idx,valorOrig>0&&valorOrig!==valorFinal?valorOrig:undefined);
+        };})(e,i));
+      }
       inVal.addEventListener('wheel',function(ev){ev.preventDefault();},{passive:false});
       row.appendChild(inVal);
       // Checkbox "Entrega final" solo para entregas
