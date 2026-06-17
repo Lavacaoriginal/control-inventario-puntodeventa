@@ -1351,8 +1351,7 @@ function buildTable(){
     }
     tr.appendChild(tdA);
     // Entrante — acumulable con botón + (bloqueado si turno cerrado)
-    var entBloqueada=(tipo==='entregas'&&e.bloqueado&&!isSuperAdmin);
-    if(soloLectura||entBloqueada){
+    if(soloLectura){
       var tdEnt=document.createElement('td'); tdEnt.className='cell-locked';
       tdEnt.textContent=r.entrante||'—'; tr.appendChild(tdEnt);
     } else {
