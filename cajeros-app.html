@@ -1636,8 +1636,8 @@ function renderEntries(tipo){
   arr.forEach(function(e,i){
     var row=document.createElement('div');
     row.style.cssText='display:flex;gap:5px;align-items:flex-start;margin-bottom:7px;';
-    if(soloLectura){
-      // Solo lectura: cajero ve gastos/entregas sin editar
+    var entBloqueada=(tipo==='entregas'&&!!e.bloqueado&&!isSuperAdmin);
+    if(soloLectura||entBloqueada){
       var lbl=document.createElement('div');
       lbl.style.cssText='flex:1;font-size:.82rem;color:var(--negro);padding:3px 0;';
       lbl.innerHTML='<div style="font-weight:500;">'+(e.desc||'Entrega')+(e.hora?' <span style="font-size:.65rem;color:var(--gris4);">⏱'+e.hora+'</span>':'')+(entBloqueada?' <span style="color:#b02020;font-size:.75rem;">&#128274;</span>':'')+'</div>'
