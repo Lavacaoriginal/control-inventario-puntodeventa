@@ -626,6 +626,36 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 var SB_URL = 'https://wnjmgzlmnpfxvmdbudew.supabase.co';
 var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Induam1nemxtbnBmeHZtZGJ1ZGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTEyNjAsImV4cCI6MjA5Njc2NzI2MH0.zxVJnN0wnVmh7-k7jJnQvm9UoBy3OOH0fpAUz54GMRI';
 var HEADS = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+// ── TELEGRAM ALERTAS ─────────────────────────────────────────────────────────
+var TG_TOKEN='8883479055:AAGeQbg3rGXteziI-zCVe1BbmZVQl9_3saU';
+var TG_CHAT='-1003918514968';
+var _tgTimer={};  // debounce por entrega para no enviar mientras escribe
+
+function enviarAlertaTelegram(entrega, idx){
+  // Debounce: esperar 3s desde que el admin termina de escribir el valor
+  clearTimeout(_tgTimer[idx]);
+  _tgTimer[idx]=setTimeout(function(){
+    if(!sesion || !entrega.valor || entrega.valor<=0) return;
+    var pN={autopista:'Autopista — Circasia',boquia:'Boquia — Salento',tebaida:'La Tebaida',
+      km25:'Km 25 Dagua (Principal)',km25_pan:'Km 25 Dagua (Panadería)',
+      km18:'Km 18 — Cali',penon:'El Peñón — Cali',colseguros:'Colseguros — Cali'}[sesion.punto]||sesion.punto;
+    var tN=sesion.turno==='manana'?'☀️ Mañana':sesion.turno==='tarde'?'🌙 Tarde':'⬛ Completo';
+    var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
+    var msg='\ud83d\udcb0 *ENTREGA REGISTRADA*\n'
+      +'\ud83d\udccd '+pN+'\n'
+      +'\ud83d\udd50 Turno '+tN+' \u2014 '+hora+'\n'
+      +'\ud83d\udc64 Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n'
+      +(entrega.desc?'\ud83d\udccb Recibe: '+entrega.desc+'\n':'')
+      +'\ud83d\udcb5 Valor: *$'+entrega.valor.toLocaleString('es-CO')+'*'
+      +(entrega.esFinal?'\n\u2705 _Entrega final_':'');
+    fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'Markdown'})
+    }).catch(function(e){console.warn('Telegram error:',e);});
+  }, 3000);
+}
 var PASS_ADMIN = '150884';
 var PASS_ADMIN2 = '@lacteos2026';
 
@@ -1568,7 +1598,7 @@ function renderEntries(tipo){
       var inVal=document.createElement('input'); inVal.type='number'; inVal.min='0';
       inVal.placeholder='$0'; inVal.value=e.valor||''; inVal.style.textAlign='right';
       inVal.style.cssText='flex:1;text-align:right;padding:5px 7px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.82rem;background:var(--gris1);min-width:75px;';
-      inVal.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;recalc();autoSave();};})(e));
+      inVal.addEventListener('input',(function(entry,idx){return function(){entry.valor=parseFloat(this.value)||0;recalc();autoSave();if(tipo==='entregas') enviarAlertaTelegram(entry,idx);};})(e,i));
       inVal.addEventListener('wheel',function(ev){ev.preventDefault();},{passive:false});
       row.appendChild(inVal);
       // Checkbox "Entrega final" solo para entregas
@@ -2166,6 +2196,13 @@ function confirmarCierre(){
   if(erroresConf.length){alert('❌ Hay productos con inventario final mayor al disponible. Corrige antes de cerrar.');return;}
   var entConf=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
   if(!entregas.length||entConf<=0){alert('❌ Registra al menos una entrega de dinero antes de cerrar.');return;}
+  // Si quien cierra es admin y el cajero sigue siendo ADMINISTRADOR,
+  // pedir que seleccione el cajero real antes de cerrar
+  if(isAdmin && sesion.cajero==='ADMINISTRADOR'){
+    abrirEditCajero();
+    alert('⚠️ Antes de cerrar, selecciona el cajero real que atendió este turno.');
+    return;
+  }
   document.getElementById('cierreModal').classList.remove('open');
   setSyncStatus('sync','⟳ Cerrando...');
   // Marcar como cerrado ANTES del fetch para que autoSave no interfiera
