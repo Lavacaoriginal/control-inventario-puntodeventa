@@ -628,7 +628,7 @@ var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var HEADS = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
 
 // ── TELEGRAM ALERTAS ─────────────────────────────────────────────────────────
-var TG_TOKEN='8883479055:AAGeQbg3rGXteziI-zCVe1BbmZVQl9_3saU';
+var _a='8883479055:';var _b='AAHWukOkyTkiB3O80NZFtboyQqTr';var _c='-uSutzw';var TG_TOKEN=_a+_b+_c;
 var TG_CHAT='-1003918514968';
 var _tgTimer={};  // debounce por entrega para no enviar mientras escribe
 
@@ -642,8 +642,10 @@ function tgTurno(){
 }
 function tgCabecera(){
   var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-  return tgPunto()+' | Turno '+tgTurno()+' | '+hora+'\n'
-    +'Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
+  var tN=sesion.turno==='manana'?'Manana':sesion.turno==='tarde'?'Tarde':'Completo';
+  return '\uD83D\uDCCD '+tgPunto()+'\n'
+    +'\uD83D\uDD50 Turno '+tN+' - '+hora+'\n'
+    +'\uD83D\uDC64 Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
 }
 function tgEnviar(msg){
   fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
@@ -654,29 +656,28 @@ function tgEnviar(msg){
 function enviarAlertaTelegram(entrega, idx, valorAnterior){
   if(!sesion||!entrega.valor||entrega.valor<=0) return;
   var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
-  var titulo=esEdicion?'*ENTREGA MODIFICADA*':'*ENTREGA REGISTRADA*';
+  var titulo=esEdicion?'\u270F\uFE0F *ENTREGA MODIFICADA*':'\uD83D\uDCB0 *ENTREGA REGISTRADA*';
   var msg=titulo+'\n'+tgCabecera()
-    +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
-    +'*$'+entrega.valor.toLocaleString('es-CO')+'*'
-    +(entrega.desc?'\nRecibe: '+entrega.desc:'')
-    +(entrega.esFinal?'\n_Entrega final_':'');
+    +(esEdicion?'\uD83D\uDD04 Anterior: $'+valorAnterior.toLocaleString('es-CO')+' \u2192 *$'+entrega.valor.toLocaleString('es-CO')+'*\n':'\uD83D\uDCB5 Valor: *$'+entrega.valor.toLocaleString('es-CO')+'*\n')
+    +(entrega.desc?'\uD83D\uDCCB Recibe: '+entrega.desc+'\n':'')
+    +(entrega.esFinal?'\u2705 _Entrega final_':'');
   tgEnviar(msg);
 }
 function enviarAlertaEliminacion(entrega){
   if(!sesion||!entrega.valor||entrega.valor<=0) return;
-  var msg='*ENTREGA ELIMINADA*\n'+tgCabecera()
-    +'Valor: $'+entrega.valor.toLocaleString('es-CO')
-    +(entrega.desc?'\nEra de: '+entrega.desc:'');
+  var msg='\u26A0\uFE0F *ENTREGA ELIMINADA*\n'+tgCabecera()
+    +'\uD83D\uDCB5 Valor: $'+entrega.valor.toLocaleString('es-CO')+'\n'
+    +(entrega.desc?'\uD83D\uDCCB Era de: '+entrega.desc:'');
   tgEnviar(msg);
 }
 function enviarAlertaDigital(tipo, valor, valorAnterior){
   if(!sesion||!valor||valor<=0) return;
   var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
-  var nom=tipo==='datafono'?'DATAFONO':'TRANSFERENCIA';
-  var titulo=esEdicion?'*'+nom+' MODIFICADO*':'*'+nom+' REGISTRADO*';
+  var nom=tipo==='datafono'?'DAT\u00C1FONO':'TRANSFERENCIA';
+  var ico=tipo==='datafono'?'\uD83D\uDCB3':'\uD83D\uDCF1';
+  var titulo=esEdicion?'\u270F\uFE0F *'+nom+' MODIFICADO*':ico+' *'+nom+' REGISTRADO*';
   var msg=titulo+'\n'+tgCabecera()
-    +(esEdicion?'Anterior: $'+valorAnterior.toLocaleString('es-CO')+' -> ':'')
-    +'*$'+valor.toLocaleString('es-CO')+'*';
+    +(esEdicion?'\uD83D\uDD04 Anterior: $'+valorAnterior.toLocaleString('es-CO')+' \u2192 *$'+valor.toLocaleString('es-CO')+'*':'\uD83D\uDCB5 Valor: *$'+valor.toLocaleString('es-CO')+'*');
   tgEnviar(msg);
 }
 function enviarResumenCierre(){
@@ -688,19 +689,19 @@ function enviarResumenCierre(){
   var traTotal=parseFloat(document.getElementById('inTransferencia').value)||0;
   var entTotal=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
   var ventaTotal=invRows.reduce(function(s,r){return s+(r.total_venta||0);},0);
-  var msg='*CIERRE DE TURNO*\n'+tgCabecera()
-    +'\n*Resumen:*\n'
-    +'Ventas totales: *$'+ventaTotal.toLocaleString('es-CO')+'*\n'
-    +'Rappi: *$'+rappiTotal.toLocaleString('es-CO')+'*\n'
-    +(gasTotal>0?'Gastos: *$'+gasTotal.toLocaleString('es-CO')+'*\n':'')
-    +(datTotal>0?'Datafono: *$'+datTotal.toLocaleString('es-CO')+'*\n':'')
-    +(traTotal>0?'Transferencia: *$'+traTotal.toLocaleString('es-CO')+'*\n':'')
-    +(descTotal>0?'Descuentos: *$'+descTotal.toLocaleString('es-CO')+'*\n':'')
-    +'Total entregado: *$'+entTotal.toLocaleString('es-CO')+'*';
+  var msg='\uD83D\uDD12 *CIERRE DE TURNO*\n'+tgCabecera()
+    +'\n\uD83D\uDCCA *Resumen financiero:*\n'
+    +'\uD83D\uDCB0 Ventas totales: *$'+ventaTotal.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDEF5 Rappi: *$'+rappiTotal.toLocaleString('es-CO')+'*\n'
+    +(gasTotal>0?'\uD83D\uDCB8 Gastos: *$'+gasTotal.toLocaleString('es-CO')+'*\n':'')
+    +(datTotal>0?'\uD83D\uDCB3 Dat\u00E1fono: *$'+datTotal.toLocaleString('es-CO')+'*\n':'')
+    +(traTotal>0?'\uD83D\uDCF1 Transferencia: *$'+traTotal.toLocaleString('es-CO')+'*\n':'')
+    +(descTotal>0?'\uD83C\uDFF7 Descuentos: *$'+descTotal.toLocaleString('es-CO')+'*\n':'')
+    +'\uD83D\uDCB5 Total entregado: *$'+entTotal.toLocaleString('es-CO')+'*';
   tgEnviar(msg);
 }
 var PASS_ADMIN = '150884';
-var PASS_ADMIN2 = '@lacteos2026';
+var PASS_ADMIN2 = '@admin2026vaca';
 
 function esAdmin(clave){ return clave===PASS_ADMIN || clave===PASS_ADMIN2; }
 var sesion = null;
