@@ -987,7 +987,7 @@ function salir(){
   var payload=JSON.stringify({
     turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
     snapshot:snap,
-    gastos_list:gastos,entregas_list:entregas,
+    gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:e.esFinal};}),
     datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
     transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
@@ -1811,7 +1811,8 @@ function guardar(){
     headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
     body:JSON.stringify({
       cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
-      snapshot:snap,gastos_list:gastos,entregas_list:entregas,
+      snapshot:snap,gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:e.esFinal};}),
+
       datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
       transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
       descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
@@ -1835,7 +1836,8 @@ function guardar(){
       return sbUpsert('turnos_caja',{
         turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,
         cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
-        snapshot:snap,gastos_list:gastos,entregas_list:entregas,
+        snapshot:snap,gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:e.esFinal};}),
+
         datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
         transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
         descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
@@ -2312,10 +2314,14 @@ function confirmarCierre(){
   clearTimeout(saveTimer);
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
   var snap=invRows.map(function(r){return {id:r.id,name:r.name,precio:r.precio,ant:r.ant,entradas:r.entradas||[],entrante:r.entrante,dev:r.dev,rappi:r.rappi,inv_final:r.inv_final,pedido:r.pedido,disponible:r.disponible,vendido:r.vendido,rappi_venta:r.rappi_venta||0,total_venta:r.total_venta};});
+  // Limpiar campo bloqueado antes de guardar — es solo UI
+  var entregasClean=entregas.map(function(e){
+    return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:e.esFinal};
+  });
   var payload={
     turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
     snapshot:snap,
-    gastos_list:gastos,entregas_list:entregas,
+    gastos_list:gastos,entregas_list:entregasClean,
     datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
     transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
