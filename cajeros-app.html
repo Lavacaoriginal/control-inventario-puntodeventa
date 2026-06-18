@@ -3563,6 +3563,7 @@ function guardarEdicionTurno(){
       });
   }).then(function(){
     setSyncStatus('ok','✓ Turno actualizado correctamente');
+    enviarAlertaAjusteHistorial(turnoEditando, tv, rap, gas, dat, tra, desc, ent, motivoVal);
     document.getElementById('editTurnoModal').classList.remove('open');
     document.getElementById('historialModal').classList.add('open');
     buscarHistorial();
@@ -3570,6 +3571,36 @@ function guardarEdicionTurno(){
     setSyncStatus('err','✗ Error al guardar');
     alert('Error al guardar: '+e.message);
   });
+}
+
+function enviarAlertaAjusteHistorial(t, tv, rap, gas, dat, tra, desc, ent, motivo){
+  var pN={autopista:'Autopista - Circasia',boquia:'Boquia - Salento',tebaida:'La Tebaida',
+    km25:'Km 25 Dagua (Principal)',km25_pan:'Km 25 Dagua (Panaderia)',
+    km18:'Km 18 - Cali',penon:'El Penon - Cali',colseguros:'Colseguros - Cali'}[t.punto]||t.punto;
+  var tN=t.turno==='manana'?'Manana':t.turno==='tarde'?'Tarde':'Completo';
+  var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
+  var ef=tv-gas-dat-tra-rap-desc;
+  var dif=ent-ef;
+  var difTxt=dif===0?'\u2705 Cuadra perfecto'
+    :dif<0?'\u26A0\uFE0F Falta: *$'+Math.abs(dif).toLocaleString('es-CO')+'*'
+    :'\uD83D\uDFE2 Sobran: *$'+dif.toLocaleString('es-CO')+'*';
+  var editadoPor=sesion?sesion.cajero:'ADMINISTRADOR';
+  var msg='\u270F\uFE0F *AJUSTE DE TURNO HIST\u00d3RICO*\n'
+    +'\uD83D\uDCCD '+pN+' | Turno '+tN+'\n'
+    +'\uD83D\uDCC5 Fecha: '+t.fecha+' | '+hora+'\n'
+    +'\uD83D\uDC64 Cajero: '+(t.cajero||'\u2014')+(t.cajero_aux?' / '+t.cajero_aux:'')+'\n'
+    +'\uD83D\uDC64 Editado por: '+editadoPor+'\n'
+    +'\uD83D\uDCCB Motivo: '+motivo+'\n'
+    +'\n\uD83D\uDCB0 *Resumen despu\u00e9s del ajuste:*\n'
+    +'\uD83D\uDCCA Ventas totales: *$'+tv.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDEF5 Rappi: *$'+rap.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDCB8 Gastos: *$'+gas.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDCB3 Dat\u00e1fono: *$'+dat.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDCF1 Transferencia: *$'+tra.toLocaleString('es-CO')+'*\n'
+    +'\uD83C\uDFF7 Descuentos: *$'+desc.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDCB5 Total entregado: *$'+ent.toLocaleString('es-CO')+'*\n'
+    +difTxt;
+  tgEnviar(msg);
 }
 
 // ── INIT ─────────────────────────────────────────
