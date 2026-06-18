@@ -1185,7 +1185,10 @@ function cargarInventario(){
             document.getElementById('turnoBadge').textContent=tN2+' — '+sesion.cajero+(sesion.cajeroAux?' & '+sesion.cajeroAux:'');
           }
           gastos=saved.gastos_list||[];
-          entregas=(saved.entregas_list||[]).map(function(e){return Object.assign({confirmada:false,esFinal:false},e);});
+          entregas=(saved.entregas_list||[]).map(function(e){
+            // Cajero nunca ve bloque editable — confirmar todo lo que venga del servidor
+            return Object.assign({confirmada:false,esFinal:false},e,{confirmada:isAdmin?!!e.confirmada:true});
+          });
           entregaFinal=saved.entrega_final||false;
           document.getElementById('inNota').value=saved.nota||'';
           var nsEl=document.getElementById('inNotaSig'); if(nsEl) nsEl.value=saved.nota_siguiente||'';
@@ -1249,7 +1252,13 @@ function cargarInventario(){
             btnCerrarEl.style.display='flex';
           }
         }
-        buildTable(); renderAllEntries(); recalc();
+        buildTable();
+        // Si admin y turno abierto y no hay entregas pendientes, agregar bloque inicial
+        if(isAdmin&&!window._turnoCerrado){
+          var hayPendiente=entregas.some(function(e){return !e.confirmada;});
+          if(!hayPendiente) addEntry('entregas');
+        }
+        renderAllEntries(); recalc();
         cargarRecomendados();
         clearInterval(syncCheckTimer);
         // Verificar cada 45s si el turno fue cerrado por otro dispositivo
