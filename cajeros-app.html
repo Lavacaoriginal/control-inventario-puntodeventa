@@ -1640,7 +1640,7 @@ function renderEntries(tipo){
   if(!container) return;
   container.innerHTML='';
 
-  // GASTOS — lógica original
+  // GASTOS
   if(tipo==='gastos'){
     var soloLectura=window._turnoCerrado&&!isAdmin;
     arr.forEach(function(e,i){
@@ -1669,40 +1669,42 @@ function renderEntries(tipo){
     return;
   }
 
-  // ENTREGAS — nuevo flujo confirm-style
+  // ENTREGAS
   var soloLecturaEnt=window._turnoCerrado&&!isAdmin;
+  // Encontrar el índice de la entrega activa (última no confirmada)
+  var activaIdx=-1;
+  for(var ii=arr.length-1;ii>=0;ii--){
+    if(!arr[ii].confirmada){ activaIdx=ii; break; }
+  }
 
   arr.forEach(function(e,i){
     var bloque=document.createElement('div');
     bloque.style.cssText='background:var(--gris1);border:1.5px solid '+(e.confirmada?'#2d6a2d':'var(--gris2)')+';border-radius:8px;padding:10px 12px;margin-bottom:8px;';
 
     if(e.confirmada){
-      // Entrega confirmada y bloqueada
+      // Bloqueada — solo mostrar datos
       var locked=document.createElement('div');
       locked.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;';
       locked.innerHTML='<div style="flex:1;">'
-        +'<div style="font-size:.78rem;color:var(--gris4);">'+( e.hora||'')+'</div>'
+        +'<div style="font-size:.78rem;color:var(--gris4);">'+(e.hora||'')+'</div>'
         +'<div style="font-weight:700;font-size:.95rem;color:#1a4a1a;">'+fmt(e.valor)+'</div>'
         +(e.desc?'<div style="font-size:.78rem;color:#4a6a4a;">Responsable: '+e.desc+'</div>':'')
         +(e.esFinal?'<div style="font-size:.7rem;color:#2d6a2d;font-weight:700;">\u2705 Entrega final</div>':'')
         +'</div>'
-        +'<span style="font-size:1.1rem;" title="Entrega confirmada y bloqueada">\uD83D\uDD12</span>';
-      // Superadmin puede eliminar
+        +'<span style="font-size:1.1rem;">\uD83D\uDD12</span>';
       if(isSuperAdmin){
         var btnS=document.createElement('button'); btnS.className='btn-remove-entry'; btnS.textContent='\u2715';
         btnS.style.marginLeft='4px';
-        btnS.addEventListener('click',(function(ii){return function(){
-          enviarAlertaEliminacion(entregas[ii]);
-          entregas.splice(ii,1); renderEntries('entregas'); recalc(); autoSave();
+        btnS.addEventListener('click',(function(ii2){return function(){
+          enviarAlertaEliminacion(entregas[ii2]);
+          entregas.splice(ii2,1); renderEntries('entregas'); recalc(); autoSave();
         };})(i));
         locked.appendChild(btnS);
       }
       bloque.appendChild(locked);
-    } else if(soloLecturaEnt){
-      // Cajero: si no está confirmada, no mostrar nada (admin no ha confirmado aún)
-      return;
-    } else {
-      // Entrega pendiente de confirmar — solo admin ve esto
+
+    } else if(i===activaIdx && !soloLecturaEnt){
+      // Bloque activo — solo uno visible a la vez
       var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ Valor entrega';
       inV.value=e.valor||'';
       inV.style.cssText='width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.9rem;background:#fff;margin-bottom:7px;box-sizing:border-box;';
@@ -1713,24 +1715,23 @@ function renderEntries(tipo){
       inD.style.cssText='width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;margin-bottom:8px;box-sizing:border-box;';
       inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();};})(e));
 
-      // Fila check + label + btn eliminar
+      // Check entrega final
       var chkRow=document.createElement('div');
-      chkRow.style.cssText='display:flex;align-items:center;gap:8px;';
+      chkRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
       var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!e.esFinal;
       chk.style.cssText='width:20px;height:20px;cursor:pointer;accent-color:#2d6a2d;flex-shrink:0;';
       var chkLbl=document.createElement('label');
       chkLbl.textContent='Marque aquí cuando es la entrega final';
       chkLbl.style.cssText='font-size:.8rem;color:var(--negro);cursor:pointer;flex:1;';
       chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;});
+      chkRow.appendChild(chk); chkRow.appendChild(chkLbl);
+      bloque.appendChild(inV); bloque.appendChild(inD); bloque.appendChild(chkRow);
 
-      var btnDel=document.createElement('button'); btnDel.className='btn-remove-entry'; btnDel.textContent='\u2715';
-      btnDel.addEventListener('click',(function(ii){return function(){entregas.splice(ii,1);renderEntries('entregas');recalc();autoSave();};})(i));
-
-      // Botón CONFIRMAR
+      // Botón confirmar
       var btnConf=document.createElement('button');
       btnConf.textContent='\u2713 Confirmar entrega';
-      btnConf.style.cssText='width:100%;margin-top:8px;padding:9px;background:#1a4a1a;color:#7dbb7d;border:none;border-radius:6px;font-weight:700;font-size:.88rem;cursor:pointer;';
-      btnConf.addEventListener('click',(function(entry,idx,inValEl,inDescEl,chkEl){return function(){
+      btnConf.style.cssText='width:100%;padding:9px;background:#1a4a1a;color:#7dbb7d;border:none;border-radius:6px;font-weight:700;font-size:.88rem;cursor:pointer;';
+      btnConf.addEventListener('click',(function(entry,idx2,inValEl,inDescEl,chkEl){return function(){
         var val=parseFloat(inValEl.value)||0;
         if(val<=0){alert('Ingresa un valor para la entrega.');return;}
         entry.valor=val;
@@ -1738,18 +1739,28 @@ function renderEntries(tipo){
         entry.esFinal=chkEl.checked;
         entry.confirmada=true;
         entry.hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-        entregas.forEach(function(x,xi){if(xi!==idx) x.esFinal=false;});
+        // Si es entrega final, desmarcar las demás
+        if(entry.esFinal) entregas.forEach(function(x,xi){if(xi!==idx2) x.esFinal=false;});
         entregaFinal=entry.esFinal;
         recalc(); autoSave();
         setTimeout(function(){renderEntries('entregas');},100);
-        enviarAlertaTelegram(entry,idx,undefined);
+        enviarAlertaTelegram(entry,idx2,undefined);
       };})(e,i,inV,inD,chk));
+      bloque.appendChild(btnConf);
 
-      chkRow.appendChild(chk); chkRow.appendChild(chkLbl); chkRow.appendChild(btnDel);
-      bloque.appendChild(inV); bloque.appendChild(inD); bloque.appendChild(chkRow); bloque.appendChild(btnConf);
+    } else {
+      // Entrega pendiente no activa o cajero — no mostrar
+      return;
     }
     container.appendChild(bloque);
   });
+
+  // Botón + agregar: solo si no hay bloque activo y no es turno cerrado
+  var btnAdd=document.getElementById('btnAddEntrega');
+  if(btnAdd){
+    var hayActiva=activaIdx!==-1;
+    btnAdd.style.display=(!hayActiva&&isAdmin&&!window._turnoCerrado)?'block':'none';
+  }
 
   var tot=document.getElementById('entregaTotal');
   if(tot) tot.textContent='Total entregado: '+fmt(arr.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0));
