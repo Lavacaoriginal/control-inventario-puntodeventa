@@ -1197,6 +1197,10 @@ function cargarInventario(){
             return Object.assign({confirmada:false,esFinal:false},e,{confirmada:isAdmin?!!e.confirmada:true});
           });
           entregaFinal=saved.entrega_final||false;
+          // También revisar las entregas individuales por si acaso
+          if(!entregaFinal&&saved.entregas_list){
+            entregaFinal=saved.entregas_list.some(function(e){return e.esFinal||e.es_final;});
+          }
           document.getElementById('inNota').value=saved.nota||'';
           var nsEl=document.getElementById('inNotaSig'); if(nsEl) nsEl.value=saved.nota_siguiente||'';
           setTimeout(function(){
@@ -1833,7 +1837,7 @@ function recalc(){
   // Efectivo a entregar descuenta gastos, digital, rappi y descuentos
   var ef=tv-gas-dat-tra-rappiTotal-desc;
   var dif=ent-ef;
-  entregaFinal=entregas.some(function(x){return x.confirmada&&x.esFinal;});
+  entregaFinal=entregas.some(function(x){return x.confirmada&&x.esFinal;})||false;
   var mostrar=isAdmin||entregaFinal;
   document.getElementById('rTotalVentas').textContent=mostrar?fmt(tv):'—';
   document.getElementById('rGastos').textContent=fmt(gas);
@@ -2406,7 +2410,7 @@ function confirmarCierre(){
     entregado:entregas.reduce(function(s,e){return s+(e.valor||0);},0),
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
-    entrega_final:entregaFinal||(entregas.length>0&&entregas.reduce(function(s,e){return s+(e.valor||0);},0)>0),
+    entrega_final:entregaFinal||entregas.some(function(e){return e.confirmada&&e.esFinal;}),
     cerrado:true,updated_at:new Date().toISOString()
   };
   enviarResumenCierre();
@@ -3529,7 +3533,7 @@ function guardarEdicionTurno(){
   // Calcular entrega_final: true si hay alguna entrega marcada como final, o si el checkbox está marcado
   var editEntregaFinalChk=document.getElementById('editEntregaFinal');
   var editEntregaFinal=(editEntregaFinalChk&&editEntregaFinalChk.checked)
-    ||(turnoEditando.entregas_list||[]).some(function(e){return e.esFinal;});
+    ||(turnoEditando.entregas_list||[]).some(function(e){return !!(e.esFinal||e.es_final);});
   var payload={
     snapshot:snap,
     gastos_list:turnoEditando.gastos_list||[],
