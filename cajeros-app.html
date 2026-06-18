@@ -700,9 +700,9 @@ function enviarResumenCierre(){
     +'\uD83D\uDCB5 Total entregado: *$'+entTotal.toLocaleString('es-CO')+'*';
   tgEnviar(msg);
 }
-var PASS_ADMIN = '150884';
+var PASS_ADMIN = 'j150884';
 var PASS_ADMIN2 = '@admin2026vaca';
-var PASS_SUPER = 'Super150884';
+var PASS_SUPER = 'Superj150884';
 
 function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER; }
 function esSuperAdmin(clave){ return clave===PASS_SUPER; }
@@ -998,11 +998,11 @@ function salir(){
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
     entrega_final:entregaFinal,
-    cerrado:false,updated_at:new Date().toISOString()
+    updated_at:new Date().toISOString()
   });
   fetch(SB_URL+'/rest/v1/turnos_caja',{
     method:'POST',
-    headers:Object.assign({},HEADS,{'Prefer':'resolution=merge-duplicates'}),
+    headers:Object.assign({},HEADS,{'Prefer':'resolution=merge-duplicates,return=minimal'}),
     body:payload,
     keepalive:true  // sobrevive al cambio de pantalla en móvil
   }).catch(function(){}).finally(function(){ limpiarUI(); });
