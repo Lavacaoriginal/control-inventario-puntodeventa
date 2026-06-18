@@ -194,6 +194,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="ADM|ADMINISTRADOR" style="font-weight:700;color:#1d4e89;background:#e8f0fb;">🔑 ADMINISTRADOR</option>
         <option value="" disabled style="color:#ccc;">────────────────</option>
         <option value="C4|Andrea Gonzales">Andrea Gonzales (C4)</option>
+        <option value="Aux|Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
         <option value="C3|Catalina Tabares">Catalina Tabares (C3)</option>
         <option value="C1|Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="C1|Jesika Imbajoa">Jesika Imbajoa (C1)</option>
@@ -451,6 +452,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       <select id="faltCajero" style="width:100%;padding:7px 9px;border:1.5px solid var(--gris2);border-radius:6px;font-family:'Inter',sans-serif;font-size:.83rem;background:var(--gris1);color:var(--negro);cursor:pointer;">
         <option value="">— Todos los cajeros —</option>
         <option value="Andrea Gonzales">Andrea Gonzales (C4)</option>
+        <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
         <option value="Catalina Tabares">Catalina Tabares (C3)</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
@@ -509,6 +511,10 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       <button class="btn" style="background:#eee;color:#333;flex:1;" id="btnCancelarEdicion">✕ Cancelar</button>
     </div>
     <div id="editTurnoBody"></div>
+    <div style="margin:10px 0 6px;">
+      <label style="font-size:.72rem;font-weight:700;display:block;margin-bottom:4px;color:#b02020;">Motivo del ajuste (obligatorio)</label>
+      <input type="text" id="historialMotivo" placeholder="Ej: Error en conteo del turno anterior" style="width:100%;padding:8px 10px;border:1.5px solid #c04040;border-radius:6px;font-size:.84rem;background:#fff9f9;box-sizing:border-box;">
+    </div>
     <!-- Botones también abajo -->
     <div class="modal-actions" style="margin-top:12px;">
       <button class="btn btn-cerrar" id="btnGuardarEdicion2">💾 Guardar cambios</button>
@@ -562,6 +568,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       <select id="editCajeroPrincipal" style="width:100%;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:'Inter',sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%238a7a68\' stroke-width=\'1.8\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer;">
         <option value="">— Selecciona cajero —</option>
         <option value="Andrea Gonzales">Andrea Gonzales (C4)</option>
+        <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
         <option value="Catalina Tabares">Catalina Tabares (C3)</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
@@ -1937,12 +1944,7 @@ function openAdmin(){
       });
     productosBorrar=[];
     renderProdAdmin();
-    if(sesion){
-      document.getElementById('ajusteSection').style.display='block';
-      var tN=sesion.turno==='manana'?'Mañana':sesion.turno==='tarde'?'Tarde':'Completo';
-      document.getElementById('ajusteTurnoLabel').textContent=sesion.fecha+' · '+tN;
-      renderAjuste();
-    }
+    // ajusteSection removido — el ajuste se hace desde el historial
     setSyncStatus('ok','✓');
     document.getElementById('adminModal').classList.add('open');
   }).catch(function(e){setSyncStatus('err','✗ Error');alert('Error al cargar productos: '+e.message);});
@@ -2067,10 +2069,7 @@ function renderAjuste(){
 }
 
 function saveAdmin(){
-  var motivo=document.getElementById('ajusteMotivo')?document.getElementById('ajusteMotivo').value.trim():'';
-  if(sesion&&document.getElementById('ajusteSection').style.display!=='none'&&motivo===''){
-    alert('El motivo del ajuste es obligatorio.');return;
-  }
+  // Motivo de ajuste solo se valida en el historial (guardarEditTurno)
   setSyncStatus('sync','⟳ Guardando...');
   var updates=productos.map(function(p,i){
     var data={name:p.name,precio:p.precio,orden:i,updated_at:new Date().toISOString()};
@@ -2502,7 +2501,7 @@ function renderEditCajerosExtras(){
     div.style.display='flex'; div.style.gap='6px';
     var inp=document.createElement('select');
     inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;cursor:pointer;';
-    var optsAux=[['','— Selecciona cajero —'],['Andrea Gonzales','Andrea Gonzales (C4)'],['Catalina Tabares','Catalina Tabares (C3)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (AO2)'],['Luz Suarez','Luz Suarez (C6)'],['Milena Ruiz','Milena Ruiz (C4)'],['Sandra Rivera','Sandra Rivera (C2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C3)']];
+    var optsAux=[['','— Selecciona cajero —'],['Andrea Gonzales','Andrea Gonzales (C4)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Catalina Tabares','Catalina Tabares (C3)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (AO2)'],['Luz Suarez','Luz Suarez (C6)'],['Milena Ruiz','Milena Ruiz (C4)'],['Sandra Rivera','Sandra Rivera (C2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C3)']];
     optsAux.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];inp.appendChild(opt);});
     inp.value=nombre;
     inp.addEventListener('change',(function(idx){return function(){editCajerosExtras[idx]=this.value;};})(i));
@@ -3471,6 +3470,9 @@ function renderEditEntradas(container, arr, field, onChange){
 
 function guardarEdicionTurno(){
   if(!turnoEditando) return;
+  var motivoEl=document.getElementById('historialMotivo');
+  var motivoVal=motivoEl?motivoEl.value.trim():'';
+  if(!motivoVal){alert('El motivo del ajuste es obligatorio.');if(motivoEl)motivoEl.focus();return;}
   setSyncStatus('sync','⟳ Guardando...');
   var snap=turnoEditando.snapshot||[];
   // Recalcular usando el precio ORIGINAL del snapshot (no el precio actual)
@@ -3503,6 +3505,7 @@ function guardarEdicionTurno(){
     cajero:turnoEditando.cajero,
     cajero_aux:turnoEditando.cajero_aux||'',
     nota:nota,
+    nota_ajuste:motivoVal||'',
     entrega_final:editEntregaFinal,
     cerrado:turnoEditando.cerrado===true, // preservar estado original, no forzar cerrado
     eliminado:turnoEditando.eliminado||false,
@@ -3577,6 +3580,7 @@ document.getElementById('histFecha') && (document.getElementById('histFecha').va
 
 var CAJEROS_LISTA=[
   {val:'C4|Andrea Gonzales',txt:'Andrea Gonzales (C4)'},
+  {val:'Aux|Arturo Gutierrez',txt:'Arturo Gutiérrez (Aux)'},
   {val:'C3|Catalina Tabares',txt:'Catalina Tabares (C3)'},
   {val:'C1|Daniela Nieto',txt:'Daniela Nieto (C1)'},
   {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)'},
