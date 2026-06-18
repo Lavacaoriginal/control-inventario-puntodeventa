@@ -3043,7 +3043,7 @@ function abrirDashboard(){
   document.getElementById('dashFecha').textContent='Fecha: '+hoy;
   document.getElementById('dashContenido').innerHTML='<p style="color:var(--gris4);text-align:center;padding:20px;">Cargando...</p>';
   document.getElementById('dashboardModal').classList.add('open');
-  sbGet('turnos_caja','fecha=eq.'+hoy+'&eliminado=eq.false&order=punto.asc,turno.asc')
+  sbGet('turnos_caja','fecha=eq.'+hoy+'&or=(eliminado.eq.false,eliminado.is.null)&order=punto.asc,turno.asc')
     .then(function(turnos){
       var pN={autopista:'Vaca Autopista',boquia:'Vaca Boquia',tebaida:'Vaca Tebaida',
               km25:'Vaca KM 25',km25_pan:'Vaca KM25 Pan',km18:'Vaca KM 18',penon:'Vaca Peñón',colseguros:'Vaca Colseguros'};
