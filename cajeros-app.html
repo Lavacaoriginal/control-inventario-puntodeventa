@@ -1681,7 +1681,8 @@ function renderEntries(tipo){
           _tgTimer['e_'+idx]=setTimeout(function(){
             if(!entry.valor||entry.valor<=0) return;
             entry.bloqueado=true;
-            autoSave(); renderEntries('entregas');
+            autoSave();
+            setTimeout(function(){ renderEntries('entregas'); }, 100);
             if(el.dataset.tgSent==='1') return;
             el.dataset.tgSent='1';
             var valorOrig=parseFloat(el.dataset.valorOrig)||0;
@@ -1695,7 +1696,9 @@ function renderEntries(tipo){
           clearTimeout(_tgTimer['e_'+idx]);
           if(!entry.valor||entry.valor<=0) return;
           entry.bloqueado=true;
-          autoSave(); renderEntries('entregas');
+          autoSave();
+          // Pequeño delay para no destruir el DOM mientras el blur aún está activo
+          setTimeout(function(){ renderEntries('entregas'); }, 100);
           if(this.dataset.tgSent==='1') return;
           this.dataset.tgSent='1';
           var valorOrig=parseFloat(this.dataset.valorOrig)||0;
@@ -1714,7 +1717,7 @@ function renderEntries(tipo){
         chk.style.cssText='width:18px;height:18px;cursor:pointer;accent-color:#2d6a2d;';
         chk.addEventListener('change',(function(entry){return function(){
           entregas.forEach(function(x){x.esFinal=false;});
-          if(this.checked) entry.esFinal=true;
+          entry.esFinal=!!this.checked;
           entregaFinal=entregas.some(function(x){return x.esFinal;});
           recalc(); autoSave();
           renderEntries('entregas');
@@ -1783,16 +1786,16 @@ function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(guardar,1200);}
 
 function recargarInventario(){
   if(!sesion) return;
-  if(!confirm('¿Recargar inventario desde la base de datos?\n\nSe actualizarán los datos sin perder lo que ya guardaste.')) return;
-  // Guardar primero para no perder cambios no sincronizados
+  if(!confirm('\u00BFRecargar inventario desde la base de datos?\n\nSe actualizarán los datos.')) return;
   clearTimeout(saveTimer);
-  setSyncStatus('sync','⟳ Guardando antes de recargar...');
-  // Dar tiempo al último autoSave de completarse antes de recargar
-  guardar();
-  setTimeout(function(){
-    setSyncStatus('sync','⟳ Recargando...');
+  setSyncStatus('sync','\u29D7 Recargando...');
+  // Si turno abierto, guardar primero; si cerrado, recargar directo
+  if(!window._turnoCerrado){
+    guardar();
+    setTimeout(function(){ cargarInventario(); }, 1500);
+  } else {
     cargarInventario();
-  }, 1500);
+  }
 }
 
 function guardar(){
