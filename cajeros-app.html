@@ -283,7 +283,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inDatafono" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_datafono']);_tgTimer['d_datafono']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_datafono']);var fin=parseFloat(this.value)||0;if(!fin)return;this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);">
+            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_datafono']);_tgTimer['d_datafono']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;if(!isAdmin){el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';}if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_datafono']);var fin=parseFloat(this.value)||0;if(!fin)return;if(!isAdmin){this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';}if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);">
         </div>
       </div>
       <div class="res-block">
@@ -292,7 +292,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inTransferencia" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_transferencia']);_tgTimer['d_transferencia']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_transferencia']);var fin=parseFloat(this.value)||0;if(!fin)return;this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);">
+            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_transferencia']);_tgTimer['d_transferencia']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;if(!isAdmin){el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';}if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_transferencia']);var fin=parseFloat(this.value)||0;if(!fin)return;if(!isAdmin){this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';}if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);">
         </div>
       </div>
       <div class="res-block">
@@ -1204,11 +1204,25 @@ function cargarInventario(){
             var tEl=document.getElementById('inTransferencia');
             if(dEl){
               dEl.value=saved.datafono_val||'';
-              if((saved.datafono_val||0)>0&&!isSuperAdmin){dEl.readOnly=true;dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';}
+              // Bloquear solo si es cajero (no admin) y tiene valor
+              if((saved.datafono_val||0)>0&&!isAdmin){
+                dEl.readOnly=true;dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
+              } else if(isAdmin&&!isSuperAdmin&&(saved.datafono_val||0)>0){
+                // Admin normal: ver valor bloqueado (solo superadmin puede editar)
+                dEl.readOnly=true;dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
+              } else {
+                dEl.readOnly=false;dEl.style.background='';dEl.style.color='';dEl.style.fontWeight='';
+              }
             }
             if(tEl){
               tEl.value=saved.transferencia_val||'';
-              if((saved.transferencia_val||0)>0&&!isSuperAdmin){tEl.readOnly=true;tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';}
+              if((saved.transferencia_val||0)>0&&!isAdmin){
+                tEl.readOnly=true;tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
+              } else if(isAdmin&&!isSuperAdmin&&(saved.transferencia_val||0)>0){
+                tEl.readOnly=true;tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
+              } else {
+                tEl.readOnly=false;tEl.style.background='';tEl.style.color='';tEl.style.fontWeight='';
+              }
             }
             var descEl=document.getElementById('inDescuentos'); if(descEl){ descEl.value=saved.descuentos_val||'';}
             recalc();
@@ -1232,8 +1246,18 @@ function cargarInventario(){
             // Admin/Superadmin: desbloquear según nivel
             var inDat=document.getElementById('inDatafono');
             var inTra=document.getElementById('inTransferencia');
-            if(inDat){inDat.readOnly=!isSuperAdmin&&(parseFloat(inDat.value)||0)>0;if(!inDat.readOnly){inDat.style.background='';inDat.style.color='';inDat.style.fontWeight='';}}
-            if(inTra){inTra.readOnly=!isSuperAdmin&&(parseFloat(inTra.value)||0)>0;if(!inTra.readOnly){inTra.style.background='';inTra.style.color='';inTra.style.fontWeight='';}}
+            if(inDat){
+              var dVal=parseFloat(inDat.value)||0;
+              inDat.readOnly=dVal>0&&!isSuperAdmin;
+              if(inDat.readOnly&&dVal>0){inDat.style.background='#f0ede8';inDat.style.color='#7c4a1e';inDat.style.fontWeight='700';}
+              else{inDat.style.background='';inDat.style.color='';inDat.style.fontWeight='';}
+            }
+            if(inTra){
+              var tVal=parseFloat(inTra.value)||0;
+              inTra.readOnly=tVal>0&&!isSuperAdmin;
+              if(inTra.readOnly&&tVal>0){inTra.style.background='#f0ede8';inTra.style.color='#7c4a1e';inTra.style.fontWeight='700';}
+              else{inTra.style.background='';inTra.style.color='';inTra.style.fontWeight='';}
+            }
             var inDesc=document.getElementById('inDescuentos'); if(inDesc){inDesc.readOnly=false;inDesc.style.background='';}
             var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
             var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
@@ -1243,8 +1267,18 @@ function cargarInventario(){
           // Asegurar que los campos estén desbloqueados
           var inDat=document.getElementById('inDatafono');
           var inTra=document.getElementById('inTransferencia');
-          if(inDat){var datV=parseFloat(inDat.value)||0;inDat.readOnly=datV>0&&!isSuperAdmin;if(inDat.readOnly){inDat.style.background='#f0ede8';inDat.style.color='#7c4a1e';inDat.style.fontWeight='700';}else{inDat.style.background='';inDat.style.color='';inDat.style.fontWeight='';}}
-          if(inTra){var traV=parseFloat(inTra.value)||0;inTra.readOnly=traV>0&&!isSuperAdmin;if(inTra.readOnly){inTra.style.background='#f0ede8';inTra.style.color='#7c4a1e';inTra.style.fontWeight='700';}else{inTra.style.background='';inTra.style.color='';inTra.style.fontWeight='';}}
+          if(inDat){var datV=parseFloat(inDat.value)||0;
+            var datBlock=datV>0&&!isAdmin;
+            inDat.readOnly=datBlock;
+            if(datBlock){inDat.style.background='#f0ede8';inDat.style.color='#7c4a1e';inDat.style.fontWeight='700';}
+            else{inDat.style.background='';inDat.style.color='';inDat.style.fontWeight='';}
+          }
+          if(inTra){var traV=parseFloat(inTra.value)||0;
+            var traBlock=traV>0&&!isAdmin;
+            inTra.readOnly=traBlock;
+            if(traBlock){inTra.style.background='#f0ede8';inTra.style.color='#7c4a1e';inTra.style.fontWeight='700';}
+            else{inTra.style.background='';inTra.style.color='';inTra.style.fontWeight='';}
+          }
           var inDesc=document.getElementById('inDescuentos'); if(inDesc){inDesc.readOnly=false;inDesc.style.background='';}
           var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
           var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
