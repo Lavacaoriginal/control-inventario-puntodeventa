@@ -392,15 +392,6 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <button id="btnAddProd">＋</button>
       </div>
     </div>
-    <div class="admin-section" id="ajusteSection" style="display:none;">
-      <div class="admin-section-title">Ajustar inventario anterior — <span id="ajusteTurnoLabel"></span></div>
-      <table class="ajuste-table"><tbody id="ajusteBody"></tbody></table>
-      <div style="margin-top:8px;">
-        <label style="font-size:.72rem;font-weight:600;display:block;margin-bottom:4px;">Motivo del ajuste (obligatorio)</label>
-        <input type="text" id="ajusteMotivo" placeholder="Ej: Error en conteo del turno anterior"
-          style="width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:'Inter',sans-serif;font-size:.83rem;background:var(--gris1);">
-      </div>
-    </div>
     <div class="modal-actions">
       <button class="btn btn-cerrar" id="btnSaveAdmin">💾 Guardar cambios</button>
       <button class="btn" style="background:#eee;color:#333;" id="btnCancelAdmin">Cancelar</button>
@@ -643,7 +634,6 @@ var HEADS = {'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'
 // ── TELEGRAM ALERTAS ─────────────────────────────────────────────────────────
 var _a='8883479055:';var _b='AAHWukOkyTkiB3O80NZFtboyQqTr';var _c='-uSutzw';var TG_TOKEN=_a+_b+_c;
 var TG_CHAT='-1003918514968';
-var _tgTimer={};  // debounce por entrega para no enviar mientras escribe
 
 function tgPunto(){
   return {autopista:'Autopista - Circasia',boquia:'Boquia - Salento',tebaida:'La Tebaida',
@@ -730,7 +720,7 @@ function enviarResumenCierre(){
   var descTotal=parseFloat(document.getElementById('inDescuentos').value)||0;
   var datTotal=parseFloat(document.getElementById('inDatafono').value)||0;
   var traTotal=parseFloat(document.getElementById('inTransferencia').value)||0;
-  var entTotal=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
+  var entTotal=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   var ventaTotal=invRows.reduce(function(s,r){return s+(r.total_venta||0);},0);
   var responsables=entregas.filter(function(e){return e.confirmada&&e.desc;}).map(function(e){return e.desc;});
   var respTxt=responsables.length?responsables.join(', '):'\u2014';
@@ -942,6 +932,7 @@ function showAdminUI(){
     if(adminTimerSecs<=0){
       clearInterval(adminTimer);
       isAdmin=false;
+      isSuperAdmin=false;
       var b=document.getElementById('adminBadge');
       if(b){b.style.display='none'; b.textContent='🔑 Admin';}
       var bH=document.getElementById('btnHistorial');
@@ -989,9 +980,8 @@ function entrar(admin){
   if(!turno){alert('Selecciona el turno.');return;}
   if(!cajero){alert('Elige tu nombre.');return;}
   if(!fecha){alert('Selecciona la fecha.');return;}
-  // Si eligió ADMINISTRADOR, pedir clave
-  var cajeroValRaw2=document.getElementById('selCajero').value;
-  if(cajeroValRaw2==='ADM|ADMINISTRADOR'){
+  // Si eligió ADMINISTRADOR en el dropdown, pedir clave
+  if(cajeroVal==='ADM|ADMINISTRADOR'){
     var clave=prompt('🔒 Clave de administrador:');
     if(!esAdmin(clave)){if(clave!==null)alert('Clave incorrecta.');return;}
     admin=true;
@@ -999,9 +989,6 @@ function entrar(admin){
     var nomLogin=prompt('\uD83D\uDC64 Tu nombre (para registro en notificaciones):');
     editorNombre=(nomLogin||'').trim()||'ADMINISTRADOR';
   }
-  // Detectar si seleccionó ADMINISTRADOR en el dropdown
-  var cajeroValRaw=document.getElementById('selCajero').value;
-  if(cajeroValRaw==='ADM|ADMINISTRADOR') admin=true;
   sesion={punto:punto,turno:turno,cajero:cajero,cajeroAux:cajeroAux,fecha:fecha};
   cajerosExtras=[];
   renderCajerosExtras();
@@ -1061,7 +1048,7 @@ function salir(){
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
     gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
     digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
-    entregado:entregas.reduce(function(s,e){return s+(e.valor||0);},0),
+    entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
     entrega_final:entregaFinal,
@@ -1091,7 +1078,7 @@ function cargarRecomendados(){
   // Buscar turnos cerrados de ese punto, mismo turno, en esas fechas
   var promises = fechas.map(function(f){
     var key = f+'_'+sesion.punto+'_'+sesion.turno;
-    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.true&eliminado=eq.false&limit=1')
+    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&limit=1')
       .catch(function(){return[];});
   });
   Promise.all(promises).then(function(results){
@@ -1148,14 +1135,14 @@ function cargarInventario(){
         // Turno actual
         sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+turnoKey+'&limit=1').catch(function(){return[];}),
         // Último turno cerrado del mismo punto en fechas ANTERIORES
-        sbGet('turnos_caja','punto=eq.'+sesion.punto+'&cerrado=eq.true&eliminado=eq.false&fecha=lt.'+sesion.fecha+'&order=fecha.desc,turno.desc&limit=1').catch(function(){return[];}),
+        sbGet('turnos_caja','punto=eq.'+sesion.punto+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&fecha=lt.'+sesion.fecha+'&order=fecha.desc,turno.desc&limit=1').catch(function(){return[];}),
         // Si es tarde o completo: buscar AM del mismo día
         (sesion.turno==='tarde'||sesion.turno==='completo')
-          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_manana&cerrado=eq.true&eliminado=eq.false&limit=1').catch(function(){return[];})
+          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_manana&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&limit=1').catch(function(){return[];})
           : Promise.resolve([]),
         // Si es completo: también buscar tarde del mismo día
         sesion.turno==='completo'
-          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_tarde&cerrado=eq.true&eliminado=eq.false&limit=1').catch(function(){return[];})
+          ? sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+sesion.fecha+'_'+sesion.punto+'_tarde&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&limit=1').catch(function(){return[];})
           : Promise.resolve([])
       ]).then(function(res){
         var saved   = res[0].length ? res[0][0] : null;
@@ -1220,7 +1207,7 @@ function cargarInventario(){
             return {id:p.id,name:p.name,precio:getPrecio(p,sesion.punto),precios:p.precios||{},
               ant:antVal,
               entradas:[],entrante:null,dev:null,rappi:null,inv_final:null,pedido:null,
-              disponible:0,vendido:0,total_venta:0};
+              disponible:0,vendido:0,rappi_venta:0,total_venta:0};
           });
         }
         // Limpiar siempre primero para evitar que persistan valores del turno anterior
@@ -1288,6 +1275,7 @@ function cargarInventario(){
         // Si el turno ya fue cerrado, bloquearlo
         if(saved && saved.cerrado){
           window._turnoCerrado=true;
+          // Un turno cerrado siempre muestra su resumen completo (es historia, ya no se puede manipular)
           entregaFinal=true;
           if(!isAdmin){
             // Cajero: bloquear campos de resumen
@@ -1359,7 +1347,7 @@ function cargarInventario(){
         renderAllEntries(); recalc();
         cargarRecomendados();
         clearInterval(syncCheckTimer);
-        // Verificar cada 45s si el turno fue cerrado por otro dispositivo
+        // Verificar cada 30 minutos si el turno fue cerrado por otro dispositivo
         if(!window._turnoCerrado){
           syncCheckTimer=setInterval(function(){
             if(!sesion||window._turnoCerrado){clearInterval(syncCheckTimer);return;}
@@ -1722,8 +1710,8 @@ function updateTotales(){
 function addEntry(tipo){
   var arr=tipo==='gastos'?gastos:entregas;
   if(tipo==='entregas'){
-    var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-    arr.push({desc:'',valor:0,hora:'',confirmada:false,esFinal:false,bloqueado:false});
+    // La hora se asigna al confirmar la entrega, no al crear el bloque
+    arr.push({desc:'',valor:0,hora:'',confirmada:false,esFinal:false});
   } else {
     arr.push({desc:'',valor:0});
   }
@@ -1731,12 +1719,9 @@ function addEntry(tipo){
 }
 
 function removeEntry(tipo,idx){
+  // Nota: esta funcion solo se usa para GASTOS. Las entregas usan su propio
+  // flujo de borrado dentro de renderEntries (con validacion de isSuperAdmin).
   var arr=tipo==='gastos'?gastos:entregas;
-  if(tipo==='entregas'&&arr[idx].bloqueado&&!isSuperAdmin){
-    alert('Esta entrega esta bloqueada. Solo el superadmin puede eliminarla.');
-    return;
-  }
-  if(tipo==='entregas') enviarAlertaEliminacion(arr[idx]);
   arr.splice(idx,1);
   renderEntries(tipo); recalc(); autoSave();
 }
@@ -1771,7 +1756,7 @@ function renderEntries(tipo){
       }
       container.appendChild(row);
     });
-    var tot=document.getElementById('gastosTotal');
+    var tot=document.getElementById('gastoTotal');
     if(tot) tot.textContent='Total gastos: '+fmt(arr.reduce(function(s,e){return s+(e.valor||0);},0));
     return;
   }
@@ -1960,7 +1945,7 @@ function guardar(){
       descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
       gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
       digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
-      entregado:entregas.reduce(function(s,e){return s+(e.valor||0);},0),
+      entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
       nota:document.getElementById('inNota').value,
       nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
       entrega_final:entregaFinal,
@@ -1987,7 +1972,7 @@ function guardar(){
         descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
         gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
         digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
-        entregado:entregas.reduce(function(s,e){return s+(e.valor||0);},0),
+        entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
         nota:document.getElementById('inNota').value,
         nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
         entrega_final:entregaFinal,updated_at:new Date().toISOString()
@@ -2035,7 +2020,7 @@ function openAdmin(){
         var prc3=p.precios;
         if(typeof prc3==='string'){try{prc3=JSON.parse(prc3);}catch(e){prc3=null;}}
         return {id:p.id,name:p.name,precio:p.precio||0,precios:prc3||{},
-          puntos:Array.isArray(pts)&&pts.length?pts:['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros']};
+          puntos:Array.isArray(pts)?pts:[]};
       });
     productosBorrar=[];
     renderProdAdmin();
@@ -2150,19 +2135,6 @@ function addProdAdmin(){
   renderProdAdmin();
 }
 
-function renderAjuste(){
-  var body=document.getElementById('ajusteBody'); body.innerHTML='';
-  invRows.forEach(function(r){
-    var tr=document.createElement('tr');
-    var tdN=document.createElement('td'); tdN.className='prod-col'; tdN.textContent=r.name;
-    var tdV=document.createElement('td');
-    var inp=document.createElement('input'); inp.type='number'; inp.min='0'; inp.value=r.ant||0;
-    inp.addEventListener('input',(function(row){return function(){row.ant=parseFloat(this.value)||0;};})(r));
-    tdV.appendChild(inp);
-    tr.appendChild(tdN); tr.appendChild(tdV); body.appendChild(tr);
-  });
-}
-
 function saveAdmin(){
   // Motivo de ajuste solo se valida en el historial (guardarEditTurno)
   setSyncStatus('sync','⟳ Guardando...');
@@ -2181,7 +2153,7 @@ function saveAdmin(){
       return fetch(SB_URL+'/rest/v1/productos_caja?id=eq.'+p.id,{
         method:'PATCH',
         headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),
-        body:JSON.stringify({precio:p.precio,precios:p.precios||{},puntos:Array.isArray(p.puntos)?p.puntos:['autopista','boquia','tebaida','km25','km25_pan','km18','penon','colseguros'],orden:i,updated_at:new Date().toISOString()})
+        body:JSON.stringify({precio:p.precio,precios:p.precios||{},puntos:Array.isArray(p.puntos)?p.puntos:[],orden:i,updated_at:new Date().toISOString()})
       }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t);});});
     }
   });
@@ -2248,9 +2220,9 @@ function abrirCierre(){
     alert('❌ No se puede cerrar el turno.\n\nFaltan inventarios finales en:\n\n'+lista2+'\n\nDebes contar y registrar el inventario final de todos los productos con movimiento.');
     return;
   }
-  // Validar entregas — solo bloquear admin sin entregas
+  // Validar entregas — aplica a todos los roles, sin excepcion
   var ent=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
-  if(isAdmin && (!entregas.length || ent<=0)){
+  if(!entregas.length || ent<=0){
     alert('❌ No se puede cerrar.\n\nDebes registrar al menos una entrega de dinero antes de cerrar.');
     return;
   }
@@ -2434,8 +2406,8 @@ function confirmarCierre(){
     return r.inv_final!==null&&r.inv_final!==undefined&&r.inv_final>r.disponible;
   });
   if(erroresConf.length){alert('❌ Hay productos con inventario final mayor al disponible. Corrige antes de cerrar.');return;}
-  var entConf=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
-  if(!entregas.length||entConf<=0){alert('❌ Registra al menos una entrega de dinero antes de cerrar.');return;}
+  var entConf=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
+  if(entConf<=0){alert('❌ Registra al menos una entrega de dinero CONFIRMADA antes de cerrar.');return;}
   // Si quien cierra es admin y el cajero sigue siendo ADMINISTRADOR,
   // pedir que seleccione el cajero real antes de cerrar
   if(isAdmin && sesion.cajero==='ADMINISTRADOR'){
@@ -2451,9 +2423,8 @@ function confirmarCierre(){
   clearTimeout(saveTimer);
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
   var snap=invRows.map(function(r){return {id:r.id,name:r.name,precio:r.precio,ant:r.ant,entradas:r.entradas||[],entrante:r.entrante,dev:r.dev,rappi:r.rappi,inv_final:r.inv_final,pedido:r.pedido,disponible:r.disponible,vendido:r.vendido,rappi_venta:r.rappi_venta||0,total_venta:r.total_venta};});
-  // Limpiar campo bloqueado antes de guardar — es solo UI
   var entregasClean=entregas.map(function(e){
-    return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:e.esFinal};
+    return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:!!e.esFinal,confirmada:!!e.confirmada};
   });
   var payload={
     turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
@@ -2466,7 +2437,7 @@ function confirmarCierre(){
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
     gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
     digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
-    entregado:entregas.reduce(function(s,e){return s+(e.valor||0);},0),
+    entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
     entrega_final:entregaFinal||entregas.some(function(e){return e.confirmada&&e.esFinal;}),
@@ -2613,10 +2584,10 @@ function renderEditCajerosExtras(){
 function agregarEditCajero(){
   editCajerosExtras.push('');
   renderEditCajerosExtras();
-  // Focus en el último input
+  // Focus en el ultimo select (los cajeros extras son dropdown, no input de texto)
   setTimeout(function(){
-    var inputs=document.getElementById('editCajerosExtras').querySelectorAll('input');
-    if(inputs.length) inputs[inputs.length-1].focus();
+    var selects=document.getElementById('editCajerosExtras').querySelectorAll('select');
+    if(selects.length) selects[selects.length-1].focus();
   },50);
 }
 
@@ -2691,21 +2662,24 @@ function buscarFaltantes(){
         if(dif>=0) return; // sin faltante
         var faltTotal=Math.abs(dif);
         var tieneAux=t.cajero_aux&&t.cajero_aux.trim();
-        var faltPorCajero=tieneAux?Math.round(faltTotal/2):faltTotal;
+        // Reparto exacto: la mitad para el auxiliar (redondeada hacia abajo),
+        // y el residuo se lo queda el cajero principal para que la suma sea exacta
+        var faltAux=tieneAux?Math.floor(faltTotal/2):0;
+        var faltPrincipal=tieneAux?(faltTotal-faltAux):faltTotal;
         var nomPrincipal=titleCase(t.cajero||'');
         var nomAux=tieneAux?titleCase(t.cajero_aux):'';
         // Cajero principal
         conFaltante.push({
           cajero:nomPrincipal,cajeroNorm:normNombre(nomPrincipal),
           fecha:t.fecha,punto:t.punto,turno:t.turno,
-          faltante:faltPorCajero,compartidoCon:nomAux,faltTotal:faltTotal
+          faltante:faltPrincipal,compartidoCon:nomAux,faltTotal:faltTotal
         });
         // Cajero auxiliar
         if(tieneAux){
           conFaltante.push({
             cajero:nomAux,cajeroNorm:normNombre(nomAux),
             fecha:t.fecha,punto:t.punto,turno:t.turno,
-            faltante:faltPorCajero,compartidoCon:nomPrincipal,faltTotal:faltTotal
+            faltante:faltAux,compartidoCon:nomPrincipal,faltTotal:faltTotal
           });
         }
       });
@@ -2927,15 +2901,6 @@ function abrirPapelera(){
           +'</div>';
         card.dataset.pape='1';
         res.appendChild(card);
-      });
-      // Delegación de eventos — sin onclick inline
-      res.addEventListener('click',function(e){
-        var btnEdit=e.target.closest('.btn-editar-hist');
-        var btnExcel=e.target.closest('.btn-excel-hist');
-        var btnDel=e.target.closest('.btn-del-hist');
-        if(btnEdit){var t=turnosMap[btnEdit.dataset.key];if(t)abrirEditarTurno(t);}
-        if(btnExcel){exportarTurnoExcel(btnExcel.dataset.key);}
-        if(btnDel){var cardEl=btnDel.closest('div[data-card]');eliminarTurno(btnDel.dataset.key,cardEl);}
       });
     }).catch(function(e){res.innerHTML='<p style="color:var(--rojo);font-size:.8rem;">Error: '+e.message+'</p>';});
 }
@@ -3214,7 +3179,8 @@ function buscarHistorial(){
           var gas=t.gastos||0;
           var dat=t.datafono_val||0; var tra=t.transferencia_val||0; var desc=t.descuentos_val||0;
           var ef=tv-gas-dat-tra-rap-desc;
-          var ent=(t.entregas_list||[]).reduce(function(s,e){return s+(e.valor||0);},0);
+          // Usar el campo ya guardado y filtrado por confirmada, igual que el resto del sistema
+          var ent=t.entregado||0;
           var dif=ent-ef;
           var difTxt=dif===0?'✔ Cuadra':dif<0?'Falta '+fmt(Math.abs(dif)):'Sobran '+fmt(dif);
           var difCol=dif===0?'#2d6a2d':dif<0?'#b02020':'#e65c00';
@@ -3505,7 +3471,9 @@ function abrirEditarTurno(t){
   var btnAddE=document.createElement('button'); btnAddE.className='btn-add-entry'; btnAddE.textContent='＋ Agregar entrega';
   btnAddE.addEventListener('click',function(){
     var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-    turnoEditando.entregas_list.push({desc:'',valor:0,hora:hora});
+    // confirmada:true porque las entregas editadas desde el historial de un turno
+    // cerrado siempre se consideran válidas (no hay flujo de "pendiente" aquí)
+    turnoEditando.entregas_list.push({desc:'',valor:0,hora:hora,confirmada:true,esFinal:false});
     renderE(); calcEditTotales();
   });
   secEnt.appendChild(entLista); secEnt.appendChild(btnAddE);
