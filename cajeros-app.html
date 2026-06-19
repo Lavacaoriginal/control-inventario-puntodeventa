@@ -279,21 +279,27 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       </div>
       <div class="res-block">
         <div class="res-block-title">Pago Datáfono</div>
-        <div class="entry-row" style="margin-top:4px;">
+        <div class="entry-row" style="margin-top:4px;align-items:center;">
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inDatafono" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_datafono']);_tgTimer['d_datafono']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;if(!isAdmin){el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';}if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_datafono']);var fin=parseFloat(this.value)||0;if(!fin)return;if(!isAdmin){this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';}if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('datafono',fin,orig>0&&orig!==fin?orig:undefined);">
+            oninput="recalc();autoSave();">
+          <input type="checkbox" id="chkConfDatafono" style="width:22px;height:22px;cursor:pointer;accent-color:#2d6a2d;flex-shrink:0;margin-left:6px;"
+            onchange="confirmarDigital('datafono',this);">
         </div>
+        <div style="font-size:.68rem;color:var(--gris4);margin-top:2px;">Marca el check para confirmar y bloquear</div>
       </div>
       <div class="res-block">
         <div class="res-block-title">Pago Transferencia</div>
-        <div class="entry-row" style="margin-top:4px;">
+        <div class="entry-row" style="margin-top:4px;align-items:center;">
           <span style="font-size:.78rem;color:var(--gris4);flex-shrink:0;">$</span>
           <input type="number" id="inTransferencia" min="0" placeholder="0"
             style="flex:1;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:5px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);text-align:right;"
-            onfocus="this.dataset.valorOrig=this.value;this.dataset.tgSent='0';" oninput="recalc();autoSave();var el=this;clearTimeout(_tgTimer['d_transferencia']);_tgTimer['d_transferencia']=setTimeout(function(){var fin=parseFloat(el.value)||0;if(!fin)return;if(!isAdmin){el.readOnly=true;el.style.background='#f0ede8';el.style.color='#7c4a1e';el.style.fontWeight='700';}if(el.dataset.tgSent==='1')return;el.dataset.tgSent='1';var orig=parseFloat(el.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);},5000);" onblur="clearTimeout(_tgTimer['d_transferencia']);var fin=parseFloat(this.value)||0;if(!fin)return;if(!isAdmin){this.readOnly=true;this.style.background='#f0ede8';this.style.color='#7c4a1e';this.style.fontWeight='700';}if(this.dataset.tgSent==='1')return;this.dataset.tgSent='1';var orig=parseFloat(this.dataset.valorOrig)||0;enviarAlertaDigital('transferencia',fin,orig>0&&orig!==fin?orig:undefined);">
+            oninput="recalc();autoSave();">
+          <input type="checkbox" id="chkConfTransferencia" style="width:22px;height:22px;cursor:pointer;accent-color:#2d6a2d;flex-shrink:0;margin-left:6px;"
+            onchange="confirmarDigital('transferencia',this);">
         </div>
+        <div style="font-size:.68rem;color:var(--gris4);margin-top:2px;">Marca el check para confirmar y bloquear</div>
       </div>
       <div class="res-block">
         <div class="res-block-title">🏷 Descuentos</div>
@@ -650,9 +656,13 @@ function tgTurno(){
 function tgCabecera(){
   var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
   var tN=sesion.turno==='manana'?'Manana':sesion.turno==='tarde'?'Tarde':'Completo';
+  var cajeroLine='\uD83D\uDC64 Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
+  if(isAdmin&&editorNombre&&editorNombre!==sesion.cajero){
+    cajeroLine+='\u270D\uFE0F Editado por: '+editorNombre+'\n';
+  }
   return '\uD83D\uDCCD '+tgPunto()+'\n'
     +'\uD83D\uDD50 Turno '+tN+' - '+hora+'\n'
-    +'\uD83D\uDC64 Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
+    +cajeroLine;
 }
 function tgEnviar(msg){
   fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{
@@ -677,6 +687,32 @@ function enviarAlertaEliminacion(entrega){
     +(entrega.desc?'\uD83D\uDCCB Era de: '+entrega.desc:'');
   tgEnviar(msg);
 }
+function confirmarDigital(tipo, chkEl){
+  var inputId=tipo==='datafono'?'inDatafono':'inTransferencia';
+  var input=document.getElementById(inputId);
+  if(!input) return;
+  var val=parseFloat(input.value)||0;
+  if(chkEl.checked){
+    if(val<=0){
+      alert('Ingresa un valor antes de confirmar.');
+      chkEl.checked=false;
+      return;
+    }
+    // Bloquear: solo superadmin puede desmarcar después
+    input.readOnly=true;
+    input.style.background='#f0ede8';input.style.color='#7c4a1e';input.style.fontWeight='700';
+    chkEl.disabled=!isSuperAdmin;
+    autoSave();
+    enviarAlertaDigital(tipo, val, undefined);
+  } else {
+    // Desmarcar (solo superadmin puede llegar aquí): desbloquear
+    input.readOnly=false;
+    input.style.background='';input.style.color='';input.style.fontWeight='';
+    chkEl.disabled=false;
+    autoSave();
+  }
+}
+
 function enviarAlertaDigital(tipo, valor, valorAnterior){
   if(!sesion||!valor||valor<=0) return;
   var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
@@ -696,6 +732,8 @@ function enviarResumenCierre(){
   var traTotal=parseFloat(document.getElementById('inTransferencia').value)||0;
   var entTotal=entregas.reduce(function(s,e){return s+(e.valor||0);},0);
   var ventaTotal=invRows.reduce(function(s,r){return s+(r.total_venta||0);},0);
+  var responsables=entregas.filter(function(e){return e.confirmada&&e.desc;}).map(function(e){return e.desc;});
+  var respTxt=responsables.length?responsables.join(', '):'\u2014';
   var msg='\uD83D\uDD12 *CIERRE DE TURNO*\n'+tgCabecera()
     +'\n\uD83D\uDCCA *Resumen financiero:*\n'
     +'\uD83D\uDCB0 Ventas totales: *$'+ventaTotal.toLocaleString('es-CO')+'*\n'
@@ -705,6 +743,7 @@ function enviarResumenCierre(){
     +(traTotal>0?'\uD83D\uDCF1 Transferencia: *$'+traTotal.toLocaleString('es-CO')+'*\n':'')
     +(descTotal>0?'\uD83C\uDFF7 Descuentos: *$'+descTotal.toLocaleString('es-CO')+'*\n':'')
     +'\uD83D\uDCB5 Total entregado: *$'+entTotal.toLocaleString('es-CO')+'*\n'
+    +'\uD83D\uDC65 Responsable(s) recibe: '+respTxt+'\n'
     +(function(){
       var ef2=ventaTotal-gasTotal-datTotal-traTotal-rappiTotal-descTotal;
       var dif2=entTotal-ef2;
@@ -735,6 +774,7 @@ function getPrecio(p, punto){
 }
 var isAdmin = false;
 var isSuperAdmin = false;
+var editorNombre = ''; // nombre real de quien entra como admin/superadmin
 var _cerrando = false; // bloquea guardar() durante el proceso de cierre
 var productos = [];
 var invRows = [];
@@ -776,7 +816,12 @@ document.getElementById('btnSalir').addEventListener('click', salir);
 document.getElementById('btnAdminApp').addEventListener('click', function(){
   if(isAdmin){ openAdmin(); return; }
   var v=prompt('🔒 Clave de administrador:');
-  if(esAdmin(v)){ isAdmin=true; isSuperAdmin=esSuperAdmin(v); showAdminUI(); openAdmin(); }
+  if(esAdmin(v)){
+    isAdmin=true; isSuperAdmin=esSuperAdmin(v);
+    var nom=prompt('👤 Tu nombre (para registro en notificaciones):');
+    editorNombre=(nom||'').trim()||'ADMINISTRADOR';
+    showAdminUI(); openAdmin();
+  }
   else if(v!==null) alert('Clave incorrecta.');
 });
 document.getElementById('adminX').addEventListener('click', function(){document.getElementById('adminModal').classList.remove('open');});
@@ -951,6 +996,8 @@ function entrar(admin){
     if(!esAdmin(clave)){if(clave!==null)alert('Clave incorrecta.');return;}
     admin=true;
     if(esSuperAdmin(clave)) isSuperAdmin=true;
+    var nomLogin=prompt('\uD83D\uDC64 Tu nombre (para registro en notificaciones):');
+    editorNombre=(nomLogin||'').trim()||'ADMINISTRADOR';
   }
   // Detectar si seleccionó ADMINISTRADOR en el dropdown
   var cajeroValRaw=document.getElementById('selCajero').value;
@@ -1009,6 +1056,8 @@ function salir(){
     gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:!!e.esFinal,confirmada:!!e.confirmada};}),
     datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
     transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
+    datafono_confirmado:(function(){var c=document.getElementById('chkConfDatafono');return c?c.checked:false;})(),
+    transferencia_confirmado:(function(){var c=document.getElementById('chkConfTransferencia');return c?c.checked:false;})(),
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
     gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
     digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
@@ -1206,26 +1255,30 @@ function cargarInventario(){
           setTimeout(function(){
             var dEl=document.getElementById('inDatafono');
             var tEl=document.getElementById('inTransferencia');
+            var chkD=document.getElementById('chkConfDatafono');
+            var chkT=document.getElementById('chkConfTransferencia');
+            var datConfirmado=!!saved.datafono_confirmado;
+            var traConfirmado=!!saved.transferencia_confirmado;
             if(dEl){
               dEl.value=saved.datafono_val||'';
-              // Bloquear solo si es cajero (no admin) y tiene valor
-              if((saved.datafono_val||0)>0&&!isAdmin){
-                dEl.readOnly=true;dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
-              } else if(isAdmin&&!isSuperAdmin&&(saved.datafono_val||0)>0){
-                // Admin normal: ver valor bloqueado (solo superadmin puede editar)
-                dEl.readOnly=true;dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
+              if(datConfirmado){
+                dEl.readOnly=!isSuperAdmin;
+                dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
+                if(chkD){chkD.checked=true;chkD.disabled=!isSuperAdmin;}
               } else {
                 dEl.readOnly=false;dEl.style.background='';dEl.style.color='';dEl.style.fontWeight='';
+                if(chkD){chkD.checked=false;chkD.disabled=false;}
               }
             }
             if(tEl){
               tEl.value=saved.transferencia_val||'';
-              if((saved.transferencia_val||0)>0&&!isAdmin){
-                tEl.readOnly=true;tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
-              } else if(isAdmin&&!isSuperAdmin&&(saved.transferencia_val||0)>0){
-                tEl.readOnly=true;tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
+              if(traConfirmado){
+                tEl.readOnly=!isSuperAdmin;
+                tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
+                if(chkT){chkT.checked=true;chkT.disabled=!isSuperAdmin;}
               } else {
                 tEl.readOnly=false;tEl.style.background='';tEl.style.color='';tEl.style.fontWeight='';
+                if(chkT){chkT.checked=false;chkT.disabled=false;}
               }
             }
             var descEl=document.getElementById('inDescuentos'); if(descEl){ descEl.value=saved.descuentos_val||'';}
@@ -1902,6 +1955,8 @@ function guardar(){
 
       datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
       transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
+      datafono_confirmado:(function(){var c=document.getElementById('chkConfDatafono');return c?c.checked:false;})(),
+      transferencia_confirmado:(function(){var c=document.getElementById('chkConfTransferencia');return c?c.checked:false;})(),
       descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
       gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
       digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
@@ -1927,6 +1982,8 @@ function guardar(){
 
         datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
         transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
+        datafono_confirmado:(function(){var c=document.getElementById('chkConfDatafono');return c?c.checked:false;})(),
+        transferencia_confirmado:(function(){var c=document.getElementById('chkConfTransferencia');return c?c.checked:false;})(),
         descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
         gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
         digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
@@ -2404,6 +2461,8 @@ function confirmarCierre(){
     gastos_list:gastos,entregas_list:entregasClean,
     datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
     transferencia_val:parseFloat(document.getElementById('inTransferencia').value)||0,
+    datafono_confirmado:(function(){var c=document.getElementById('chkConfDatafono');return c?c.checked:false;})(),
+    transferencia_confirmado:(function(){var c=document.getElementById('chkConfTransferencia');return c?c.checked:false;})(),
     descuentos_val:parseFloat(document.getElementById('inDescuentos')?document.getElementById('inDescuentos').value:0)||0,
     gastos:gastos.reduce(function(s,e){return s+(e.valor||0);},0),
     digital:(parseFloat(document.getElementById('inDatafono').value)||0)+(parseFloat(document.getElementById('inTransferencia').value)||0),
@@ -3545,10 +3604,14 @@ function guardarEdicionTurno(){
     nota:nota,
     nota_ajuste:motivoVal||'',
     entrega_final:editEntregaFinal,
-    cerrado:turnoEditando.cerrado===true, // preservar estado original, no forzar cerrado
     eliminado:turnoEditando.eliminado||false,
     updated_at:new Date().toISOString()
   };
+  // NO incluir cerrado en el payload — para no arriesgarnos a sobreescribirlo
+  // Si el turno estaba cerrado, hacer un PATCH adicional explícito solo para cerrado
+  if(turnoEditando.cerrado===true){
+    payload.cerrado=true;
+  }
   // Usar PATCH directo por turno_key para garantizar que actualiza
   fetch(SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(turnoEditando.turno_key),{
     method:'PATCH',
