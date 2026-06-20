@@ -489,6 +489,20 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <input type="date" id="histFecha" style="width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-family:'Inter',sans-serif;font-size:.83rem;background:var(--gris1);">
       </div>
     </div>
+    <div style="margin-bottom:8px;">
+      <label style="font-size:.72rem;font-weight:600;display:block;margin-bottom:4px;">Punto de venta</label>
+      <select id="histPunto" style="width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-family:'Inter',sans-serif;font-size:.83rem;background:var(--gris1);color:var(--negro);">
+        <option value="">— Todos los puntos —</option>
+        <option value="autopista">Autopista del Café</option>
+        <option value="boquia">Boquia, Salento</option>
+        <option value="tebaida">La Tebaida</option>
+        <option value="km25">Km 25, Dagua (Principal)</option>
+        <option value="km25_pan">Km 25, Dagua (Panadería)</option>
+        <option value="km18">Km 18, Cali</option>
+        <option value="penon">El Peñón, Cali</option>
+        <option value="colseguros">Colseguros (Autopista)</option>
+      </select>
+    </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <button class="btn btn-cerrar" onclick="buscarHistorial()" style="flex:2;padding:8px;">🔍 Buscar</button>
       <button class="btn" onclick="exportarDetalleExcel()" style="flex:1;padding:8px;background:#1a6a1a;color:#7dff7d;">📥 Excel</button>
@@ -2966,10 +2980,15 @@ function exportarDetalleExcel(){
   var hasta=document.getElementById('histFecha').value;
   var desde=document.getElementById('histDesde')?document.getElementById('histDesde').value||hasta:hasta;
   if(!hasta){alert('Selecciona un rango de fechas en el historial.');return;}
+  var puntoEl=document.getElementById('histPunto');
+  var puntoFiltro=puntoEl?puntoEl.value:'';
   var pN={autopista:'Autopista del Café',boquia:'Boquia, Salento',tebaida:'La Tebaida',km25:'Km 25, Dagua',km25_pan:'KM25 Panadería',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Aut.)'};
   var tN={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
   setSyncStatus('sync','⟳ Generando Excel...');
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.asc,punto.asc,turno.asc')
+  var qx='fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)'
+    +(puntoFiltro?'&punto=eq.'+puntoFiltro:'')
+    +'&order=fecha.asc,punto.asc,turno.asc';
+  sbGet('turnos_caja',qx)
     .then(function(turnos){
       cargarSheetJS(function(){
         var rows=[['Fecha','Punto','Turno','Cajero','Auxiliar','Total Ventas','Gastos','Datáfono','Transferencia','Descuentos','Rappi','Efectivo a Entregar','Total Entregado','Diferencia','Observaciones']];
@@ -3164,6 +3183,9 @@ function abrirHistorial(){
   document.getElementById('histFecha').value=hoy;
   var desdeEl=document.getElementById('histDesde');
   if(desdeEl) desdeEl.value=hoy;
+  // Pre-seleccionar el punto del turno actual para que el historial venga filtrado
+  var puntoEl=document.getElementById('histPunto');
+  if(puntoEl&&sesion&&sesion.punto) puntoEl.value=sesion.punto;
   document.getElementById('histResultados').innerHTML='';
   document.getElementById('historialModal').classList.add('open');
 }
@@ -3172,9 +3194,14 @@ function buscarHistorial(){
   var hasta=document.getElementById('histFecha').value;
   var desde=document.getElementById('histDesde')?document.getElementById('histDesde').value||hasta:hasta;
   if(!hasta){alert('Selecciona una fecha.');return;}
+  var puntoEl=document.getElementById('histPunto');
+  var puntoFiltro=puntoEl?puntoEl.value:'';
   var res=document.getElementById('histResultados');
   res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;">Buscando...</p>';
-  sbGet('turnos_caja','fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&order=fecha.desc,punto.asc,turno.asc')
+  var q='fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)'
+    +(puntoFiltro?'&punto=eq.'+puntoFiltro:'')
+    +'&order=fecha.desc,punto.asc,turno.asc';
+  sbGet('turnos_caja',q)
     .then(function(turnos){
       if(!turnos.length){
         res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;padding:12px 0;text-align:center;">No hay turnos cerrados para esta fecha.</p>';
