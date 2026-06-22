@@ -823,7 +823,16 @@ document.getElementById('btnAdminLogin').addEventListener('click', function(){
 });
 document.getElementById('btnSalir').addEventListener('click', salir);
 document.getElementById('btnAdminApp').addEventListener('click', function(){
-  if(isAdmin){ openAdmin(); return; }
+  if(isAdmin){
+    // Si ya es admin pero no superadmin, dar la opcion de subir de nivel
+    if(!isSuperAdmin){
+      var vUp=prompt('Ya tienes acceso de Admin.\n\nSi quieres entrar como SUPERADMIN, escribe la clave:\n(o deja vacio para continuar como Admin)');
+      if(vUp&&esSuperAdmin(vUp)) isSuperAdmin=true;
+      else if(vUp&&!esSuperAdmin(vUp)) alert('Clave incorrecta. Continuas como Admin normal.');
+    }
+    openAdmin();
+    return;
+  }
   var v=prompt('🔒 Clave de administrador:');
   if(esAdmin(v)){
     isAdmin=true; isSuperAdmin=esSuperAdmin(v);
@@ -2561,7 +2570,99 @@ function imprimirTurno(){
   setTimeout(function(){w.print();},400);
 }
 
-// ── EDITAR CAJERO ────────────────────────────────
+function imprimirTurnoHistorial(t){
+  var pNh={autopista:'Autopista del Cafe, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km25_pan:'Km 25 Panaderia',km18:'Km 18, Cali',penon:'El Penon, Cali',colseguros:'Colseguros (Autopista)'}[t.punto]||t.punto;
+  var tNh=t.turno==='manana'?'Manana':t.turno==='tarde'?'Tarde':'Completo';
+  var snap=t.snapshot||[];
+  var gastosH=t.gastos_list||[];
+  var entregasH=(t.entregas_list||[]).filter(function(e){return e.confirmada;});
+  var tv=snap.reduce(function(s,r){return s+(r.total_venta||0);},0);
+  var rappiTotal=snap.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
+  var gas=gastosH.reduce(function(s,e){return s+(e.valor||0);},0);
+  var dat=t.datafono_val||0;
+  var tra=t.transferencia_val||0;
+  var desc=t.descuentos_val||0;
+  var ent=entregasH.reduce(function(s,e){return s+(e.valor||0);},0);
+  var ef=tv-gas-dat-tra-rappiTotal-desc;
+  var dif=ent-ef;
+  var nota=t.nota||'';
+  var hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
+  var difTxt=dif===0?'Cuadra':dif<0?'Falta '+fmt(Math.abs(dif)):'Sobran '+fmt(dif);
+  var difCol=dif===0?'#2d6a2d':dif<0?'#b02020':'#7a4a00';
+  var totVend=snap.reduce(function(s,r){return s+(r.vendido||0);},0);
+  var filas='';
+  snap.forEach(function(r){
+    filas+='<tr><td style="text-align:left;font-weight:500">'+escH(r.name)+'</td>'
+      +'<td>'+fmt(r.precio)+'</td><td>'+(r.ant||'-')+'</td><td>'+(r.entrante||'-')+'</td>'
+      +'<td>'+(r.dev||'-')+'</td>'
+      +'<td style="color:#c0392b;font-weight:700;">'+(r.rappi||'-')+'</td>'
+      +'<td><b>'+(r.disponible||'-')+'</b></td>'
+      +'<td>'+(r.inv_final!==null&&r.inv_final!==undefined?r.inv_final:'-')+'</td>'
+      +'<td style="background:#f8f0ff;font-weight:700;color:#6a3a8a;">'+(r.pedido||'-')+'</td>'
+      +'<td style="font-weight:700;color:#2d6a2d;">'+(r.vendido||'-')+'</td>'
+      +'<td style="font-weight:700">'+(r.total_venta>0?fmt(r.total_venta):'-')+'</td></tr>';
+  });
+  function listaEntradasH(arr, mostrarHora){
+    if(!arr||!arr.length) return '<i style="color:#aaa">Ninguno</i>';
+    return arr.map(function(e){
+      return '<div style="display:flex;justify-content:space-between;font-size:7pt;padding:2px 0;border-bottom:1px dotted #eee;">'
+        +'<span>'+(e.desc||'-')+(mostrarHora&&e.hora?' <span style="color:#888;font-size:6pt;">'+e.hora+'</span>':'')+'</span>'
+        +'<b>'+fmt(e.valor)+'</b></div>';
+    }).join('');
+  }
+  var htmlOut='<!DOCTYPE html><html><head><title>Cierre</title>'
+    +'<style>@page{size:letter portrait;margin:7mm 9mm;}*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;color:#111;font-size:7.5pt;}'
+    +'.hdr{border-bottom:2px solid #111;padding-bottom:4px;margin-bottom:6px;}'
+    +'.brand{font-size:11pt;font-weight:900;}.sub{display:flex;justify-content:space-between;margin-top:2px;}'
+    +'.punto{font-size:8.5pt;font-weight:700;color:#0a2a0a;}.meta{font-size:6pt;color:#666;text-align:right;}'
+    +'table{border-collapse:collapse;width:100%;margin-bottom:5px;}'
+    +'th{background:#111;color:white;padding:2pt 2.5pt;font-size:5.5pt;text-transform:uppercase;text-align:center;}'
+    +'th.left{text-align:left;}td{padding:1.8pt 2.5pt;font-size:6.5pt;border-bottom:1px solid #ddd;text-align:center;}'
+    +'td.left{text-align:left;}tr:nth-child(even) td{background:#f5f5f5;}'
+    +'tfoot td{font-weight:700;background:#e8e8e8;border-top:2px solid #111;}'
+    +'.sec{font-size:7pt;font-weight:700;text-transform:uppercase;color:#444;border-bottom:1px solid #ccc;padding-bottom:2px;margin:5px 0 3px;}'
+    +'.rr{display:flex;justify-content:space-between;padding:1.5px 0;font-size:7pt;}'
+    +'.rr.big{font-size:8.5pt;font-weight:700;border-top:1px solid #ccc;margin-top:4px;padding-top:4px;}'
+    +'.col2{display:grid;grid-template-columns:1fr 1fr;gap:5px;}'
+    +'.box{background:#f5f5f5;border:1px solid #ddd;border-radius:3px;padding:5px;}'
+    +'.firmas{display:flex;justify-content:space-between;margin-top:14px;padding:0 8px;}'
+    +'.fb{text-align:center;width:150px;}.fl{border-top:1px solid #333;padding-top:3px;font-size:6pt;color:#555;}'
+    +'.reimp{background:#fff3cd;border:1px solid #f0c040;border-radius:4px;padding:4px 6px;font-size:6.5pt;color:#7a5a00;margin-bottom:5px;text-align:center;}'
+    +'</style></head><body>'
+    +'<div class="reimp">REIMPRESION DESDE HISTORIAL - incluye correcciones registradas en el sistema'+(t.nota_ajuste?' - Motivo: '+escH(t.nota_ajuste):'')+'</div>'
+    +'<div class="hdr"><div class="brand">La Vaca <span style="color:#7c4a1e">Original</span></div>'
+    +'<div class="sub"><div><div class="punto">'+pNh+' - '+tNh+'</div><div style="font-size:7.5pt;color:#555;">'+t.fecha+' - Reimpreso '+hora+'</div></div>'
+    +'<div class="meta">Cajero: <b>'+escH(t.cajero||'')+'</b>'+(t.cajero_aux?'<br>Auxiliar: <b>'+escH(t.cajero_aux)+'</b>':'')+'</div></div></div>'
+    +'<table><thead><tr><th class="left">Producto</th><th>Precio</th>'
+    +'<th>Ant.</th><th>Entr.</th><th>Dev.</th><th style="background:#c0392b;color:white;">Rappi</th><th>Disp.</th><th>Final</th><th style="background:#2a1a3a;color:#c8a8f0;">Pedido</th><th>Vendido</th><th>$ Venta</th>'
+    +'</tr></thead><tbody>'+filas+'</tbody>'
+    +'<tfoot><tr><td class="left" colspan="9">TOTALES</td>'
+    +'<td style="font-weight:700;color:#2d6a2d">'+totVend+'</td>'
+    +'<td style="font-weight:700">'+fmt(tv)+'</td></tr></tfoot></table>'
+    +'<div class="col2">'
+    +'<div class="box"><div class="sec">Gastos</div>'+listaEntradasH(gastosH,false)+'<div class="rr" style="border-top:1px solid #ccc;margin-top:4px;padding-top:3px;"><b>Total</b><b>'+fmt(gas)+'</b></div></div>'
+    +'<div class="box"><div class="sec">Datafono</div><div class="rr"><b>Total</b><b>'+fmt(dat)+'</b></div></div>'
+    +(desc>0?'<div class="box"><div class="sec">Descuentos</div><div class="rr"><b>Total</b><b>'+fmt(desc)+'</b></div></div>':'')
+    +'<div class="box"><div class="sec">Transferencias</div><div class="rr"><b>Total</b><b>'+fmt(tra)+'</b></div></div>'
+    +'<div class="box"><div class="sec">Entregas efectivo</div>'+listaEntradasH(entregasH,true)+'<div class="rr" style="border-top:1px solid #ccc;margin-top:4px;padding-top:3px;"><b>Total</b><b>'+fmt(ent)+'</b></div></div>'
+    +'</div>'
+    +'<div class="rr" style="margin-top:7px;font-size:9pt;"><span>Total ventas</span><b>'+fmt(tv)+'</b></div>'
+    +'<div class="rr" style="font-size:9pt;"><span>- Gastos + Digital + Rappi'+(desc>0?' + Desc.':'')+'</span><b>'+fmt(gas+dat+tra+rappiTotal+desc)+'</b></div>'
+    +'<div class="rr big"><span>Efectivo a entregar</span><b style="color:#7c4a1e">'+fmt(ef)+'</b></div>'
+    +(ent>0?'<div class="rr"><span>Diferencia</span><b style="color:'+difCol+'">'+difTxt+'</b></div>':'')
+    +(nota?'<div style="margin-top:5px;font-style:italic;font-size:8pt;color:#666;">Nota: '+escH(nota)+'</div>':'')
+    +'<div class="firmas">'
+    +'<div class="fb"><div class="fl">Firma Cajero: '+escH(t.cajero||'')+'</div></div>'
+    +(t.cajero_aux?'<div class="fb"><div class="fl">Firma Auxiliar: '+escH(t.cajero_aux)+'</div></div>':'')
+    +'<div class="fb"><div class="fl">Firma Encargado Produccion</div></div>'
+    +'</div></body></html>';
+  var w=window.open('','_blank','width=750,height=900');
+  if(!w){alert('El navegador bloqueo la ventana emergente.\nActiva los popups para este sitio e intenta de nuevo.');return;}
+  w.document.write(htmlOut); w.document.close();
+  setTimeout(function(){w.print();},400);
+}
+
+// ── EDITAR CAJERO ────────────────────────
 var editCajerosExtras=[];
 
 function abrirEditCajero(){
@@ -3271,6 +3372,7 @@ function buscarHistorial(){
             +'<div style="display:flex;gap:6px;">'
             +'<button class="btn btn-editar-hist" data-key="'+escH(t.turno_key)+'" style="flex:2;padding:5px;font-size:.72rem;background:#1a3a1a;color:#7dbb7d;">✏ Editar / Ver</button>'
             +'<button class="btn btn-excel-hist" data-key="'+escH(t.turno_key)+'" style="flex:1;padding:5px;font-size:.72rem;background:#1a3a1a;color:#5dff5d;">📥 Excel</button>'
+            +'<button class="btn btn-print-hist" data-key="'+escH(t.turno_key)+'" style="flex:1;padding:5px;font-size:.72rem;background:#1a3a1a;color:#7ab8f5;">🖨 Imprimir</button>'
             +'<button class="btn-del-hist" data-key="'+escH(t.turno_key)+'" style="background:none;border:1px solid #ddd;border-radius:5px;cursor:pointer;font-size:.7rem;color:#aaa;padding:5px 8px;">🗑</button>'
             +'</div>';
 
@@ -3282,9 +3384,11 @@ function buscarHistorial(){
       res.addEventListener('click',function(e){
         var btnEdit=e.target.closest('.btn-editar-hist');
         var btnExcel=e.target.closest('.btn-excel-hist');
+        var btnPrint=e.target.closest('.btn-print-hist');
         var btnDel=e.target.closest('.btn-del-hist');
         if(btnEdit){var t=turnosMap[btnEdit.dataset.key];if(t)abrirEditarTurno(t);}
         if(btnExcel){exportarTurnoExcel(btnExcel.dataset.key);}
+        if(btnPrint){var tp=turnosMap[btnPrint.dataset.key];if(tp)imprimirTurnoHistorial(tp);}
         if(btnDel){var cardEl=btnDel.closest('div[data-card]');eliminarTurno(btnDel.dataset.key,cardEl);}
       });
 
