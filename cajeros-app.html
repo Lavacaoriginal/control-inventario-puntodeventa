@@ -358,6 +358,10 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <label style="color:#7c4a1e;">💬 Nota para el siguiente turno</label>
         <input type="text" id="inNotaSig" placeholder="Mensaje para tu compañero..." oninput="autoSave()">
       </div>
+      <div class="nota-field" style="margin-top:8px;">
+        <label style="color:#6a3a8a;">📦 Pedido adicional (no del inventario)</label>
+        <input type="text" id="inPedidoExtra" placeholder="Ej: cucharas, servilletas, vasos..." oninput="autoSave()">
+      </div>
     </div>
   </div>
 
@@ -1075,6 +1079,7 @@ function salir(){
     entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
+    pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
     entrega_final:entregaFinal,
     updated_at:new Date().toISOString()
   });
@@ -1090,36 +1095,44 @@ function salir(){
 // ── RECOMENDADOS: promedio últimos 4 turnos del mismo día de semana ──────────
 function cargarRecomendados(){
   if(!sesion) return;
-  // Calcular fechas de los últimos 4 mismos días de semana (excluir hoy)
+  // El pedido de HOY abastece las ventas de MAÑANA (el día siguiente).
+  // Entonces se busca el mismo día de la semana que sería "mañana", en las
+  // últimas 4 semanas, y se suman TODOS los turnos de ese día (manana+tarde+completo),
+  // ya que el punto de venta es el mismo sin importar cómo se dividió el turno.
   var hoy = new Date(sesion.fecha+'T12:00:00');
-  var diaSemana = hoy.getDay(); // 0=dom,1=lun,...,6=sab
+  var manana = new Date(hoy); manana.setDate(hoy.getDate()+1);
   var fechas = [];
   for(var i=1;fechas.length<4;i++){
-    var d = new Date(hoy); d.setDate(hoy.getDate() - i*7);
+    var d = new Date(manana); d.setDate(manana.getDate() - i*7);
     var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
     fechas.push(y+'-'+m+'-'+dd);
   }
-  // Buscar turnos cerrados de ese punto, mismo turno, en esas fechas
+  // Buscar TODOS los turnos cerrados de ese punto en esas fechas (sin filtrar por turno)
   var promises = fechas.map(function(f){
-    var key = f+'_'+sesion.punto+'_'+sesion.turno;
-    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)&limit=1')
+    return sbGet('turnos_caja','punto=eq.'+sesion.punto+'&fecha=eq.'+f+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)')
       .catch(function(){return[];});
   });
   Promise.all(promises).then(function(results){
-    // Acumular vendidos por producto
-    var sumas = {}, conteos = {};
-    results.forEach(function(res){
-      if(!res.length||!res[0].snapshot) return;
-      res[0].snapshot.forEach(function(p){
-        var v = p.vendido||0;
-        if(!sumas[p.id]){ sumas[p.id]=0; conteos[p.id]=0; }
-        sumas[p.id]+=v; conteos[p.id]++;
+    // Acumular vendidos por producto, sumando todos los turnos del mismo día
+    var sumas = {}, diasConDato = {};
+    results.forEach(function(turnosDelDia){
+      if(!turnosDelDia||!turnosDelDia.length) return;
+      var ventaDelDia = {};
+      turnosDelDia.forEach(function(t){
+        if(!t.snapshot) return;
+        t.snapshot.forEach(function(p){
+          ventaDelDia[p.id] = (ventaDelDia[p.id]||0) + (p.vendido||0);
+        });
+      });
+      Object.keys(ventaDelDia).forEach(function(id){
+        if(!sumas[id]){ sumas[id]=0; diasConDato[id]=0; }
+        sumas[id]+=ventaDelDia[id]; diasConDato[id]++;
       });
     });
-    // Calcular promedio redondeado hacia arriba
+    // Calcular promedio redondeado hacia arriba (promedio sobre los DÍAS con datos, no por turno)
     recMap={};
     Object.keys(sumas).forEach(function(id){
-      recMap[id] = conteos[id]>0 ? Math.ceil(sumas[id]/conteos[id]) : 0;
+      recMap[id] = diasConDato[id]>0 ? Math.ceil(sumas[id]/diasConDato[id]) : 0;
     });
     // Actualizar celdas RECOMENDADO ya renderizadas
     invRows.forEach(function(r){
@@ -1241,6 +1254,7 @@ function cargarInventario(){
         gastos=[]; entregas=[]; entregaFinal=false;
         document.getElementById('inNota').value='';
         var nsEl0=document.getElementById('inNotaSig'); if(nsEl0) nsEl0.value='';
+        var peEl0=document.getElementById('inPedidoExtra'); if(peEl0) peEl0.value='';
         if(saved){
           // ── Seguridad: restaurar cajero original del turno ──
           // Si el turno ya existe en Supabase, siempre usar el cajero guardado,
@@ -1263,6 +1277,7 @@ function cargarInventario(){
           }
           document.getElementById('inNota').value=saved.nota||'';
           var nsEl=document.getElementById('inNotaSig'); if(nsEl) nsEl.value=saved.nota_siguiente||'';
+          var peEl=document.getElementById('inPedidoExtra'); if(peEl) peEl.value=saved.pedido_extra||'';
           setTimeout(function(){
             var dEl=document.getElementById('inDatafono');
             var tEl=document.getElementById('inTransferencia');
@@ -1972,6 +1987,7 @@ function guardar(){
       entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
       nota:document.getElementById('inNota').value,
       nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
+    pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
       entrega_final:entregaFinal,
       updated_at:new Date().toISOString()
     })
@@ -1999,6 +2015,7 @@ function guardar(){
         entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
         nota:document.getElementById('inNota').value,
         nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
+    pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
         entrega_final:entregaFinal,updated_at:new Date().toISOString()
       }).then(function(res){
         // Si el upsert tampoco hace nada (conflicto con cerrado:true), detectar cierre externo
@@ -2368,6 +2385,16 @@ function imprimirPedido(){
       +'</tr></thead>'
       +'<tbody>'+buildTabla(accentColor,accentLight)+'</tbody>'
       +'</table>'
+      // Pedido adicional (insumos no del inventario, ej. cucharas, servilletas)
+      +(function(){
+        var pe=document.getElementById('inPedidoExtra');
+        var peVal=pe?pe.value.trim():'';
+        if(!peVal) return '';
+        return '<div style="background:#f8f0ff;border:1.5px solid #6a3a8a;border-radius:5px;padding:6px 8px;margin-top:7px;">'
+          +'<div style="font-size:6.5pt;color:#6a3a8a;text-transform:uppercase;font-weight:700;letter-spacing:.3px;">📦 Pedido adicional (no del inventario)</div>'
+          +'<div style="font-size:9pt;font-weight:600;margin-top:2px;">'+escH(peVal)+'</div>'
+          +'</div>';
+      })()
       // Firmas
       +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">'
       +'<div style="border-top:1.2px solid #bbb;padding-top:4px;">'
@@ -2464,6 +2491,7 @@ function confirmarCierre(){
     entregado:entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0),
     nota:document.getElementById('inNota').value,
     nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
+    pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
     entrega_final:entregaFinal||entregas.some(function(e){return e.confirmada&&e.esFinal;}),
     cerrado:true,updated_at:new Date().toISOString()
   };
