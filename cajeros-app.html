@@ -2457,6 +2457,18 @@ function confirmarCierre(){
     return r.inv_final!==null&&r.inv_final!==undefined&&r.inv_final>r.disponible;
   });
   if(erroresConf.length){alert('❌ Hay productos con inventario final mayor al disponible. Corrige antes de cerrar.');return;}
+  // Re-validar que TODOS los productos con movimiento tengan inventario final
+  // (segunda capa de seguridad, igual que en abrirCierre)
+  var sinFinalConf=invRows.filter(function(r){
+    var tuvoMovimiento=(r.ant||0)>0||(r.entrante||0)>0||r.disponible>0;
+    var noTieneInvFinal=r.inv_final===null||r.inv_final===undefined||r.inv_final==='';
+    return tuvoMovimiento && noTieneInvFinal;
+  });
+  if(sinFinalConf.length){
+    var listaConf=sinFinalConf.map(function(r){return '• '+r.name;}).join('\n');
+    alert('❌ No se puede cerrar.\n\nFaltan inventarios finales en:\n\n'+listaConf+'\n\nCierra el modal y completa el conteo antes de continuar.');
+    return;
+  }
   var entConf=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   if(entConf<=0){alert('❌ Registra al menos una entrega de dinero CONFIRMADA antes de cerrar.');return;}
   // Si quien cierra es admin y el cajero sigue siendo ADMINISTRADOR,
