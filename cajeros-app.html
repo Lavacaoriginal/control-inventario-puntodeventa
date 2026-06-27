@@ -1059,8 +1059,8 @@ function salir(){
     document.getElementById('appScreen').style.display='none';
   }
 
-  // Si no hay sesión activa o está cerrado, salir directo
-  if(!sesion || window._turnoCerrado){ limpiarUI(); return; }
+  // Si no hay sesión activa, está cerrado, o invRows esta vacio, salir directo sin guardar
+  if(!sesion || window._turnoCerrado || !invRows || invRows.length===0){ limpiarUI(); return; }
 
   // Guardar con keepalive antes de salir (garantiza que el fetch se complete aunque se cambie de pantalla)
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
@@ -1962,6 +1962,13 @@ function guardar(){
   if(_cerrando)return; // bloquear durante proceso de cierre
   // Admin siempre puede guardar aunque el turno esté cerrado
   if(window._turnoCerrado && !isAdmin){setSyncStatus('ok','✓');return;}
+  // PROTECCION CRITICA: nunca enviar un snapshot vacio si invRows aun no se ha
+  // poblado (por ejemplo justo despues de cargar la pagina o durante un refresh).
+  // Esto evita sobrescribir un turno real con datos vacios por error de timing.
+  if(!invRows||invRows.length===0){
+    console.warn('guardar() cancelado: invRows esta vacio, se evita sobrescribir con snapshot vacio');
+    return;
+  }
   setSyncStatus('sync','⟳ Guardando...');
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
   var snap=invRows.map(function(r){return {id:r.id,name:r.name,precio:r.precio,ant:r.ant,entradas:r.entradas||[],entrante:r.entrante,dev:r.dev,rappi:r.rappi,inv_final:r.inv_final,pedido:r.pedido,disponible:r.disponible,vendido:r.vendido,rappi_venta:r.rappi_venta||0,total_venta:r.total_venta};});
@@ -2476,6 +2483,11 @@ function confirmarCierre(){
   if(isAdmin && sesion.cajero==='ADMINISTRADOR'){
     abrirEditCajero();
     alert('⚠️ Antes de cerrar, selecciona el cajero real que atendió este turno.');
+    return;
+  }
+  // Proteccion critica: no cerrar si invRows esta vacio por alguna razon
+  if(!invRows||invRows.length===0){
+    alert('❌ Error: el inventario no está cargado correctamente. Recarga la página antes de cerrar.');
     return;
   }
   document.getElementById('cierreModal').classList.remove('open');
