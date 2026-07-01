@@ -367,6 +367,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 
   <div class="action-bar" style="overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;">
     <button class="btn btn-admin" id="btnAdminApp" style="flex-shrink:0;">⚙ Admin</button>
+    <button class="btn" style="background:#3a1a4a;color:#d0a0f0;display:none;flex-shrink:0;" id="btnCambiarPunto" title="Cambiar de punto de venta o turno sin salir (solo superadmin)">🔀 Cambiar punto</button>
     <button class="btn" style="background:#1a2a3a;color:#7ab0e0;display:none;flex-shrink:0;" id="btnDashboard">📊 Dashboard</button>
     <button class="btn" style="background:#1a3a2a;color:#7dbb9d;display:none;flex-shrink:0;" id="btnHistorial">📋 Historial</button>
     <button class="btn" style="background:#0a2a0a;color:#5dff5d;display:none;flex-shrink:0;" id="btnResumen">📊 Mensual</button>
@@ -635,6 +636,38 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </div>
 </div>
 
+<!-- MODAL CAMBIAR PUNTO/TURNO (SUPERADMIN) -->
+<div class="overlay" id="cambiarPuntoModal">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="document.getElementById('cambiarPuntoModal').classList.remove('open')">✕</button>
+    <div class="modal-title">🔀 Cambiar punto / turno</div>
+    <div class="modal-sub">Guarda el turno actual y abre otro sin salir de la sesión</div>
+    <div style="margin:12px 0;">
+      <label style="font-size:.78rem;font-weight:700;color:var(--gris4);display:block;margin-bottom:4px;">Punto de venta</label>
+      <select id="cpSelPunto" style="width:100%;padding:9px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.88rem;margin-bottom:10px;">
+        <option value="autopista">Autopista del Café, Circasia</option>
+        <option value="boquia">Boquia, Salento</option>
+        <option value="tebaida">La Herradura (La Tebaida)</option>
+        <option value="km25">Km 25, Dagua (Principal)</option>
+        <option value="km25_pan">Km 25, Dagua (Panadería)</option>
+        <option value="km18">Km 18, Cali</option>
+        <option value="penon">El Peñón, Cali</option>
+        <option value="colseguros">Colseguros (Autopista, Cali)</option>
+      </select>
+      <label style="font-size:.78rem;font-weight:700;color:var(--gris4);display:block;margin-bottom:4px;">Turno</label>
+      <select id="cpSelTurno" style="width:100%;padding:9px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.88rem;">
+        <option value="manana">☀ Mañana</option>
+        <option value="tarde">🌙 Tarde</option>
+        <option value="completo">⬛ Completo</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cerrar" id="btnConfirmarCambioPunto">✅ Cambiar</button>
+      <button class="btn" style="background:#eee;color:#333;" onclick="document.getElementById('cambiarPuntoModal').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CIERRE -->
 <div class="overlay" id="cierreModal">
   <div class="modal modal-sm">
@@ -870,6 +903,13 @@ document.getElementById('btnAplicarRec').addEventListener('click', function(){
   }
 });
 document.getElementById('btnDashboard').addEventListener('click', abrirDashboard);
+document.getElementById('btnCambiarPunto').addEventListener('click', function(){
+  if(!isSuperAdmin){alert('Solo el superadmin puede cambiar de punto/turno sin salir.');return;}
+  document.getElementById('cpSelPunto').value=sesion.punto;
+  document.getElementById('cpSelTurno').value=sesion.turno;
+  document.getElementById('cambiarPuntoModal').classList.add('open');
+});
+document.getElementById('btnConfirmarCambioPunto').addEventListener('click', cambiarPuntoTurno);
 document.getElementById('btnResumen').addEventListener('click', function(){
   var hoy=new Date().toLocaleDateString('en-CA',{timeZone:'America/Bogota'});
   var mes=parseInt(hoy.split('-')[1]);
@@ -939,6 +979,8 @@ function showAdminUI(){
   if(fab) fab.style.display='flex';
   var btnDB=document.getElementById('btnDashboard');
   if(btnDB) btnDB.style.display='flex';
+  var btnCP=document.getElementById('btnCambiarPunto');
+  if(btnCP) btnCP.style.display=isSuperAdmin?'flex':'none';
   var btnRes=document.getElementById('btnResumen');
   if(btnRes) btnRes.style.display='flex';
   var btnEC=document.getElementById('btnEditCajero');
@@ -973,6 +1015,8 @@ function showAdminUI(){
       if(bFalt) bFalt.style.display='none';
       var bDB=document.getElementById('btnDashboard');
       if(bDB) bDB.style.display='none';
+      var bCP=document.getElementById('btnCambiarPunto');
+      if(bCP) bCP.style.display='none';
       var bRes=document.getElementById('btnResumen');
       if(bRes) bRes.style.display='none';
       var bEC=document.getElementById('btnEditCajero');
@@ -998,6 +1042,46 @@ function actualizarBadgeTimer(){
 }
 
 // ── ENTRADA ──────────────────────────────────────
+function cambiarPuntoTurno(){
+  if(!isSuperAdmin){alert('Solo el superadmin puede usar esta función.');return;}
+  var nuevoPunto=document.getElementById('cpSelPunto').value;
+  var nuevoTurno=document.getElementById('cpSelTurno').value;
+  if(nuevoPunto===sesion.punto && nuevoTurno===sesion.turno){
+    document.getElementById('cambiarPuntoModal').classList.remove('open');
+    alert('Ya estás en ese punto y turno.');
+    return;
+  }
+  var pNombresCP={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km25_pan:'Km 25 Panadería',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'};
+  var tNombresCP={manana:'Mañana',tarde:'Tarde',completo:'Completo'};
+  if(!confirm('Se guardará el turno actual y se abrirá:\n\n'+pNombresCP[nuevoPunto]+' — '+tNombresCP[nuevoTurno]+'\n\n¿Continuar?')) return;
+  document.getElementById('cambiarPuntoModal').classList.remove('open');
+  setSyncStatus('sync','⟳ Guardando turno actual...');
+  clearTimeout(saveTimer);
+  clearInterval(syncCheckTimer);
+
+  function abrirNuevoPuntoTurno(){
+    sesion.punto=nuevoPunto;
+    sesion.turno=nuevoTurno;
+    invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false; _cerrando=false;
+    var pN=pNombresCP[nuevoPunto];
+    var tN=nuevoTurno==='manana'?'☀ Mañana':nuevoTurno==='tarde'?'🌙 Tarde':'⬛ Completo';
+    document.getElementById('hdrSub').textContent=pN+' · '+sesion.fecha;
+    document.getElementById('turnoBadge').textContent=tN+' — '+sesion.cajero+(sesion.cajeroAux?' & '+sesion.cajeroAux:'');
+    var BASE_FIJA_CP={autopista:200000,boquia:200000,tebaida:260000,km25:200000,km25_pan:200000,km18:200000,penon:200000,colseguros:200000};
+    var baseEl=document.getElementById('rBaseFija');
+    if(baseEl) baseEl.textContent='$'+(BASE_FIJA_CP[nuevoPunto]||200000).toLocaleString('es-CO');
+    cargarInventario();
+  }
+
+  // Si había un turno abierto con datos cargados, guardarlo antes de cambiar
+  if(!window._turnoCerrado && invRows && invRows.length){
+    guardar();
+    setTimeout(abrirNuevoPuntoTurno, 1500);
+  } else {
+    abrirNuevoPuntoTurno();
+  }
+}
+
 function entrar(admin){
   var punto=document.getElementById('selPunto').value;
   var turno=document.getElementById('selTurno').value;
@@ -1051,6 +1135,7 @@ function salir(){
     var bPape=document.getElementById('btnPapelera'); if(bPape) bPape.style.display='none';
     var bFalt=document.getElementById('btnFaltantes'); if(bFalt) bFalt.style.display='none';
     var bDB=document.getElementById('btnDashboard'); if(bDB) bDB.style.display='none';
+    var bCP=document.getElementById('btnCambiarPunto'); if(bCP) bCP.style.display='none';
     var bRes=document.getElementById('btnResumen'); if(bRes) bRes.style.display='none';
     var bEC=document.getElementById('btnEditCajero'); if(bEC) bEC.style.display='none';
     var bC=document.getElementById('btnCerrar'); if(bC) bC.style.display='none';
@@ -1065,8 +1150,8 @@ function salir(){
   // Guardar con keepalive antes de salir (garantiza que el fetch se complete aunque se cambie de pantalla)
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
   var snap=invRows.map(function(r){return {id:r.id,name:r.name,precio:r.precio,ant:r.ant,entradas:r.entradas||[],entrante:r.entrante,dev:r.dev,rappi:r.rappi,inv_final:r.inv_final,pedido:r.pedido,disponible:r.disponible,vendido:r.vendido,rappi_venta:r.rappi_venta||0,total_venta:r.total_venta};});
-  var payload=JSON.stringify({
-    turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
+  var datosComunes={
+    cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
     snapshot:snap,
     gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:!!e.esFinal,confirmada:!!e.confirmada};}),
     datafono_val:parseFloat(document.getElementById('inDatafono').value)||0,
@@ -1082,12 +1167,30 @@ function salir(){
     pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
     entrega_final:entregaFinal,
     updated_at:new Date().toISOString()
-  });
-  fetch(SB_URL+'/rest/v1/turnos_caja',{
-    method:'POST',
-    headers:Object.assign({},HEADS,{'Prefer':'resolution=merge-duplicates,return=minimal'}),
-    body:payload,
+  };
+  // PROTECCION: igual que guardar(), solo se sobreescribe si el turno sigue abierto
+  // (cerrado=eq.false). Si otro dispositivo ya lo cerró, NO se toca ese registro.
+  var patchUrl=(isAdmin)
+    ?SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)
+    :SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.false';
+  fetch(patchUrl,{
+    method:'PATCH',
+    headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
+    body:JSON.stringify(datosComunes),
     keepalive:true  // sobrevive al cambio de pantalla en móvil
+  }).then(function(r){
+    var cr=r.headers.get('content-range')||'';
+    if(cr==='*/0'){
+      // No existe aún (turno nuevo) — insertar. Si existiera y estuviera cerrado,
+      // el upsert con merge-duplicates lo actualizaría solo en los campos enviados
+      // (nunca incluye "cerrado"), así que no reabre ni corrompe un cierre ya hecho.
+      return fetch(SB_URL+'/rest/v1/turnos_caja',{
+        method:'POST',
+        headers:Object.assign({},HEADS,{'Prefer':'resolution=merge-duplicates,return=minimal'}),
+        body:JSON.stringify(Object.assign({turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha},datosComunes)),
+        keepalive:true
+      });
+    }
   }).catch(function(){}).finally(function(){ limpiarUI(); });
 }
 
@@ -1267,8 +1370,11 @@ function cargarInventario(){
           }
           gastos=saved.gastos_list||[];
           entregas=(saved.entregas_list||[]).map(function(e){
-            // Cajero nunca ve bloque editable — confirmar todo lo que venga del servidor
-            return Object.assign({confirmada:false,esFinal:false},e,{confirmada:isAdmin?!!e.confirmada:true});
+            // Se respeta el estado real de confirmación que viene del servidor.
+            // Un cajero no-admin puede VER que hay una entrega pendiente, pero
+            // no puede editarla ni confirmarla (ver renderEntries), y esa
+            // entrega pendiente NUNCA se cuenta en el total entregado.
+            return Object.assign({confirmada:false,esFinal:false},e,{confirmada:!!e.confirmada});
           });
           entregaFinal=saved.entrega_final||false;
           // También revisar las entregas individuales por si acaso
@@ -1826,25 +1932,28 @@ function renderEntries(tipo){
       if(isSuperAdmin){
         var btnS=document.createElement('button'); btnS.className='btn-remove-entry'; btnS.textContent='\u2715';
         btnS.style.marginLeft='4px';
-        btnS.addEventListener('click',(function(ii2){return function(){
+        btnS.addEventListener('click',(function(ii2,btnEl){return function(){
+          if(btnEl.disabled) return;
+          btnEl.disabled=true;
           enviarAlertaEliminacion(entregas[ii2]);
           entregas.splice(ii2,1); renderEntries('entregas'); recalc(); autoSave();
-        };})(i));
+        };})(i,btnS));
         locked.appendChild(btnS);
       }
       bloque.appendChild(locked);
 
-    } else if(i===activaIdx && !soloLecturaEnt){
-      // Bloque activo — solo uno visible a la vez
+    } else if(i===activaIdx && !soloLecturaEnt && isAdmin){
+      // Bloque activo — solo uno visible a la vez (solo editable por admin)
       var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ Valor entrega';
       inV.value=e.valor||'';
       inV.style.cssText='width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.9rem;background:#fff;margin-bottom:7px;box-sizing:border-box;';
-      inV.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;};})(e));
+      // Guardar el borrador en cada cambio para no perderlo si se recarga la página
+      inV.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;autoSave();};})(e));
 
       var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Responsable';
       inD.value=e.desc||'';
       inD.style.cssText='width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;margin-bottom:8px;box-sizing:border-box;';
-      inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();};})(e));
+      inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();autoSave();};})(e));
 
       // Check entrega final
       var chkRow=document.createElement('div');
@@ -1854,7 +1963,7 @@ function renderEntries(tipo){
       var chkLbl=document.createElement('label');
       chkLbl.textContent='Marque aquí cuando es la entrega final';
       chkLbl.style.cssText='font-size:.8rem;color:var(--negro);cursor:pointer;flex:1;';
-      chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;});
+      chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;e.esFinal=chk.checked;autoSave();});
       chkRow.appendChild(chk); chkRow.appendChild(chkLbl);
       bloque.appendChild(inV); bloque.appendChild(inD); bloque.appendChild(chkRow);
 
@@ -1862,9 +1971,11 @@ function renderEntries(tipo){
       var btnConf=document.createElement('button');
       btnConf.textContent='\u2713 Confirmar entrega';
       btnConf.style.cssText='width:100%;padding:9px;background:#1a4a1a;color:#7dbb7d;border:none;border-radius:6px;font-weight:700;font-size:.88rem;cursor:pointer;';
-      btnConf.addEventListener('click',(function(entry,idx2,inValEl,inDescEl,chkEl){return function(){
+      btnConf.addEventListener('click',(function(entry,idx2,inValEl,inDescEl,chkEl,btnEl){return function(){
+        if(btnEl.disabled) return; // evita doble-toque -> doble mensaje de Telegram
         var val=parseFloat(inValEl.value)||0;
         if(val<=0){alert('Ingresa un valor para la entrega.');return;}
+        btnEl.disabled=true; btnEl.style.opacity='0.6'; btnEl.textContent='Confirmando...';
         entry.valor=val;
         entry.desc=inDescEl.value.trim();
         entry.esFinal=chkEl.checked;
@@ -1874,13 +1985,19 @@ function renderEntries(tipo){
         if(entry.esFinal) entregas.forEach(function(x,xi){if(xi!==idx2) x.esFinal=false;});
         entregaFinal=entry.esFinal;
         recalc(); autoSave();
-        setTimeout(function(){renderEntries('entregas');},100);
         enviarAlertaTelegram(entry,idx2,undefined);
-      };})(e,i,inV,inD,chk));
+        setTimeout(function(){renderEntries('entregas');},100);
+      };})(e,i,inV,inD,chk,btnConf));
       bloque.appendChild(btnConf);
 
+    } else if(i===activaIdx && !soloLecturaEnt && !isAdmin){
+      // Cajero sin admin: ve que hay una entrega pendiente pero no puede editarla ni confirmarla
+      var pend=document.createElement('div');
+      pend.style.cssText='font-size:.82rem;color:var(--gris4);font-style:italic;padding:4px 0;';
+      pend.textContent='\u23F3 Hay una entrega pendiente de confirmar por un administrador.';
+      bloque.appendChild(pend);
     } else {
-      // Entrega pendiente no activa o cajero — no mostrar
+      // Entrega pendiente no activa — no mostrar
       return;
     }
     container.appendChild(bloque);
@@ -1977,7 +2094,7 @@ function guardar(){
   var patchUrl=(window._turnoCerrado&&isAdmin)
     ?SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)
     :SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key)+'&cerrado=eq.false';
-  fetch(patchUrl,{
+  return fetch(patchUrl,{
     method:'PATCH',
     headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
     body:JSON.stringify({
@@ -2459,6 +2576,7 @@ function imprimirPedido(){
 }
 
 function confirmarCierre(){
+  if(_cerrando) return; // evita doble-toque -> doble mensaje de Telegram y doble guardado
   // Re-validar antes de cerrar definitivo
   var erroresConf=invRows.filter(function(r){
     return r.inv_final!==null&&r.inv_final!==undefined&&r.inv_final>r.disponible;
@@ -2494,6 +2612,8 @@ function confirmarCierre(){
   setSyncStatus('sync','⟳ Cerrando...');
   // Bloquear guardar() y autoSave durante el cierre
   _cerrando=true;
+  var btnConfirmarEl=document.getElementById('btnConfirmar');
+  if(btnConfirmarEl){btnConfirmarEl.disabled=true; btnConfirmarEl.style.opacity='0.6';}
   window._turnoCerrado=true;
   clearTimeout(saveTimer);
   var key=sesion.fecha+'_'+sesion.punto+'_'+sesion.turno;
@@ -2528,6 +2648,8 @@ function confirmarCierre(){
     // Si falló, revertir el estado local
     window._turnoCerrado=false;
     _cerrando=false;
+    var btnConfirmarEl2=document.getElementById('btnConfirmar');
+    if(btnConfirmarEl2){btnConfirmarEl2.disabled=false; btnConfirmarEl2.style.opacity='';}
     setSyncStatus('err','✗ Error');
     alert('Error al cerrar: '+e.message);
   });
@@ -3773,7 +3895,9 @@ function renderEditEntradas(container, arr, field, onChange){
   });
 }
 
+var _guardandoEdicion=false;
 function guardarEdicionTurno(){
+  if(_guardandoEdicion) return; // evita doble-toque -> doble mensaje de Telegram
   if(!turnoEditando) return;
   var editorEl=document.getElementById('historialEditor');
   var editorVal=editorEl?editorEl.value.trim():'';
@@ -3782,6 +3906,10 @@ function guardarEdicionTurno(){
   var motivoVal=motivoEl?motivoEl.value.trim():'';
   if(!motivoVal){alert('El motivo del ajuste es obligatorio.');if(motivoEl)motivoEl.focus();return;}
   setSyncStatus('sync','⟳ Guardando...');
+  _guardandoEdicion=true;
+  var btnGE1=document.getElementById('btnGuardarEdicion'), btnGE2=document.getElementById('btnGuardarEdicion2');
+  if(btnGE1){btnGE1.disabled=true; btnGE1.style.opacity='0.6';}
+  if(btnGE2){btnGE2.disabled=true; btnGE2.style.opacity='0.6';}
   var snap=turnoEditando.snapshot||[];
   // Recalcular usando el precio ORIGINAL del snapshot (no el precio actual)
   // para que los totales históricos no cambien si hubo cambio de precio posterior
@@ -3880,10 +4008,16 @@ function guardarEdicionTurno(){
   }).then(function(){
     setSyncStatus('ok','✓ Turno actualizado correctamente');
     enviarAlertaAjusteHistorial(turnoEditando, tv, rap, gas, dat, tra, desc, ent, motivoVal, editorVal);
+    _guardandoEdicion=false;
+    if(btnGE1){btnGE1.disabled=false; btnGE1.style.opacity='';}
+    if(btnGE2){btnGE2.disabled=false; btnGE2.style.opacity='';}
     document.getElementById('editTurnoModal').classList.remove('open');
     document.getElementById('historialModal').classList.add('open');
     buscarHistorial();
   }).catch(function(e){
+    _guardandoEdicion=false;
+    if(btnGE1){btnGE1.disabled=false; btnGE1.style.opacity='';}
+    if(btnGE2){btnGE2.disabled=false; btnGE2.style.opacity='';}
     setSyncStatus('err','✗ Error al guardar');
     alert('Error al guardar: '+e.message);
   });
