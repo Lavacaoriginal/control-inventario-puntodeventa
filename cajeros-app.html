@@ -855,7 +855,10 @@ function setSyncStatus(state,msg){
 document.getElementById('btnEntrar').addEventListener('click', function(){ entrar(false); });
 document.getElementById('btnAdminLogin').addEventListener('click', function(){
   var v=prompt('🔒 Clave de administrador:');
-  if(esAdmin(v)) entrar(true);
+  if(esAdmin(v)){
+    if(esSuperAdmin(v)) isSuperAdmin=true;
+    entrar(true);
+  }
   else if(v!==null) alert('Clave incorrecta.');
 });
 document.getElementById('btnSalir').addEventListener('click', salir);
@@ -1318,7 +1321,12 @@ function cargarInventario(){
             } else {
               antVal=sv.ant!==null&&sv.ant!==undefined?sv.ant:0;
             }
-            return {id:p.id,name:p.name,precio:getPrecio(p,sesion.punto)||sv.precio||0,precios:p.precios||{},
+            return {id:p.id,name:p.name,
+              // CRITICO: si el turno YA está cerrado, el precio es histórico y SAGRADO —
+              // nunca se reemplaza por el precio actual del catálogo, así admin lo reabra
+              // para corregir cantidades. Solo un turno aún abierto usa el precio vigente.
+              precio: saved.cerrado ? (sv.precio||0) : (getPrecio(p,sesion.punto)||sv.precio||0),
+              precios:p.precios||{},
               ant:antVal,
               entradas:sv.entradas&&sv.entradas.length?sv.entradas:(sv.entrante?[sv.entrante]:[]),
               entrante:sv.entrante,dev:sv.dev,rappi:sv.rappi||null,inv_final:sv.inv_final,pedido:sv.pedido||null,
