@@ -1942,6 +1942,8 @@ function renderEntries(tipo){
         btnS.style.marginLeft='4px';
         btnS.addEventListener('click',(function(ii2,btnEl){return function(){
           if(btnEl.disabled) return;
+          var ent=entregas[ii2];
+          if(!confirm('¿Eliminar esta entrega confirmada?\n\n'+fmt(ent.valor)+' — '+(ent.desc||'Sin responsable')+'\n\nEsta acción no se puede deshacer.')) return;
           btnEl.disabled=true;
           enviarAlertaEliminacion(entregas[ii2]);
           entregas.splice(ii2,1); renderEntries('entregas'); recalc(); autoSave();
@@ -2650,6 +2652,11 @@ function confirmarCierre(){
   enviarResumenCierre();
   sbUpsert('turnos_caja',payload).then(function(){
     setSyncStatus('ok','✓ Cerrado');
+    // Liberar el bloqueo ANTES de llamar salir(): si el admin cancela el diálogo
+    // "¿Salir?" (por ejemplo porque quiere seguir gestionando otro turno), el botón
+    // de Confirmar cierre no debe quedar atascado para el próximo cierre.
+    _cerrando=false;
+    if(btnConfirmarEl){btnConfirmarEl.disabled=false; btnConfirmarEl.style.opacity='';}
     alert('✅ Turno cerrado correctamente.');
     salir();
   }).catch(function(e){
