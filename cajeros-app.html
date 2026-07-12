@@ -242,16 +242,15 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="C4|Andrea Gonzales">Andrea Gonzales (C4)</option>
         <option value="SUP|Angela Marin">Ángela Marín (Supervisora)</option>
         <option value="Aux|Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
-        <option value="C3|Catalina Tabares">Catalina Tabares (C3)</option>
         <option value="C1|Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="C1|Jesika Imbajoa">Jesika Imbajoa (C1)</option>
         <option value="C2|Jimena Caldas">Jimena Caldas (C2)</option>
         <option value="C5|Julian Diaz">Julian Diaz (C5)</option>
         <option value="C2|Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="C1|Laura Barrera">Laura Barrera (C1)</option>
+        <option value="C3|Leidy Higuera">Leidy Higuera (C3)</option>
         <option value="AO2|Leidy Meneses">Leidy Meneses (AO2)</option>
         <option value="C6|Luz Suarez">Luz Suarez (C6)</option>
-        <option value="C4|Milena Ruiz">Milena Ruiz (C4)</option>
         <option value="C3|Monica Arango">Mónica Arango (C3)</option>
         <option value="C2|Sebastian Perez">Sebastian Perez (C2)</option>
         <option value="C1|Vanessa Gallego">Vanessa Gallego (C1)</option>
@@ -516,16 +515,17 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Andrea Gonzales">Andrea Gonzales (C4)</option>
         <option value="Angela Marin">Ángela Marín (Supervisora)</option>
         <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
-        <option value="Catalina Tabares">Catalina Tabares (C3)</option>
+        <option value="Catalina Tabares">Catalina Tabares (C3) — inactiva</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
         <option value="Jimena Caldas">Jimena Caldas (C2)</option>
         <option value="Julian Diaz">Julian Diaz (C5)</option>
         <option value="Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="Laura Barrera">Laura Barrera (C1)</option>
+        <option value="Leidy Higuera">Leidy Higuera (C3)</option>
         <option value="Leidy Meneses">Leidy Meneses (AO2)</option>
         <option value="Luz Suarez">Luz Suarez (C6)</option>
-        <option value="Milena Ruiz">Milena Ruiz (C4)</option>
+        <option value="Milena Ruiz">Milena Ruiz (C4) — inactiva</option>
         <option value="Monica Arango">Mónica Arango (C3)</option>
         <option value="Sebastian Perez">Sebastian Perez (C2)</option>
         <option value="Vanessa Gallego">Vanessa Gallego (C1)</option>
@@ -651,16 +651,15 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Andrea Gonzales">Andrea Gonzales (C4)</option>
         <option value="Angela Marin">Ángela Marín (Supervisora)</option>
         <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
-        <option value="Catalina Tabares">Catalina Tabares (C3)</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
         <option value="Jimena Caldas">Jimena Caldas (C2)</option>
         <option value="Julian Diaz">Julian Diaz (C5)</option>
         <option value="Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="Laura Barrera">Laura Barrera (C1)</option>
+        <option value="Leidy Higuera">Leidy Higuera (C3)</option>
         <option value="Leidy Meneses">Leidy Meneses (AO2)</option>
         <option value="Luz Suarez">Luz Suarez (C6)</option>
-        <option value="Milena Ruiz">Milena Ruiz (C4)</option>
         <option value="Monica Arango">Mónica Arango (C3)</option>
         <option value="Sebastian Perez">Sebastian Perez (C2)</option>
         <option value="Vanessa Gallego">Vanessa Gallego (C1)</option>
@@ -2969,7 +2968,7 @@ function renderEditCajerosExtras(){
     div.style.display='flex'; div.style.gap='6px';
     var inp=document.createElement('select');
     inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;cursor:pointer;';
-    var optsAux=[['','— Selecciona cajero —'],['Andrea Gonzales','Andrea Gonzales (C4)'],['Angela Marin','Ángela Marín (Supervisora)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Catalina Tabares','Catalina Tabares (C3)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (AO2)'],['Luz Suarez','Luz Suarez (C6)'],['Milena Ruiz','Milena Ruiz (C4)'],['Monica Arango','Mónica Arango (C3)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C2)']];
+    var optsAux=[['','— Selecciona cajero —'],['Andrea Gonzales','Andrea Gonzales (C4)'],['Angela Marin','Ángela Marín (Supervisora)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Higuera','Leidy Higuera (C3)'],['Leidy Meneses','Leidy Meneses (AO2)'],['Luz Suarez','Luz Suarez (C6)'],['Monica Arango','Mónica Arango (C3)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C2)']];
     optsAux.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];inp.appendChild(opt);});
     inp.value=nombre;
     inp.addEventListener('change',(function(idx){return function(){editCajerosExtras[idx]=this.value;};})(i));
@@ -4173,16 +4172,15 @@ var CAJEROS_LISTA=[
   {val:'C4|Andrea Gonzales',txt:'Andrea Gonzales (C4)'},
   {val:'SUP|Angela Marin',txt:'Ángela Marín (Supervisora)'},
   {val:'Aux|Arturo Gutierrez',txt:'Arturo Gutiérrez (Aux)'},
-  {val:'C3|Catalina Tabares',txt:'Catalina Tabares (C3)'},
   {val:'C1|Daniela Nieto',txt:'Daniela Nieto (C1)'},
   {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)'},
   {val:'C2|Jimena Caldas',txt:'Jimena Caldas (C2)'},
   {val:'C5|Julian Diaz',txt:'Julian Diaz (C5)'},
   {val:'C2|Karen Ipiales',txt:'Karen Ipiales (C2)'},
   {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
+  {val:'C3|Leidy Higuera',txt:'Leidy Higuera (C3)'},
   {val:'AO2|Leidy Meneses',txt:'Leidy Meneses (AO2)'},
   {val:'C6|Luz Suarez',txt:'Luz Suarez (C6)'},
-  {val:'C4|Milena Ruiz',txt:'Milena Ruiz (C4)'},
   {val:'C3|Monica Arango',txt:'Mónica Arango (C3)'},
   {val:'C2|Sebastian Perez',txt:'Sebastian Perez (C2)'},
   {val:'C1|Vanessa Gallego',txt:'Vanessa Gallego (C1)'},
