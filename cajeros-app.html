@@ -332,7 +332,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <div class="payToggleRow">
             <span>Confirmado</span>
             <label class="toggleSwitch">
-              <input type="checkbox" id="chkConfDatafono" onchange="confirmarDigital('datafono',this);">
+              <input type="checkbox" id="chkConfDatafono" disabled onchange="confirmarDigital('datafono',this);">
               <span class="toggleTrack"></span>
             </label>
           </div>
@@ -344,7 +344,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           <div class="payToggleRow">
             <span>Confirmado</span>
             <label class="toggleSwitch">
-              <input type="checkbox" id="chkConfTransferencia" onchange="confirmarDigital('transferencia',this);">
+              <input type="checkbox" id="chkConfTransferencia" disabled onchange="confirmarDigital('transferencia',this);">
               <span class="toggleTrack"></span>
             </label>
           </div>
@@ -729,6 +729,22 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 </div>
 
 <!-- MODAL CIERRE -->
+<div class="overlay" id="welcomeModal">
+  <div class="modal modal-sm" style="text-align:center;">
+    <div style="font-size:2.2rem;margin-bottom:4px;">👋</div>
+    <div class="modal-title" id="welcomeTitulo" style="font-size:1.15rem;">¡Bienvenido/a!</div>
+    <div class="modal-sub" id="welcomeSub" style="margin-bottom:16px;"></div>
+    <div style="text-align:left;background:var(--gris1);border-radius:10px;padding:14px 16px;font-size:.82rem;line-height:1.55;color:var(--negro);">
+      <div style="margin-bottom:8px;">✅ Verifica que el <b>punto</b> y el <b>turno</b> sean los que te corresponden.</div>
+      <div style="margin-bottom:8px;">✅ Revisa que tu <b>nombre</b> esté bien seleccionado antes de empezar.</div>
+      <div>📌 Antes de <b>cerrar tu turno</b>, confirma de nuevo que estás cerrando el punto y turno correctos.</div>
+    </div>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-cerrar" id="btnWelcomeOk" style="flex-shrink:0;">✅ Entendido, ¡a trabajar!</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="cierreModal">
   <div class="modal modal-sm">
     <button class="modal-x" id="cierreX">✕</button>
@@ -794,6 +810,12 @@ function enviarAlertaEliminacion(entrega){
   tgEnviar(msg);
 }
 function confirmarDigital(tipo, chkEl){
+  // Exclusivo admin: el cajero puede digitar el valor pero no confirmarlo.
+  if(!isAdmin){
+    chkEl.checked=!chkEl.checked;
+    alert('🔒 Solo el administrador puede confirmar este valor.');
+    return;
+  }
   var inputId=tipo==='datafono'?'inDatafono':'inTransferencia';
   var input=document.getElementById(inputId);
   if(!input) return;
@@ -804,17 +826,17 @@ function confirmarDigital(tipo, chkEl){
       chkEl.checked=false;
       return;
     }
-    // Bloquear: solo superadmin puede desmarcar después
+    // Bloquear el campo; solo un admin puede desmarcar después
     input.readOnly=true;
     input.style.background='#f0ede8';input.style.color='#7c4a1e';input.style.fontWeight='700';
-    chkEl.disabled=!isSuperAdmin;
+    chkEl.disabled=!isAdmin;
     autoSave();
     enviarAlertaDigital(tipo, val, undefined);
   } else {
-    // Desmarcar (solo superadmin puede llegar aquí): desbloquear
+    // Desmarcar (solo admin puede llegar aquí): desbloquear
     input.readOnly=false;
     input.style.background='';input.style.color='';input.style.fontWeight='';
-    chkEl.disabled=false;
+    chkEl.disabled=!isAdmin;
     autoSave();
   }
 }
@@ -863,6 +885,15 @@ function enviarResumenCierre(){
 var PASS_ADMIN = 'j150884';
 var PASS_ADMIN2 = 'AdminLVO26';
 var PASS_SUPER = 'Super150884';
+
+function mostrarBienvenidaCajero(nombre, pN, tN){
+  var tit=document.getElementById('welcomeTitulo');
+  var sub=document.getElementById('welcomeSub');
+  if(tit) tit.textContent='¡Bienvenido/a, '+nombre+'!';
+  if(sub) sub.textContent=pN+' · '+tN;
+  var m=document.getElementById('welcomeModal');
+  if(m) m.classList.add('open');
+}
 
 function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER; }
 function esSuperAdmin(clave){ return clave===PASS_SUPER; }
@@ -1001,6 +1032,14 @@ document.getElementById('editTurnoX').addEventListener('click', function(){docum
 document.getElementById('btnCancelarEdicion').addEventListener('click', function(){document.getElementById('editTurnoModal').classList.remove('open');});
 document.getElementById('btnCancelarEdicion2').addEventListener('click', function(){document.getElementById('editTurnoModal').classList.remove('open');});
 document.getElementById('btnConfirmar').addEventListener('click', confirmarCierre);
+document.getElementById('btnWelcomeOk').addEventListener('click', function(){
+  document.getElementById('welcomeModal').classList.remove('open');
+  if(window._pendingNotaCompanero){
+    var nota=window._pendingNotaCompanero;
+    window._pendingNotaCompanero=null;
+    setTimeout(function(){mostrarNotaCompañero(nota);},350);
+  }
+});
 document.getElementById('cierreX').addEventListener('click', function(){document.getElementById('cierreModal').classList.remove('open');});
 document.getElementById('btnCancelarCierre').addEventListener('click', function(){document.getElementById('cierreModal').classList.remove('open');});
 document.getElementById('inNota').addEventListener('input', autoSave);
@@ -1045,6 +1084,8 @@ function showAdminUI(){
   if(btnFalt) btnFalt.style.display='flex';
   var btnImp=document.getElementById('btnImprimir');
   if(btnImp) btnImp.style.display='flex';
+  var chkDA=document.getElementById('chkConfDatafono'); if(chkDA) chkDA.disabled=false;
+  var chkTA=document.getElementById('chkConfTransferencia'); if(chkTA) chkTA.disabled=false;
   var btnE=document.getElementById('btnAddEntrega');
   if(btnE){
     btnE.style.display=window._turnoCerrado?'none':'block';
@@ -1091,6 +1132,8 @@ function showAdminUI(){
       if(bFalt) bFalt.style.display='none';
       var bImp=document.getElementById('btnImprimir');
       if(bImp) bImp.style.display='none';
+      var bChkDA=document.getElementById('chkConfDatafono'); if(bChkDA) bChkDA.disabled=true;
+      var bChkTA=document.getElementById('chkConfTransferencia'); if(bChkTA) bChkTA.disabled=true;
       var bDB=document.getElementById('btnDashboard');
       if(bDB) bDB.style.display='none';
       var bCP=document.getElementById('btnCambiarPunto');
@@ -1194,6 +1237,7 @@ function entrar(admin){
   if(isAdmin) showAdminUI();
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='block';
+  window._pendingWelcome = isAdmin ? null : {nombre:cajero, pN:pN, tN:tN};
   cargarInventario();
 }
 
@@ -1213,6 +1257,8 @@ function salir(){
     var bPape=document.getElementById('btnPapelera'); if(bPape) bPape.style.display='none';
     var bFalt=document.getElementById('btnFaltantes'); if(bFalt) bFalt.style.display='none';
     var bImp=document.getElementById('btnImprimir'); if(bImp) bImp.style.display='none';
+    var bChkDA=document.getElementById('chkConfDatafono'); if(bChkDA) bChkDA.disabled=true;
+    var bChkTA=document.getElementById('chkConfTransferencia'); if(bChkTA) bChkTA.disabled=true;
     var bDB=document.getElementById('btnDashboard'); if(bDB) bDB.style.display='none';
     var bCP=document.getElementById('btnCambiarPunto'); if(bCP) bCP.style.display='none';
     var bRes=document.getElementById('btnResumen'); if(bRes) bRes.style.display='none';
@@ -1478,23 +1524,23 @@ function cargarInventario(){
             if(dEl){
               dEl.value=saved.datafono_val||'';
               if(datConfirmado){
-                dEl.readOnly=!isSuperAdmin;
+                dEl.readOnly=!isAdmin;
                 dEl.style.background='#f0ede8';dEl.style.color='#7c4a1e';dEl.style.fontWeight='700';
-                if(chkD){chkD.checked=true;chkD.disabled=!isSuperAdmin;}
+                if(chkD){chkD.checked=true;chkD.disabled=!isAdmin;}
               } else {
                 dEl.readOnly=false;dEl.style.background='';dEl.style.color='';dEl.style.fontWeight='';
-                if(chkD){chkD.checked=false;chkD.disabled=false;}
+                if(chkD){chkD.checked=false;chkD.disabled=!isAdmin;}
               }
             }
             if(tEl){
               tEl.value=saved.transferencia_val||'';
               if(traConfirmado){
-                tEl.readOnly=!isSuperAdmin;
+                tEl.readOnly=!isAdmin;
                 tEl.style.background='#f0ede8';tEl.style.color='#7c4a1e';tEl.style.fontWeight='700';
-                if(chkT){chkT.checked=true;chkT.disabled=!isSuperAdmin;}
+                if(chkT){chkT.checked=true;chkT.disabled=!isAdmin;}
               } else {
                 tEl.readOnly=false;tEl.style.background='';tEl.style.color='';tEl.style.fontWeight='';
-                if(chkT){chkT.checked=false;chkT.disabled=false;}
+                if(chkT){chkT.checked=false;chkT.disabled=!isAdmin;}
               }
             }
             var descEl=document.getElementById('inDescuentos'); if(descEl){ descEl.value=saved.descuentos_val||'';}
@@ -1502,8 +1548,10 @@ function cargarInventario(){
           },150);
         }
         // Si el turno ya fue cerrado, bloquearlo
+        var bienvenidaMostrada=false;
         if(saved && saved.cerrado){
           window._turnoCerrado=true;
+          window._pendingWelcome=null; // solo consulta: no mostrar bienvenida de inicio de turno
           // Un turno cerrado siempre muestra su resumen completo (es historia, ya no se puede manipular)
           entregaFinal=true;
           if(!isAdmin){
@@ -1517,7 +1565,6 @@ function cargarInventario(){
             var btnCerrar=document.getElementById('btnCerrar'); if(btnCerrar) btnCerrar.style.display='none';
             setTimeout(function(){alert('⚠️ Este turno ya fue cerrado. Solo puedes consultarlo.');},800);
           } else {
-            // Admin/Superadmin: desbloquear según nivel
             var inDat=document.getElementById('inDatafono');
             var inTra=document.getElementById('inTransferencia');
             if(inDat){
@@ -1557,6 +1604,11 @@ function cargarInventario(){
           var inNota=document.getElementById('inNota'); if(inNota){inNota.readOnly=false;inNota.style.background='';}
           var inNotaSig=document.getElementById('inNotaSig'); if(inNotaSig){inNotaSig.readOnly=false;inNotaSig.style.background='';}
           var btnGas=document.getElementById('btnAddGasto'); if(btnGas) btnGas.style.display='';
+          if(window._pendingWelcome){
+            mostrarBienvenidaCajero(window._pendingWelcome.nombre, window._pendingWelcome.pN, window._pendingWelcome.tN);
+            window._pendingWelcome=null;
+            bienvenidaMostrada=true;
+          }
         }
         // Mostrar/ocultar btnCerrar según estado del turno
         var btnCerrarEl=document.getElementById('btnCerrar');
@@ -1596,7 +1648,12 @@ function cargarInventario(){
         }
         // Nota del compañero solo si es turno nuevo (no existe guardado aún)
         if(!saved&&antTurno&&antTurno.nota_siguiente&&antTurno.nota_siguiente.trim()){
-          setTimeout(function(){mostrarNotaCompañero(antTurno.nota_siguiente);},600);
+          if(bienvenidaMostrada){
+            // Se muestra después, al cerrar la bienvenida (ver btnWelcomeOk)
+            window._pendingNotaCompanero=antTurno.nota_siguiente;
+          } else {
+            setTimeout(function(){mostrarNotaCompañero(antTurno.nota_siguiente);},600);
+          }
         }
         setSyncStatus('ok','✓ Listo');
       }).catch(function(e){setSyncStatus('err','✗ Error');alert('Error al cargar: '+e.message);});
