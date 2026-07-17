@@ -729,6 +729,19 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 </div>
 
 <!-- MODAL CIERRE -->
+<div class="overlay" id="claveModal">
+  <div class="modal modal-sm" style="text-align:center;">
+    <div style="font-size:2rem;">🔒</div>
+    <div class="modal-title" id="claveModalTitulo" style="font-size:1rem;">Clave de administrador</div>
+    <input type="password" id="inClaveModal" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false"
+      placeholder="••••••" style="width:100%;margin:14px 0;padding:12px;font-size:1.4rem;text-align:center;letter-spacing:6px;border-radius:8px;border:1px solid #ccc;box-sizing:border-box;">
+    <div class="modal-actions" style="justify-content:center;gap:10px;">
+      <button class="btn" style="background:#eee;color:#333;flex-shrink:0;" id="btnClaveCancelar">Cancelar</button>
+      <button class="btn btn-cerrar" id="btnClaveOk" style="flex-shrink:0;">Ingresar</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="welcomeModal">
   <div class="modal modal-sm" style="text-align:center;">
     <div style="font-size:2.2rem;margin-bottom:4px;">👋</div>
@@ -895,6 +908,32 @@ function mostrarBienvenidaCajero(nombre, pN, tN){
   if(m) m.classList.add('open');
 }
 
+var _claveResolve=null;
+function promptClave(mensaje){
+  return new Promise(function(resolve){
+    var tit=document.getElementById('claveModalTitulo');
+    if(tit) tit.textContent=mensaje||'Clave de administrador';
+    var inp=document.getElementById('inClaveModal');
+    if(inp) inp.value='';
+    _claveResolve=resolve;
+    document.getElementById('claveModal').classList.add('open');
+    setTimeout(function(){ if(inp) inp.focus(); },150);
+  });
+}
+document.getElementById('btnClaveOk').addEventListener('click', function(){
+  var inp=document.getElementById('inClaveModal');
+  var val=inp?inp.value:'';
+  document.getElementById('claveModal').classList.remove('open');
+  if(_claveResolve){ var r=_claveResolve; _claveResolve=null; r(val); }
+});
+document.getElementById('btnClaveCancelar').addEventListener('click', function(){
+  document.getElementById('claveModal').classList.remove('open');
+  if(_claveResolve){ var r=_claveResolve; _claveResolve=null; r(null); }
+});
+document.getElementById('inClaveModal').addEventListener('keydown', function(e){
+  if(e.key==='Enter'){ e.preventDefault(); document.getElementById('btnClaveOk').click(); }
+});
+
 function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER; }
 function esSuperAdmin(clave){ return clave===PASS_SUPER; }
 var sesion = null;
@@ -955,8 +994,8 @@ function setSyncStatus(state,msg){
 })();
 
 document.getElementById('btnEntrar').addEventListener('click', function(){ entrar(false); });
-document.getElementById('btnAdminLogin').addEventListener('click', function(){
-  var v=prompt('🔒 Clave de administrador:');
+document.getElementById('btnAdminLogin').addEventListener('click', async function(){
+  var v=await promptClave('🔒 Clave de administrador');
   if(esAdmin(v)){
     if(esSuperAdmin(v)) isSuperAdmin=true;
     entrar(true);
@@ -964,18 +1003,18 @@ document.getElementById('btnAdminLogin').addEventListener('click', function(){
   else if(v!==null) alert('Clave incorrecta.');
 });
 document.getElementById('btnSalir').addEventListener('click', salir);
-document.getElementById('btnAdminApp').addEventListener('click', function(){
+document.getElementById('btnAdminApp').addEventListener('click', async function(){
   if(isAdmin){
     // Si ya es admin pero no superadmin, dar la opcion de subir de nivel
     if(!isSuperAdmin){
-      var vUp=prompt('Ya tienes acceso de Admin.\n\nSi quieres entrar como SUPERADMIN, escribe la clave:\n(o deja vacio para continuar como Admin)');
+      var vUp=await promptClave('Ya tienes acceso de Admin. Para SUPERADMIN escribe la clave (o cancela para continuar como Admin)');
       if(vUp&&esSuperAdmin(vUp)) isSuperAdmin=true;
       else if(vUp&&!esSuperAdmin(vUp)) alert('Clave incorrecta. Continuas como Admin normal.');
     }
     openAdmin();
     return;
   }
-  var v=prompt('🔒 Clave de administrador:');
+  var v=await promptClave('🔒 Clave de administrador');
   if(esAdmin(v)){
     isAdmin=true; isSuperAdmin=esSuperAdmin(v);
     showAdminUI(); openAdmin();
@@ -1203,7 +1242,7 @@ function cambiarPuntoTurno(){
   }
 }
 
-function entrar(admin){
+async function entrar(admin){
   var punto=document.getElementById('selPunto').value;
   var turno=document.getElementById('selTurno').value;
   var cajeroVal=document.getElementById('selCajero').value;
@@ -1217,7 +1256,7 @@ function entrar(admin){
   if(!fecha){alert('Selecciona la fecha.');return;}
   // Si eligió ADMINISTRADOR en el dropdown, pedir clave
   if(cajeroVal==='ADM|ADMINISTRADOR'){
-    var clave=prompt('🔒 Clave de administrador:');
+    var clave=await promptClave('🔒 Clave de administrador');
     if(!esAdmin(clave)){if(clave!==null)alert('Clave incorrecta.');return;}
     admin=true;
     if(esSuperAdmin(clave)) isSuperAdmin=true;
@@ -2327,9 +2366,9 @@ function guardar(){
 }
 
 // ── ADMIN ────────────────────────────────────────
-function openAdmin(){
+async function openAdmin(){
   if(!isAdmin){
-    var v=prompt('🔒 Clave de administrador:');
+    var v=await promptClave('🔒 Clave de administrador');
     if(!esAdmin(v)){if(v!==null)alert('Clave incorrecta.');return;}
     isAdmin=true; showAdminUI();
     // Desbloquear campos que pudieron quedar bloqueados por sesión de cajero
