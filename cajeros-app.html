@@ -2132,25 +2132,22 @@ function renderEntries(tipo){
     } else if(!soloLecturaEnt){
       // Pendiente — el cajero puede escribir valor y responsable; solo el admin confirma
       var row2=document.createElement('div');
-      row2.style.cssText='display:flex;gap:6px;margin-bottom:8px;';
+      row2.className='payGrid'; row2.style.marginBottom='8px';
 
-      var colV=document.createElement('div'); colV.style.cssText='flex:1;min-width:0;';
-      var lblV=document.createElement('span'); lblV.textContent='Valor';
-      lblV.style.cssText='font-size:.62rem;color:var(--gris4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;display:block;';
-      var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ 0';
+      var colV=document.createElement('div'); colV.className='payChip';
+      colV.innerHTML='<div class="payIco ico-datafono">💵</div><label>Valor</label>';
+      var inV=document.createElement('input'); inV.type='number'; inV.placeholder='0';
       inV.value=e.valor||'';
-      inV.style.cssText='width:100%;padding:7px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;box-sizing:border-box;';
       inV.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;autoSave();};})(e));
-      colV.appendChild(lblV); colV.appendChild(inV);
+      colV.appendChild(inV);
 
-      var colD=document.createElement('div'); colD.style.cssText='flex:1;min-width:0;';
-      var lblD=document.createElement('span'); lblD.textContent='Responsable';
-      lblD.style.cssText='font-size:.62rem;color:var(--gris4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;display:block;';
+      var colD=document.createElement('div'); colD.className='payChip';
+      colD.innerHTML='<div class="payIco ico-transfer">👤</div><label>Responsable</label>';
       var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Quién recibe';
       inD.value=e.desc||'';
-      inD.style.cssText='width:100%;padding:7px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;box-sizing:border-box;';
+      inD.style.cssText='width:100%;padding:6px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;box-sizing:border-box;font-family:inherit;font-weight:400;text-align:left;';
       inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();autoSave();};})(e));
-      colD.appendChild(lblD); colD.appendChild(inD);
+      colD.appendChild(inD);
 
       row2.appendChild(colV); row2.appendChild(colD);
       bloque.appendChild(row2);
@@ -2202,11 +2199,7 @@ function renderEntries(tipo){
 
   var tot=document.getElementById('entregaTotal');
   if(tot){
-    if(isAdmin){
-      tot.textContent='Total entregado: '+fmt(arr.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0));
-    } else {
-      tot.textContent='Total entregado: — (oculto, solo lo ve el admin)';
-    }
+    tot.textContent='Total entregado: '+fmt(arr.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0));
   }
 }
 
