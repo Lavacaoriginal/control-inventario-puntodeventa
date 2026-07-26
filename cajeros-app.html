@@ -377,7 +377,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <div style="font-size:.68rem;color:var(--gris4);margin-top:3px;">Calculado automáticamente de la tabla</div>
       </div>
       <div class="res-block">
-        <div class="res-block-title">Entregas de dinero en efectivo <span style="font-size:.62rem;background:#1a1a3a;color:#7a9fd4;padding:1px 6px;border-radius:3px;font-weight:700;">Solo Admin</span></div>
+        <div class="res-block-title">Entregas de dinero en efectivo</div>
         <div class="entries-list" id="entregasLista"></div>
         <button class="btn-add-entry" id="btnAddEntrega" style="display:none;">＋ Agregar entrega</button>
 
@@ -2143,20 +2143,20 @@ function renderEntries(tipo){
 
       bloque.appendChild(inV); bloque.appendChild(inD);
 
-      // Check entrega final (cajero y admin pueden marcarlo; solo es informativo)
-      var chkRow=document.createElement('div');
-      chkRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
-      var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!e.esFinal;
-      chk.style.cssText='width:20px;height:20px;cursor:pointer;accent-color:#2d6a2d;flex-shrink:0;';
-      var chkLbl=document.createElement('label');
-      chkLbl.textContent='Marque aquí cuando es la entrega final';
-      chkLbl.style.cssText='font-size:.8rem;color:var(--negro);cursor:pointer;flex:1;';
-      chk.addEventListener('change',(function(entry){return function(){entry.esFinal=this.checked;autoSave();};})(e));
-      chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;e.esFinal=chk.checked;autoSave();});
-      chkRow.appendChild(chk); chkRow.appendChild(chkLbl);
-      bloque.appendChild(chkRow);
-
       if(isAdmin){
+        // Check entrega final — exclusivo admin
+        var chkRow=document.createElement('div');
+        chkRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+        var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!e.esFinal;
+        chk.style.cssText='width:20px;height:20px;cursor:pointer;accent-color:#2d6a2d;flex-shrink:0;';
+        var chkLbl=document.createElement('label');
+        chkLbl.textContent='Marque aquí cuando es la entrega final';
+        chkLbl.style.cssText='font-size:.8rem;color:var(--negro);cursor:pointer;flex:1;';
+        chk.addEventListener('change',(function(entry){return function(){entry.esFinal=this.checked;autoSave();};})(e));
+        chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;e.esFinal=chk.checked;autoSave();});
+        chkRow.appendChild(chk); chkRow.appendChild(chkLbl);
+        bloque.appendChild(chkRow);
+
         // Slider "Deslizar para confirmar" — reemplaza el botón de confirmar
         var track=document.createElement('div'); track.className='slide-track';
         track.innerHTML='<div class="slide-fill"></div><div class="slide-label">Deslizar para confirmar \u279c</div><div class="slide-handle">\ud83d\udd12</div>';
