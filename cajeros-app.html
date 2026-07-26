@@ -2131,17 +2131,29 @@ function renderEntries(tipo){
 
     } else if(!soloLecturaEnt){
       // Pendiente — el cajero puede escribir valor y responsable; solo el admin confirma
-      var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ Valor entrega';
+      var row2=document.createElement('div');
+      row2.style.cssText='display:flex;gap:6px;margin-bottom:8px;';
+
+      var colV=document.createElement('div'); colV.style.cssText='flex:1;min-width:0;';
+      var lblV=document.createElement('span'); lblV.textContent='Valor';
+      lblV.style.cssText='font-size:.62rem;color:var(--gris4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;display:block;';
+      var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ 0';
       inV.value=e.valor||'';
-      inV.style.cssText='width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.9rem;background:#fff;margin-bottom:7px;box-sizing:border-box;';
+      inV.style.cssText='width:100%;padding:7px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;box-sizing:border-box;';
       inV.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;autoSave();};})(e));
+      colV.appendChild(lblV); colV.appendChild(inV);
 
-      var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Responsable (quién recibe)';
+      var colD=document.createElement('div'); colD.style.cssText='flex:1;min-width:0;';
+      var lblD=document.createElement('span'); lblD.textContent='Responsable';
+      lblD.style.cssText='font-size:.62rem;color:var(--gris4);text-transform:uppercase;letter-spacing:.03em;margin-bottom:3px;display:block;';
+      var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Quién recibe';
       inD.value=e.desc||'';
-      inD.style.cssText='width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;margin-bottom:8px;box-sizing:border-box;';
+      inD.style.cssText='width:100%;padding:7px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;box-sizing:border-box;';
       inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();autoSave();};})(e));
+      colD.appendChild(lblD); colD.appendChild(inD);
 
-      bloque.appendChild(inV); bloque.appendChild(inD);
+      row2.appendChild(colV); row2.appendChild(colD);
+      bloque.appendChild(row2);
 
       if(isAdmin){
         // Check entrega final — exclusivo admin
