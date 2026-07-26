@@ -134,6 +134,13 @@ td input[readonly]{background:#f0f0f0;color:#888;cursor:not-allowed;border-color
 .entry-row input:focus{outline:none;border-color:var(--madera);}
 .btn-remove-entry{background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem;padding:2px 5px;border-radius:3px;flex-shrink:0;}
 .btn-remove-entry:hover{color:var(--rojo);}
+.lock-row{display:flex;align-items:center;gap:8px;background:#eee;border-radius:6px;padding:9px 10px;font-size:.78rem;color:var(--gris4);font-style:italic;}
+.slide-track{position:relative;width:100%;height:48px;background:#e4ede4;border:1.5px solid #bcd6bc;border-radius:24px;overflow:hidden;user-select:none;touch-action:none;}
+.slide-fill{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,#2d6a2d,#3f8f3f);border-radius:24px;width:48px;pointer-events:none;}
+.slide-label{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:#2d6a2d;letter-spacing:.02em;pointer-events:none;}
+.slide-handle{position:absolute;top:3px;left:3px;width:42px;height:42px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:1.1rem;cursor:grab;touch-action:none;}
+.slide-track.confirmed .slide-label{color:#fff;}
+.slide-track.confirmed .slide-handle{cursor:default;}
 .btn-add-entry{background:var(--gris1);border:1.5px dashed var(--gris3);color:var(--gris4);font-size:.75rem;font-weight:600;padding:6px 12px;border-radius:5px;cursor:pointer;width:100%;font-family:'Inter',sans-serif;}
 .btn-add-entry:hover{border-color:var(--madera);color:var(--madera);}
 .entry-total{text-align:right;font-size:.75rem;font-weight:700;color:var(--madera);margin-top:3px;}
@@ -1181,8 +1188,6 @@ function showAdminUI(){
       if(bRes) bRes.style.display='none';
       var bEC=document.getElementById('btnEditCajero');
       if(bEC) bEC.style.display='none';
-      var bE=document.getElementById('btnAddEntrega');
-      if(bE) bE.style.display='none';
 
       var f=document.getElementById('fabAddProd');
       if(f) f.style.display='none';
@@ -2088,18 +2093,14 @@ function renderEntries(tipo){
 
   // ENTREGAS
   var soloLecturaEnt=window._turnoCerrado&&!isAdmin;
-  // Encontrar el índice de la entrega activa (última no confirmada)
-  var activaIdx=-1;
-  for(var ii=arr.length-1;ii>=0;ii--){
-    if(!arr[ii].confirmada){ activaIdx=ii; break; }
-  }
 
   arr.forEach(function(e,i){
     var bloque=document.createElement('div');
     if(e.confirmada){
       bloque.style.cssText='background:var(--madera-suave);border:1.5px dashed var(--gris2);border-radius:10px;padding:12px 14px 11px;margin-bottom:10px;position:relative;box-shadow:0 2px 0 var(--gris2);';
     } else {
-      bloque.style.cssText='background:var(--gris1);border:1.5px solid '+(activaIdx===i?'var(--dorado)':'var(--gris2)')+';border-radius:8px;padding:10px 12px;margin-bottom:8px;';
+      bloque.className='card-pendiente-entrega';
+      bloque.style.cssText='background:var(--gris1);border:1.5px solid var(--gris2);border-radius:8px;padding:10px 12px;margin-bottom:8px;';
     }
 
     if(e.confirmada){
@@ -2113,7 +2114,7 @@ function renderEntries(tipo){
         +(e.esFinal?'<div style="display:inline-flex;align-items:center;gap:3px;margin-top:5px;font-size:.66rem;font-weight:700;color:var(--dorado);background:#FBF0DA;padding:2px 8px;border-radius:20px;">\ud83c\udfc1 Entrega final</div>':'')
         +'</div>'
         +'<span style="flex-shrink:0;font-family:monospace;font-weight:700;font-size:.62rem;color:var(--verde);border:2px solid var(--verde);border-radius:5px;padding:2px 7px;transform:rotate(-6deg);white-space:nowrap;letter-spacing:.04em;">\u2713 SELLADA</span>';
-      if(isSuperAdmin){
+      if(isAdmin){
         var btnS=document.createElement('button'); btnS.className='btn-remove-entry'; btnS.textContent='\u2715';
         btnS.style.marginLeft='4px';
         btnS.addEventListener('click',(function(ii2,btnEl){return function(){
@@ -2128,20 +2129,21 @@ function renderEntries(tipo){
       }
       bloque.appendChild(locked);
 
-    } else if(i===activaIdx && !soloLecturaEnt && isAdmin){
-      // Bloque activo — solo uno visible a la vez (solo editable por admin)
+    } else if(!soloLecturaEnt){
+      // Pendiente — el cajero puede escribir valor y responsable; solo el admin confirma
       var inV=document.createElement('input'); inV.type='number'; inV.placeholder='$ Valor entrega';
       inV.value=e.valor||'';
       inV.style.cssText='width:100%;padding:8px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.9rem;background:#fff;margin-bottom:7px;box-sizing:border-box;';
-      // Guardar el borrador en cada cambio para no perderlo si se recarga la página
       inV.addEventListener('input',(function(entry){return function(){entry.valor=parseFloat(this.value)||0;autoSave();};})(e));
 
-      var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Responsable';
+      var inD=document.createElement('input'); inD.type='text'; inD.placeholder='Responsable (quién recibe)';
       inD.value=e.desc||'';
       inD.style.cssText='width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.84rem;background:#fff;margin-bottom:8px;box-sizing:border-box;';
       inD.addEventListener('input',(function(entry){return function(){entry.desc=this.value.trim();autoSave();};})(e));
 
-      // Check entrega final
+      bloque.appendChild(inV); bloque.appendChild(inD);
+
+      // Check entrega final (cajero y admin pueden marcarlo; solo es informativo)
       var chkRow=document.createElement('div');
       chkRow.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
       var chk=document.createElement('input'); chk.type='checkbox'; chk.checked=!!e.esFinal;
@@ -2149,56 +2151,107 @@ function renderEntries(tipo){
       var chkLbl=document.createElement('label');
       chkLbl.textContent='Marque aquí cuando es la entrega final';
       chkLbl.style.cssText='font-size:.8rem;color:var(--negro);cursor:pointer;flex:1;';
+      chk.addEventListener('change',(function(entry){return function(){entry.esFinal=this.checked;autoSave();};})(e));
       chkLbl.addEventListener('click',function(){chk.checked=!chk.checked;e.esFinal=chk.checked;autoSave();});
       chkRow.appendChild(chk); chkRow.appendChild(chkLbl);
-      bloque.appendChild(inV); bloque.appendChild(inD); bloque.appendChild(chkRow);
+      bloque.appendChild(chkRow);
 
-      // Botón confirmar
-      var btnConf=document.createElement('button');
-      btnConf.textContent='\u2713 Confirmar entrega';
-      btnConf.style.cssText='width:100%;padding:9px;background:#1a4a1a;color:#7dbb7d;border:none;border-radius:6px;font-weight:700;font-size:.88rem;cursor:pointer;';
-      btnConf.addEventListener('click',(function(entry,idx2,inValEl,inDescEl,chkEl,btnEl){return function(){
-        if(btnEl.disabled) return; // evita doble-toque -> doble mensaje de Telegram
-        var val=parseFloat(inValEl.value)||0;
-        if(val<=0){alert('Ingresa un valor para la entrega.');return;}
-        btnEl.disabled=true; btnEl.style.opacity='0.6'; btnEl.textContent='Confirmando...';
-        entry.valor=val;
-        entry.desc=inDescEl.value.trim();
-        entry.esFinal=chkEl.checked;
-        entry.confirmada=true;
-        entry.hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
-        // Si es entrega final, desmarcar las demás
-        if(entry.esFinal) entregas.forEach(function(x,xi){if(xi!==idx2) x.esFinal=false;});
-        entregaFinal=entry.esFinal;
-        recalc(); autoSave();
-        enviarAlertaTelegram(entry,idx2,undefined);
-        setTimeout(function(){renderEntries('entregas');},100);
-      };})(e,i,inV,inD,chk,btnConf));
-      bloque.appendChild(btnConf);
+      if(isAdmin){
+        // Slider "Deslizar para confirmar" — reemplaza el botón de confirmar
+        var track=document.createElement('div'); track.className='slide-track';
+        track.innerHTML='<div class="slide-fill"></div><div class="slide-label">Deslizar para confirmar \u279c</div><div class="slide-handle">\ud83d\udd12</div>';
+        bloque.appendChild(track);
+        setupSliderEntrega(track, e, i);
 
-    } else if(i===activaIdx && !soloLecturaEnt && !isAdmin){
-      // Cajero sin admin: ve que hay una entrega pendiente pero no puede editarla ni confirmarla
-      var pend=document.createElement('div');
-      pend.style.cssText='display:flex;align-items:center;gap:8px;padding:4px 0;';
-      pend.innerHTML='<span style="width:8px;height:8px;border-radius:50%;background:var(--dorado);flex-shrink:0;animation:entPendingDot 1.4s infinite;"></span>'
-        +'<span style="font-size:.8rem;color:var(--gris4);font-style:italic;">Hay una entrega pendiente de confirmar por un administrador.</span>';
-      bloque.appendChild(pend);
+        var btnDelDraft=document.createElement('button'); btnDelDraft.textContent='\u2715 Eliminar';
+        btnDelDraft.style.cssText='width:100%;padding:7px;background:transparent;color:var(--rojo);border:none;font-size:.76rem;cursor:pointer;margin-top:6px;';
+        btnDelDraft.addEventListener('click',(function(ii2){return function(){
+          entregas.splice(ii2,1); renderEntries('entregas'); autoSave();
+        };})(i));
+        bloque.appendChild(btnDelDraft);
+      } else {
+        var lock=document.createElement('div'); lock.className='lock-row';
+        lock.innerHTML='\ud83d\udd12 Pendiente de confirmar por un administrador.';
+        bloque.appendChild(lock);
+      }
     } else {
-      // Entrega pendiente no activa — no mostrar
+      // Turno cerrado y no admin: no se muestran pendientes (no debería quedar ninguna)
       return;
     }
     container.appendChild(bloque);
   });
 
-  // Botón + agregar: solo si no hay bloque activo y no es turno cerrado
+  // Botón + agregar: cajero y admin pueden agregar, mientras el turno no esté cerrado
   var btnAdd=document.getElementById('btnAddEntrega');
   if(btnAdd){
-    var hayActiva=activaIdx!==-1;
-    btnAdd.style.display=(!hayActiva&&isAdmin&&!window._turnoCerrado)?'block':'none';
+    btnAdd.style.display=(!window._turnoCerrado)?'block':'none';
+    btnAdd.textContent=arr.length?'+ Agregar otra entrega':'+ Agregar entrega';
   }
 
   var tot=document.getElementById('entregaTotal');
-  if(tot) tot.textContent='Total entregado: '+fmt(arr.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0));
+  if(tot){
+    if(isAdmin){
+      tot.textContent='Total entregado: '+fmt(arr.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0));
+    } else {
+      tot.textContent='Total entregado: — (oculto, solo lo ve el admin)';
+    }
+  }
+}
+
+function setupSliderEntrega(track, entry, idx){
+  var handle=track.querySelector('.slide-handle');
+  var fill=track.querySelector('.slide-fill');
+  var label=track.querySelector('.slide-label');
+  var dragging=false, startX=0, maxX=0, currentX=0;
+
+  function trackWidth(){ return track.offsetWidth; }
+  function handleWidth(){ return handle.offsetWidth; }
+  function setPos(x){
+    currentX=Math.max(0, Math.min(x, maxX));
+    handle.style.left=(3+currentX)+'px';
+    fill.style.width=(handleWidth()+6+currentX)+'px';
+  }
+  function onDown(clientX){
+    if(track.classList.contains('confirmed')) return;
+    dragging=true; startX=clientX-currentX; handle.style.cursor='grabbing';
+  }
+  function onMove(clientX){
+    if(!dragging) return;
+    maxX=trackWidth()-handleWidth()-6;
+    setPos(clientX-startX);
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging=false; handle.style.cursor='grab';
+    maxX=trackWidth()-handleWidth()-6;
+    if(currentX>=maxX*0.82){
+      if((entry.valor||0)<=0){
+        setPos(0);
+        alert('Ingresa un valor para la entrega antes de confirmar.');
+        return;
+      }
+      setPos(maxX);
+      track.classList.add('confirmed');
+      handle.textContent='\u2713';
+      label.textContent='Entrega confirmada';
+      entry.valor=parseFloat(entry.valor)||0;
+      entry.confirmada=true;
+      entry.hora=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'});
+      if(entry.esFinal) entregas.forEach(function(x,xi){if(xi!==idx) x.esFinal=false;});
+      entregaFinal=entry.esFinal;
+      recalc(); autoSave();
+      enviarAlertaTelegram(entry, idx, undefined);
+      setTimeout(function(){renderEntries('entregas');},550);
+    } else {
+      setPos(0);
+    }
+  }
+  handle.addEventListener('mousedown',function(ev){onDown(ev.clientX);});
+  window.addEventListener('mousemove',function(ev){onMove(ev.clientX);});
+  window.addEventListener('mouseup',onUp);
+  handle.addEventListener('touchstart',function(ev){onDown(ev.touches[0].clientX);},{passive:true});
+  window.addEventListener('touchmove',function(ev){if(dragging){onMove(ev.touches[0].clientX);}},{passive:true});
+  window.addEventListener('touchend',onUp);
 }
 
 function renderAllEntries(){ renderEntries('gastos'); renderEntries('entregas'); }
