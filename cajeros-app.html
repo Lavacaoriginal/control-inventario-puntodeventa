@@ -160,6 +160,22 @@ td input[readonly]{background:#f0f0f0;color:#888;cursor:not-allowed;border-color
 .btn-admin{background:#1a1a3a;color:#7a9fd4;}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center;padding:14px;}
 .overlay.open{display:flex;}
+.cierreOverlay{position:fixed;inset:0;background:rgba(20,14,8,.78);display:none;align-items:center;justify-content:center;z-index:1200;padding:20px;}
+.cierreOverlay.show{display:flex;}
+.cierreCard{background:#fff;border-radius:16px;padding:28px 24px;max-width:300px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.35);}
+.cierreSpinner{width:52px;height:52px;border:4px solid var(--gris1);border-top-color:var(--dorado);border-radius:50%;margin:0 auto 16px;animation:cierreSpin 0.8s linear infinite;}
+@keyframes cierreSpin{to{transform:rotate(360deg);}}
+.cierreTitulo{font-size:1.02rem;font-weight:700;color:var(--madera2);margin-bottom:4px;}
+.cierreSubtitulo{font-size:.76rem;color:var(--gris4);margin-bottom:16px;}
+.cierreSteps{text-align:left;font-size:.78rem;}
+.cierreStep{display:flex;align-items:center;gap:8px;padding:5px 0;color:var(--gris4);transition:color .3s;}
+.cierreStep.active{color:var(--negro);font-weight:600;}
+.cierreStep.done{color:var(--verde);font-weight:600;}
+.cierreStep .cierreDot{width:16px;height:16px;border-radius:50%;border:2px solid var(--gris4);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .3s;}
+.cierreStep.active .cierreDot{border-color:var(--dorado);}
+.cierreStep.done .cierreDot{border-color:var(--verde);background:var(--verde);color:#fff;}
+.cierreCheckAnim{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:var(--verde);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;animation:cierrePopIn .4s ease;}
+@keyframes cierrePopIn{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
 .modal{background:var(--blanco);border-radius:12px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.3);position:relative;}
 .modal-sm{max-width:380px;}
 .modal-x{position:absolute;top:12px;right:14px;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gris4);}
@@ -743,6 +759,10 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </div>
 </div>
 
+<div class="cierreOverlay" id="cierreOverlay">
+  <div class="cierreCard" id="cierreCardContent"></div>
+</div>
+
 <div class="overlay" id="welcomeModal">
   <div class="modal modal-sm" style="text-align:center;">
     <div style="font-size:2.2rem;margin-bottom:4px;">👋</div>
@@ -865,6 +885,31 @@ function enviarAlertaDigital(tipo, valor, valorAnterior){
     +(esEdicion?'\uD83D\uDD04 Anterior: $'+valorAnterior.toLocaleString('es-CO')+' \u2192 *$'+valor.toLocaleString('es-CO')+'*':'\uD83D\uDCB5 Valor: *$'+valor.toLocaleString('es-CO')+'*');
   tgEnviar(msg);
 }
+function cierreStepsHtml(active){
+  var steps=['Guardando el cierre','Enviando resumen a Telegram','Listo'];
+  return '<div class="cierreSteps">'+steps.map(function(s,i){
+    var cls=i<active?'done':(i===active?'active':'');
+    var dot=i<active?'\u2713':'';
+    return '<div class="cierreStep '+cls+'"><span class="cierreDot">'+dot+'</span><span>'+s+'</span></div>';
+  }).join('')+'</div>';
+}
+function mostrarOverlayCierre(pasoActivo){
+  var ov=document.getElementById('cierreOverlay');
+  var card=document.getElementById('cierreCardContent');
+  if(!ov||!card) return;
+  card.innerHTML='<div class="cierreSpinner"></div><div class="cierreTitulo">Cerrando turno...</div><div class="cierreSubtitulo">No cierres ni recargues la app</div>'+cierreStepsHtml(pasoActivo);
+  ov.classList.add('show');
+}
+function mostrarExitoCierre(){
+  var card=document.getElementById('cierreCardContent');
+  if(!card) return;
+  card.innerHTML='<div class="cierreCheckAnim">\u2713</div><div class="cierreTitulo" style="color:var(--verde);">Turno cerrado correctamente</div><div class="cierreSubtitulo">Redirigiendo al inicio...</div>';
+}
+function ocultarOverlayCierre(){
+  var ov=document.getElementById('cierreOverlay');
+  if(ov) ov.classList.remove('show');
+}
+
 function enviarResumenCierre(){
   if(!sesion) return;
   var rappiTotal=invRows.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
@@ -2608,6 +2653,25 @@ function abrirCierre(){
     alert('❌ No se puede cerrar el turno.\n\nFaltan inventarios finales en:\n\n'+lista2+'\n\nDebes contar y registrar el inventario final de todos los productos con movimiento.');
     return;
   }
+  // Validar Datáfono/Transferencia: si tienen valor, deben estar confirmados por un admin
+  var datVal=parseFloat(document.getElementById('inDatafono')?document.getElementById('inDatafono').value:0)||0;
+  var traVal=parseFloat(document.getElementById('inTransferencia')?document.getElementById('inTransferencia').value:0)||0;
+  var datConf=(function(){var c=document.getElementById('chkConfDatafono');return c?c.checked:false;})();
+  var traConf=(function(){var c=document.getElementById('chkConfTransferencia');return c?c.checked:false;})();
+  var sinConfirmarDigital=[];
+  if(datVal>0 && !datConf) sinConfirmarDigital.push('• Datáfono: '+fmt(datVal));
+  if(traVal>0 && !traConf) sinConfirmarDigital.push('• Transferencia: '+fmt(traVal));
+  if(sinConfirmarDigital.length){
+    alert('❌ No se puede cerrar el turno.\n\nEstos valores tienen dinero pero no han sido confirmados:\n\n'+sinConfirmarDigital.join('\n')+'\n\nUn administrador debe confirmarlos, o dejarlos en $0 si no aplicaron.');
+    return;
+  }
+  // Validar entregas pendientes sin confirmar (aparte de exigir al menos una confirmada, más abajo)
+  var entregasPendientes=entregas.filter(function(e){return !e.confirmada && (e.valor||0)>0;});
+  if(entregasPendientes.length){
+    var listaEntPend=entregasPendientes.map(function(e){return '• '+(e.desc||'Sin responsable')+': '+fmt(e.valor);}).join('\n');
+    alert('❌ No se puede cerrar el turno.\n\nHay entregas de dinero registradas que aún no han sido confirmadas:\n\n'+listaEntPend+'\n\nUn administrador debe confirmarlas antes de cerrar.');
+    return;
+  }
   // Validar entregas — aplica a todos los roles, sin excepcion
   var ent=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   if(!entregas.length || ent<=0){
@@ -2833,6 +2897,7 @@ function confirmarCierre(){
   }
   document.getElementById('cierreModal').classList.remove('open');
   setSyncStatus('sync','⟳ Cerrando...');
+  mostrarOverlayCierre(0);
   // Bloquear guardar() y autoSave durante el cierre
   _cerrando=true;
   var btnConfirmarEl=document.getElementById('btnConfirmar');
@@ -2862,18 +2927,26 @@ function confirmarCierre(){
     entrega_final:entregaFinal||entregas.some(function(e){return e.confirmada&&e.esFinal;}),
     cerrado:true,updated_at:new Date().toISOString()
   };
+  mostrarOverlayCierre(1);
   enviarResumenCierre();
   sbUpsert('turnos_caja',payload).then(function(){
     setSyncStatus('ok','✓ Cerrado');
+    mostrarOverlayCierre(2);
     // Liberar el bloqueo ANTES de llamar salir(): si el admin cancela el diálogo
     // "¿Salir?" (por ejemplo porque quiere seguir gestionando otro turno), el botón
     // de Confirmar cierre no debe quedar atascado para el próximo cierre.
     _cerrando=false;
     if(btnConfirmarEl){btnConfirmarEl.disabled=false; btnConfirmarEl.style.opacity='';}
-    alert('✅ Turno cerrado correctamente.');
-    salir();
+    setTimeout(function(){
+      mostrarExitoCierre();
+      setTimeout(function(){
+        ocultarOverlayCierre();
+        salir();
+      },1400);
+    },350);
   }).catch(function(e){
     // Si falló, revertir el estado local
+    ocultarOverlayCierre();
     window._turnoCerrado=false;
     _cerrando=false;
     var btnConfirmarEl2=document.getElementById('btnConfirmar');
