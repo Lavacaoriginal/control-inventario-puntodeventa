@@ -3881,10 +3881,9 @@ function calcEditTotales(){
   var dat=parseFloat(document.getElementById('editDatafono')?document.getElementById('editDatafono').value:0)||0;
   var tra=parseFloat(document.getElementById('editTransferencia')?document.getElementById('editTransferencia').value:0)||0;
   var desc=parseFloat(document.getElementById('editDescuentos')?document.getElementById('editDescuentos').value:0)||0;
-  // Si no es superadmin, las entregas no pudieron modificarse en la UI,
-  // pero por seguridad se vuelve a calcular igual sobre la lista actual
-  var ent=(turnoEditando.entregas_list||[]).reduce(function(s,e){return s+(e.valor||0);},0);
-  var ef=tv-gas-dat-tra-rappiTotal-desc;
+  // Solo se cuentan las entregas ya CONFIRMADAS por un admin, igual que en el resto del sistema.
+  // Las pendientes (sin confirmar) no cuentan como dinero entregado.
+  var ent=(turnoEditando.entregas_list||[]).filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   var dif=ent-ef;
   var difTxt=dif===0?'✔ Cuadra':dif<0?'Falta '+fmt(Math.abs(dif)):'Sobran '+fmt(dif);
   var difCol=dif===0?'#2d6a2d':dif<0?'#b02020':'#7a4a00';
@@ -4115,6 +4114,12 @@ function renderEditEntradas(container, arr, field, onChange){
       btnDel.addEventListener('click',(function(a,idx,c,f,cb){return function(){a.splice(idx,1);renderEditEntradas(c,a,f,cb);if(cb)cb();};})(arr,i,container,field,onChange));
     }
     row.appendChild(inDesc); row.appendChild(inVal); row.appendChild(btnDel);
+    if(field==='entregas_list'&&!e.confirmada){
+      var pend=document.createElement('span');
+      pend.style.cssText='font-size:.62rem;color:#b02020;font-weight:700;margin-left:4px;white-space:nowrap;';
+      pend.textContent='⏳ Sin confirmar (no cuenta en el total)';
+      row.appendChild(pend);
+    }
     if(field==='entregas_list'&&e.hora){
       var h=document.createElement('span');h.style.cssText='font-size:.65rem;color:var(--gris4);margin-left:4px;';h.textContent='⏱'+e.hora;
       row.appendChild(h);
@@ -4157,9 +4162,8 @@ function guardarEdicionTurno(){
   var tv=snap.reduce(function(s,r){return s+(r.total_venta||0);},0);
   var rap=snap.reduce(function(s,r){return s+(r.rappi_venta||0);},0);
   var gas=(turnoEditando.gastos_list||[]).reduce(function(s,e){return s+(e.valor||0);},0);
-  // Si no es superadmin, las entregas no pudieron modificarse en la UI,
-  // pero por seguridad se vuelve a calcular igual sobre la lista actual
-  var ent=(turnoEditando.entregas_list||[]).reduce(function(s,e){return s+(e.valor||0);},0);
+  // Solo se cuentan las entregas ya CONFIRMADAS por un admin (igual que calcEditTotales y el resto del sistema)
+  var ent=(turnoEditando.entregas_list||[]).filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   // Calcular entrega_final: true si hay alguna entrega marcada como final, o si el checkbox está marcado
   var editEntregaFinalChk=document.getElementById('editEntregaFinal');
   var editEntregaFinal=(editEntregaFinalChk&&editEntregaFinalChk.checked)
