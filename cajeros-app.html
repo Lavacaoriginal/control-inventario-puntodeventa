@@ -945,8 +945,9 @@ function enviarResumenCierre(){
   tgEnviar(msg);
 }
 var PASS_ADMIN = 'j150884';
-var PASS_ADMIN2 = 'AdminLVO26';
+var PASS_ADMIN2 = 'controlilvo1';
 var PASS_SUPER = 'Super150884';
+var PASS_SUPER2 = 'PMadminlvo';
 
 function mostrarBienvenidaCajero(nombre, pN, tN){
   var tit=document.getElementById('welcomeTitulo');
@@ -983,8 +984,8 @@ document.getElementById('inClaveModal').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ e.preventDefault(); document.getElementById('btnClaveOk').click(); }
 });
 
-function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER; }
-function esSuperAdmin(clave){ return clave===PASS_SUPER; }
+function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER||clave===PASS_SUPER2; }
+function esSuperAdmin(clave){ return clave===PASS_SUPER||clave===PASS_SUPER2; }
 var sesion = null;
 
 // Grupos de precio: 'abc' = Autopista/Boquia/Tebaida, 'kpp' = KM25/KM18/Peñón/Colseguros
