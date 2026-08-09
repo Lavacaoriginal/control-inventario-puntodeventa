@@ -944,10 +944,27 @@ function enviarResumenCierre(){
     })();
   tgEnviar(msg);
 }
-var PASS_ADMIN = 'j150884';
-var PASS_ADMIN2 = 'controlilvo1';
-var PASS_SUPER = 'Super150884';
-var PASS_SUPER2 = 'PMadminlvo';
+// Claves de acceso — ofuscadas (partidas + base64) para que no aparezcan en texto plano
+// al ver el código fuente. Esto dificulta el acceso casual, no es cifrado real.
+var _q1='THZvcW',_q2='NjMQ==';
+var PASS_ADMIN_QUINDIO = atob(_q1+_q2);           // admin regional Quindío
+var _v1='THZvdmFs',_v2='bGVjYw==';
+var PASS_ADMIN_VALLE = atob(_v1+_v2);             // admin regional Valle
+var _sq1='U3VwZX',_sq2='JMVk9R';
+var PASS_SUPER = atob(_sq1+_sq2);                 // superadmin (acceso total) #1
+var _sv1='U3VwZX',_sv2='JMVk9W';
+var PASS_SUPER2 = atob(_sv1+_sv2);                // superadmin (acceso total) #2
+var REGION_PUNTOS = {
+  quindio: ['autopista','boquia','tebaida'],
+  valle: ['km25','km25_pan','km18','penon','colseguros']
+};
+var adminRegion = null; // null = acceso total; 'quindio' | 'valle' = restringido a esa zona
+function regionDeClave(clave){
+  if(clave===PASS_ADMIN_QUINDIO) return 'quindio';
+  if(clave===PASS_ADMIN_VALLE) return 'valle';
+  return null;
+}
+function nombreRegion(r){ return r==='valle'?'Valle':(r==='quindio'?'Quindío':''); }
 
 function mostrarBienvenidaCajero(nombre, pN, tN){
   var tit=document.getElementById('welcomeTitulo');
@@ -984,7 +1001,7 @@ document.getElementById('inClaveModal').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ e.preventDefault(); document.getElementById('btnClaveOk').click(); }
 });
 
-function esAdmin(clave){ return clave===PASS_ADMIN||clave===PASS_ADMIN2||clave===PASS_SUPER||clave===PASS_SUPER2; }
+function esAdmin(clave){ return clave===PASS_SUPER||clave===PASS_SUPER2||clave===PASS_ADMIN_QUINDIO||clave===PASS_ADMIN_VALLE; }
 function esSuperAdmin(clave){ return clave===PASS_SUPER||clave===PASS_SUPER2; }
 var sesion = null;
 
@@ -1047,6 +1064,13 @@ document.getElementById('btnEntrar').addEventListener('click', function(){ entra
 document.getElementById('btnAdminLogin').addEventListener('click', async function(){
   var v=await promptClave('🔒 Clave de administrador');
   if(esAdmin(v)){
+    var region=regionDeClave(v);
+    var puntoSel=document.getElementById('selPunto').value;
+    if(region && puntoSel && REGION_PUNTOS[region].indexOf(puntoSel)===-1){
+      alert('🔒 Esta clave de admin solo tiene acceso a los puntos de '+nombreRegion(region)+'.');
+      return;
+    }
+    adminRegion=region;
     if(esSuperAdmin(v)) isSuperAdmin=true;
     entrar(true);
   }
@@ -1058,7 +1082,7 @@ document.getElementById('btnAdminApp').addEventListener('click', async function(
     // Si ya es admin pero no superadmin, dar la opcion de subir de nivel
     if(!isSuperAdmin){
       var vUp=await promptClave('Ya tienes acceso de Admin. Para SUPERADMIN escribe la clave (o cancela para continuar como Admin)');
-      if(vUp&&esSuperAdmin(vUp)) isSuperAdmin=true;
+      if(vUp&&esSuperAdmin(vUp)){isSuperAdmin=true; adminRegion=null;}
       else if(vUp&&!esSuperAdmin(vUp)) alert('Clave incorrecta. Continuas como Admin normal.');
     }
     openAdmin();
@@ -1066,7 +1090,12 @@ document.getElementById('btnAdminApp').addEventListener('click', async function(
   }
   var v=await promptClave('🔒 Clave de administrador');
   if(esAdmin(v)){
-    isAdmin=true; isSuperAdmin=esSuperAdmin(v);
+    var region2=regionDeClave(v);
+    if(region2 && sesion && sesion.punto && REGION_PUNTOS[region2].indexOf(sesion.punto)===-1){
+      alert('🔒 Esta clave de admin solo tiene acceso a los puntos de '+nombreRegion(region2)+'.\n\nEste turno pertenece a otra zona.');
+      return;
+    }
+    isAdmin=true; isSuperAdmin=esSuperAdmin(v); adminRegion=region2;
     showAdminUI(); openAdmin();
   }
   else if(v!==null) alert('Clave incorrecta.');
@@ -1211,6 +1240,7 @@ function showAdminUI(){
       clearInterval(adminTimer);
       isAdmin=false;
       isSuperAdmin=false;
+      adminRegion=null;
       var b=document.getElementById('adminBadge');
       if(b){b.style.display='none'; b.textContent='🔑 Admin';}
       var bH=document.getElementById('btnHistorial');
@@ -1306,7 +1336,13 @@ async function entrar(admin){
   if(cajeroVal==='ADM|ADMINISTRADOR'){
     var clave=await promptClave('🔒 Clave de administrador');
     if(!esAdmin(clave)){if(clave!==null)alert('Clave incorrecta.');return;}
+    var region=regionDeClave(clave);
+    if(region && REGION_PUNTOS[region].indexOf(punto)===-1){
+      alert('🔒 Esta clave de admin solo tiene acceso a los puntos de '+nombreRegion(region)+'.');
+      return;
+    }
     admin=true;
+    adminRegion=region;
     if(esSuperAdmin(clave)) isSuperAdmin=true;
   }
   sesion={punto:punto,turno:turno,cajero:cajero,cajeroAux:cajeroAux,fecha:fecha};
@@ -1334,7 +1370,7 @@ function salir(){
   clearTimeout(saveTimer);
 
   function limpiarUI(){
-    sesion=null; isAdmin=false; isSuperAdmin=false; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false;
+    sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false;
     clearInterval(adminTimer);
     clearInterval(syncCheckTimer);
     clearTimeout(saveTimer);
@@ -2437,7 +2473,12 @@ async function openAdmin(){
   if(!isAdmin){
     var v=await promptClave('🔒 Clave de administrador');
     if(!esAdmin(v)){if(v!==null)alert('Clave incorrecta.');return;}
-    isAdmin=true; showAdminUI();
+    var regionOA=regionDeClave(v);
+    if(regionOA && sesion && sesion.punto && REGION_PUNTOS[regionOA].indexOf(sesion.punto)===-1){
+      alert('🔒 Esta clave de admin solo tiene acceso a los puntos de '+nombreRegion(regionOA)+'.\n\nEste turno pertenece a otra zona.');
+      return;
+    }
+    isAdmin=true; isSuperAdmin=esSuperAdmin(v); adminRegion=regionOA; showAdminUI();
     // Desbloquear campos que pudieron quedar bloqueados por sesión de cajero
     var inDat=document.getElementById('inDatafono'); if(inDat){inDat.readOnly=false;inDat.style.background='';}
     var inTra=document.getElementById('inTransferencia'); if(inTra){inTra.readOnly=false;inTra.style.background='';}
@@ -3763,9 +3804,24 @@ function abrirHistorial(){
   document.getElementById('histFecha').value=hoy;
   var desdeEl=document.getElementById('histDesde');
   if(desdeEl) desdeEl.value=hoy;
-  // Pre-seleccionar el punto del turno actual para que el historial venga filtrado
   var puntoEl=document.getElementById('histPunto');
-  if(puntoEl&&sesion&&sesion.punto) puntoEl.value=sesion.punto;
+  if(puntoEl){
+    // Admin regional: ocultar "Todos" y los puntos de la otra zona — no puede ver otro historial
+    Array.prototype.forEach.call(puntoEl.options,function(opt){
+      if(adminRegion){
+        opt.hidden=(opt.value===''||REGION_PUNTOS[adminRegion].indexOf(opt.value)===-1);
+        opt.disabled=opt.hidden;
+      } else {
+        opt.hidden=false; opt.disabled=false;
+      }
+    });
+    // Pre-seleccionar el punto del turno actual (o el primero permitido) para que el historial venga filtrado
+    if(sesion&&sesion.punto&&(!adminRegion||REGION_PUNTOS[adminRegion].indexOf(sesion.punto)!==-1)){
+      puntoEl.value=sesion.punto;
+    } else if(adminRegion){
+      puntoEl.value=REGION_PUNTOS[adminRegion][0];
+    }
+  }
   document.getElementById('histResultados').innerHTML='';
   document.getElementById('historialModal').classList.add('open');
 }
@@ -3776,10 +3832,22 @@ function buscarHistorial(){
   if(!hasta){alert('Selecciona una fecha.');return;}
   var puntoEl=document.getElementById('histPunto');
   var puntoFiltro=puntoEl?puntoEl.value:'';
+  // Defensa adicional: un admin regional nunca puede consultar fuera de su zona,
+  // sin importar lo que diga el select en pantalla.
+  var filtroExtra='';
+  if(adminRegion){
+    if(puntoFiltro && REGION_PUNTOS[adminRegion].indexOf(puntoFiltro)===-1){
+      alert('🔒 No tienes acceso al historial de ese punto.');
+      return;
+    }
+    if(!puntoFiltro){
+      filtroExtra='&punto=in.('+REGION_PUNTOS[adminRegion].join(',')+')';
+    }
+  }
   var res=document.getElementById('histResultados');
   res.innerHTML='<p style="color:var(--gris4);font-size:.8rem;">Buscando...</p>';
   var q='fecha=gte.'+desde+'&fecha=lte.'+hasta+'&cerrado=eq.true&or=(eliminado.eq.false,eliminado.is.null)'
-    +(puntoFiltro?'&punto=eq.'+puntoFiltro:'')
+    +(puntoFiltro?'&punto=eq.'+puntoFiltro:'')+filtroExtra
     +'&order=fecha.desc,punto.asc,turno.asc';
   sbGet('turnos_caja',q)
     .then(function(turnos){
