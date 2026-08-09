@@ -31,9 +31,9 @@ body{font-family:'Inter',sans-serif;background:var(--gris1);color:var(--negro);m
 .manchasVaca span:nth-child(5){width:160px;height:100px;bottom:-15px;left:12%;border-radius:45% 55% 60% 40% / 60% 40% 60% 40%;transform:rotate(6deg);}
 .manchasVaca span:nth-child(6){width:150px;height:190px;bottom:-30px;right:-30px;border-radius:55% 45% 40% 60% / 45% 60% 40% 55%;transform:rotate(-18deg);}
 /* Marca de agua del logo — colocada dentro de cada pantalla para que no quede tapada por su fondo */
-.logoWatermark{position:absolute;inset:0;pointer-events:none;z-index:0;
-  background-repeat:no-repeat;background-position:center 42%;background-size:280px auto;
-  opacity:.10;filter:grayscale(1) brightness(1.6);}
+.logoWatermark{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-repeat:no-repeat;background-position:center 38%;background-size:320px auto;
+  opacity:.16;filter:grayscale(1) contrast(1.3);}
 #loginScreen,#appScreen{position:relative;}
 #loginScreen .login-card,#appScreen header,#appScreen .main{position:relative;z-index:1;}
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--negro);padding:20px;}
