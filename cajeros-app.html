@@ -20,7 +20,32 @@
 --terracota:#B5432E; --morado:#6B4FA0; --dorado:#C9973B; --tinta-verde:#1F4D28;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Inter',sans-serif;background:var(--gris1);color:var(--negro);min-height:100vh;}
+body{font-family:'Inter',sans-serif;background:var(--gris1);color:var(--negro);min-height:100vh;position:relative;}
+/* Manchas negras estilo vaca — muy sutiles, en zonas vacías de fondo */
+body::before{
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.05;
+  background-image:
+    radial-gradient(ellipse 120px 80px at 8% 12%, #000 40%, transparent 41%),
+    radial-gradient(ellipse 90px 130px at 92% 8%, #000 40%, transparent 41%),
+    radial-gradient(ellipse 140px 90px at 85% 55%, #000 40%, transparent 41%),
+    radial-gradient(ellipse 80px 80px at 5% 60%, #000 40%, transparent 41%),
+    radial-gradient(ellipse 110px 70px at 20% 92%, #000 40%, transparent 41%),
+    radial-gradient(ellipse 100px 140px at 95% 90%, #000 40%, transparent 41%);
+  background-repeat:no-repeat;
+}
+/* Marca de agua del logo de la vaca — se rellena por JS con el mismo logo ya usado */
+#bgWatermark{
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  opacity:.04;
+  background-repeat:no-repeat;
+  background-position:center 45%;
+  background-size:340px auto;
+  filter:grayscale(1);
+}
+/* Asegurar que el contenido de la app quede sobre las capas de fondo */
+#loginScreen,#appScreen{position:relative; z-index:1;}
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--negro);padding:20px;}
 .login-card{background:var(--blanco);border-radius:14px;padding:32px 28px;max-width:420px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.4);}
 .login-logo{text-align:center;margin-bottom:24px;}
@@ -104,12 +129,15 @@ td input[readonly]{background:#f0f0f0;color:#888;cursor:not-allowed;border-color
 
 /* ==== Tarjetas de método de pago (rediseño) ==== */
 .payGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-.payChip{background:var(--madera-suave);border:1.5px solid var(--gris2);border-radius:12px;padding:11px 12px 10px;}
+.payChip{background:var(--madera-suave);border:1.5px solid var(--gris2);border-radius:12px;padding:11px 12px 10px;position:relative;box-shadow:0 3px 10px rgba(90,51,16,.10);transition:box-shadow .2s;}
 .payChip .payIco{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:7px;}
 .payIco.ico-datafono{background:#E7EFEA;color:var(--verde);}
 .payIco.ico-transfer{background:#EAE2F3;color:var(--morado);}
 .payChip label{font-size:.64rem;text-transform:uppercase;letter-spacing:.03em;color:var(--gris4);display:block;margin-bottom:4px;font-weight:600;}
-.payChip input[type=number]{width:100%;padding:6px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:.92rem;font-weight:700;font-family:monospace;background:#fff;text-align:right;box-sizing:border-box;}
+.payChip input[type=number]{width:100%;padding:6px 8px;border:1.5px solid var(--gris2);border-radius:6px;font-size:1.15rem;font-weight:700;font-family:'JetBrains Mono',monospace;background:#fff;text-align:right;box-sizing:border-box;}
+.payStatusPill{position:absolute;top:9px;right:10px;font-size:.58rem;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.payStatusPill.ok{background:#dff0df;color:var(--verde);}
+.payStatusPill.pend{background:#fbecc8;color:#8a6414;}
 .payToggleRow{display:flex;align-items:center;justify-content:space-between;margin-top:8px;}
 .payToggleRow span{font-size:.64rem;color:var(--gris4);}
 .toggleSwitch{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
@@ -344,6 +372,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       </div>
       <div class="payGrid">
         <div class="payChip">
+          <span class="payStatusPill pend" id="pillDatafono">⏳ Pendiente</span>
           <div class="payIco ico-datafono">💳</div>
           <label>Datáfono</label>
           <input type="number" id="inDatafono" min="0" placeholder="0" oninput="recalc();autoSave();">
@@ -356,6 +385,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           </div>
         </div>
         <div class="payChip">
+          <span class="payStatusPill pend" id="pillTransferencia">⏳ Pendiente</span>
           <div class="payIco ico-transfer">📲</div>
           <label>Transferencia</label>
           <input type="number" id="inTransferencia" min="0" placeholder="0" oninput="recalc();autoSave();">
@@ -762,6 +792,8 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </div>
 </div>
 
+<div id="bgWatermark"></div>
+
 <div class="cierreOverlay" id="cierreOverlay">
   <div class="cierreCard" id="cierreCardContent"></div>
 </div>
@@ -846,6 +878,18 @@ function enviarAlertaEliminacion(entrega){
     +(entrega.desc?'\uD83D\uDCCB Era de: '+entrega.desc:'');
   tgEnviar(msg);
 }
+function actualizarPillDigital(tipo, confirmado){
+  var pill=document.getElementById('pill'+tipo);
+  if(!pill) return;
+  if(confirmado){
+    pill.className='payStatusPill ok';
+    pill.textContent='✓ Confirmado';
+  } else {
+    pill.className='payStatusPill pend';
+    pill.textContent='⏳ Pendiente';
+  }
+}
+
 function confirmarDigital(tipo, chkEl){
   // Exclusivo admin: el cajero puede digitar el valor pero no confirmarlo.
   if(!isAdmin){
@@ -869,12 +913,14 @@ function confirmarDigital(tipo, chkEl){
     chkEl.disabled=!isAdmin;
     autoSave();
     enviarAlertaDigital(tipo, val, undefined);
+    actualizarPillDigital(tipo==='datafono'?'Datafono':'Transferencia', true);
   } else {
     // Desmarcar (solo admin puede llegar aquí): desbloquear
     input.readOnly=false;
     input.style.background='';input.style.color='';input.style.fontWeight='';
     chkEl.disabled=!isAdmin;
     autoSave();
+    actualizarPillDigital(tipo==='datafono'?'Datafono':'Transferencia', false);
   }
 }
 
@@ -1000,6 +1046,15 @@ document.getElementById('btnClaveCancelar').addEventListener('click', function()
 document.getElementById('inClaveModal').addEventListener('keydown', function(e){
   if(e.key==='Enter'){ e.preventDefault(); document.getElementById('btnClaveOk').click(); }
 });
+
+(function(){
+  // Marca de agua: reutiliza el logo que ya está en el DOM (#logoImgMain), sin duplicar la imagen en el código
+  var logo=document.getElementById('logoImgMain');
+  var wm=document.getElementById('bgWatermark');
+  if(logo && wm){
+    wm.style.backgroundImage="url('"+logo.getAttribute('src')+"')";
+  }
+})();
 
 function esAdmin(clave){ return clave===PASS_SUPER||clave===PASS_SUPER2||clave===PASS_ADMIN_QUINDIO||clave===PASS_ADMIN_VALLE; }
 function esSuperAdmin(clave){ return clave===PASS_SUPER||clave===PASS_SUPER2; }
@@ -1654,6 +1709,7 @@ function cargarInventario(){
                 dEl.readOnly=false;dEl.style.background='';dEl.style.color='';dEl.style.fontWeight='';
                 if(chkD){chkD.checked=false;chkD.disabled=!isAdmin;}
               }
+              actualizarPillDigital('Datafono',datConfirmado);
             }
             if(tEl){
               tEl.value=saved.transferencia_val||'';
@@ -1665,6 +1721,7 @@ function cargarInventario(){
                 tEl.readOnly=false;tEl.style.background='';tEl.style.color='';tEl.style.fontWeight='';
                 if(chkT){chkT.checked=false;chkT.disabled=!isAdmin;}
               }
+              actualizarPillDigital('Transferencia',traConfirmado);
             }
             var descEl=document.getElementById('inDescuentos'); if(descEl){ descEl.value=saved.descuentos_val||'';}
             recalc();
