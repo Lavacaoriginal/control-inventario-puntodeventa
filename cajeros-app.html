@@ -3862,6 +3862,7 @@ function abrirHistorial(){
   document.getElementById('historialModal').classList.add('open');
 }
 
+var histTurnosMap={}; // se reasigna en cada búsqueda; el listener de clic (registrado una sola vez) siempre lee esta misma referencia
 function buscarHistorial(){
   var hasta=document.getElementById('histFecha').value;
   var desde=document.getElementById('histDesde')?document.getElementById('histDesde').value||hasta:hasta;
@@ -3902,7 +3903,8 @@ function buscarHistorial(){
         porFecha[t.fecha].push(t);
       });
 
-      var turnosMap={};
+      var turnosMap=histTurnosMap; // alias local por comodidad, misma referencia global
+      Object.keys(turnosMap).forEach(function(k){delete turnosMap[k];}); // limpiar sin perder la referencia (el listener sigue apuntando al mismo objeto)
       Object.keys(porFecha).sort().reverse().forEach(function(fecha){
         // Encabezado fecha
         var fechaHdr=document.createElement('div');
@@ -3963,17 +3965,22 @@ function buscarHistorial(){
         });
       });
 
-      // Delegación de eventos para los botones del historial
-      res.addEventListener('click',function(e){
-        var btnEdit=e.target.closest('.btn-editar-hist');
-        var btnExcel=e.target.closest('.btn-excel-hist');
-        var btnPrint=e.target.closest('.btn-print-hist');
-        var btnDel=e.target.closest('.btn-del-hist');
-        if(btnEdit){var t=turnosMap[btnEdit.dataset.key];if(t)abrirEditarTurno(t);}
-        if(btnExcel){exportarTurnoExcel(btnExcel.dataset.key);}
-        if(btnPrint){var tp=turnosMap[btnPrint.dataset.key];if(tp)imprimirTurnoHistorial(tp);}
-        if(btnDel){var cardEl=btnDel.closest('div[data-card]');eliminarTurno(btnDel.dataset.key,cardEl);}
-      });
+      // Delegación de eventos para los botones del historial — registrado UNA SOLA VEZ (bandera en dataset)
+      // para no acumular listeners duplicados en cada búsqueda, lo que causaba que Imprimir/Editar
+      // a veces usaran datos viejos (de antes de una edición) en lugar de los recién guardados.
+      if(!res.dataset.histListenerBound){
+        res.dataset.histListenerBound='1';
+        res.addEventListener('click',function(e){
+          var btnEdit=e.target.closest('.btn-editar-hist');
+          var btnExcel=e.target.closest('.btn-excel-hist');
+          var btnPrint=e.target.closest('.btn-print-hist');
+          var btnDel=e.target.closest('.btn-del-hist');
+          if(btnEdit){var t=histTurnosMap[btnEdit.dataset.key];if(t)abrirEditarTurno(t);}
+          if(btnExcel){exportarTurnoExcel(btnExcel.dataset.key);}
+          if(btnPrint){var tp=histTurnosMap[btnPrint.dataset.key];if(tp)imprimirTurnoHistorial(tp);}
+          if(btnDel){var cardEl=btnDel.closest('div[data-card]');eliminarTurno(btnDel.dataset.key,cardEl);}
+        });
+      }
 
     }).catch(function(e){res.innerHTML='<p style="color:var(--rojo);font-size:.8rem;">Error: '+e.message+'</p>';});
 }
