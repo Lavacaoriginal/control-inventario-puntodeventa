@@ -852,6 +852,39 @@ function tgEnviar(msg){
     body:JSON.stringify({chat_id:TG_CHAT,text:msg,parse_mode:'Markdown'})
   }).catch(function(e){console.warn('Telegram:',e);});
 }
+// Respaldo: arma el conteo completo de inventario del turno (mismos datos del snapshot
+// que se guarda en Supabase) y lo envía como archivo .txt adjunto — para poder recuperar
+// los valores manualmente si el turno queda con datos en blanco o inconsistentes.
+function construirInventarioTxt(){
+  var fmt=function(n){return (n===null||n===undefined||n==='')?'—':n;};
+  var txt='INVENTARIO DE CIERRE\n';
+  txt+=tgPunto()+' — Turno '+tgTurno()+'\n';
+  txt+='Fecha: '+sesion.fecha+'   Hora: '+new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'})+'\n';
+  txt+='Cajero: '+sesion.cajero+(sesion.cajeroAux?' / '+sesion.cajeroAux:'')+'\n';
+  txt+='='.repeat(40)+'\n\n';
+  invRows.forEach(function(r){
+    var tieneDatos=(r.ant||r.entrante||r.dev||r.inv_final!==null&&r.inv_final!==undefined);
+    if(!tieneDatos) return;
+    txt+=r.name+'\n';
+    txt+='   Anterior:'+fmt(r.ant)+'  Entrante:'+fmt(r.entrante)+'  Devolucion:'+fmt(r.dev)+'  Final:'+fmt(r.inv_final)+'\n';
+    txt+='   Disponible:'+fmt(r.disponible)+'  Vendido:'+fmt(r.vendido)+'  Rappi:'+fmt(r.rappi_venta)+'  Venta:$'+fmt(r.total_venta)+'\n\n';
+  });
+  return txt;
+}
+function enviarInventarioTxtTelegram(){
+  if(!invRows||!invRows.length) return;
+  var texto=construirInventarioTxt();
+  var fecha=sesion.fecha;
+  var horaArch=new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'}).replace(':','');
+  var nombreArchivo='Inventario_'+tgPunto().replace(/[^a-zA-Z0-9]+/g,'_')+'_'+fecha+'_'+horaArch+'.txt';
+  var blob=new Blob([texto],{type:'text/plain'});
+  var form=new FormData();
+  form.append('chat_id',TG_CHAT);
+  form.append('caption','📦 Inventario de cierre — '+tgPunto()+' ('+tgTurno()+')');
+  form.append('document',blob,nombreArchivo);
+  return fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendDocument',{method:'POST',body:form})
+    .catch(function(e){console.warn('Telegram (inventario txt):',e);});
+}
 function enviarAlertaTelegram(entrega, idx, valorAnterior){
   if(!sesion||!entrega.valor||entrega.valor<=0) return;
   var esEdicion=(valorAnterior!==undefined&&valorAnterior>0);
@@ -1076,6 +1109,30 @@ function sbUpsert(table,data){
     headers:Object.assign({},HEADS,{'Prefer':'resolution=merge-duplicates'}),
     body:JSON.stringify(data)
   }).then(function(r){if(!r.ok)return r.text().then(function(t){throw new Error(t);});});
+}
+// Guarda el cierre definitivo con el MISMO patrón seguro que usa guardar() para los
+// autoguardados: primero intenta un PATCH sobre la fila que YA existe para este turno_key
+// (creada por los autoguardados durante el turno). Solo si esa fila no existe (caso raro)
+// cae a sbUpsert para crearla. Antes, confirmarCierre() llamaba sbUpsert() directamente,
+// lo que podía crear una fila NUEVA y duplicada en vez de actualizar la existente —
+// dejando dos filas para el mismo turno (una abierta, otra cerrada) y haciendo que el
+// turno pareciera "a veces cerrado, a veces abierto" o con datos en blanco, dependiendo
+// de cuál de las dos filas duplicadas devolviera la base de datos en cada consulta.
+function guardarCierreSeguro(key,payload){
+  var patchBody=Object.assign({},payload);
+  delete patchBody.turno_key; delete patchBody.punto; delete patchBody.turno; delete patchBody.fecha;
+  return fetch(SB_URL+'/rest/v1/turnos_caja?turno_key=eq.'+encodeURIComponent(key),{
+    method:'PATCH',
+    headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
+    body:JSON.stringify(patchBody)
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(t){throw new Error(t);});
+    var cr=r.headers.get('content-range')||'';
+    if(cr==='*/0'){
+      // No existía fila previa (turno nunca se autoguardó) — crearla ahora
+      return sbUpsert('turnos_caja',payload);
+    }
+  });
 }
 function fmt(n){return '$'+Number(n||0).toLocaleString('es-CO');}
 function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -3013,7 +3070,8 @@ function confirmarCierre(){
   };
   mostrarOverlayCierre(1);
   enviarResumenCierre();
-  sbUpsert('turnos_caja',payload).then(function(){
+  enviarInventarioTxtTelegram();
+  guardarCierreSeguro(key,payload).then(function(){
     setSyncStatus('ok','✓ Cerrado');
     mostrarOverlayCierre(2);
     // Liberar el bloqueo ANTES de llamar salir(): si el admin cancela el diálogo
