@@ -68,6 +68,43 @@ body{font-family:'Inter',sans-serif;background:var(--gris1);color:var(--negro);m
 .btn-login:hover{background:var(--madera3);}
 .admin-link{text-align:center;margin-top:14px;}
 .admin-link button{background:none;border:none;color:var(--gris4);font-size:.75rem;cursor:pointer;text-decoration:underline;}
+/* ── Paso 2 del login: identificación por foto ── */
+.step2-topbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.step2-topbar button{border:none;background:transparent;color:var(--negro);cursor:pointer;padding:4px;display:flex;font-size:1.1rem;line-height:1;}
+.step2-chips{flex-grow:1;display:flex;gap:6px;flex-wrap:wrap;}
+.step2-chip{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;background:rgba(124,74,30,.12);color:var(--madera);border:1px solid var(--gris2);}
+.quien-eres-title{font-size:.92rem;font-weight:700;text-align:center;margin-bottom:2px;}
+.quien-eres-sub{font-size:.72rem;color:var(--gris4);text-align:center;margin-bottom:14px;}
+.cajero-search{width:100%;padding:9px 12px;border:1.5px solid var(--gris2);border-radius:8px;font-family:'Inter',sans-serif;font-size:.82rem;background:var(--gris1);color:var(--negro);margin-bottom:12px;}
+.cajero-search:focus{outline:none;border-color:var(--madera);}
+.cajero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px;max-height:308px;overflow-y:auto;padding:4px 2px 10px;margin-bottom:10px;}
+.cajero-tile{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:4px 2px;border:none;background:transparent;font-family:'Inter',sans-serif;}
+.cajero-avatar-ring{position:relative;width:58px;height:58px;border-radius:50%;padding:3px;box-sizing:border-box;border:2px solid var(--gris2);}
+.cajero-tile.selected .cajero-avatar-ring{border:none;background:var(--madera);box-shadow:0 0 0 3px rgba(124,74,30,.18);}
+.cajero-avatar{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;border:2px solid #fff;background-size:cover;background-position:center top;}
+.cajero-check{position:absolute;top:-2px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--verde);border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;line-height:1;}
+.cajero-tile-nombre{margin-top:6px;font-size:.62rem;font-weight:700;color:var(--negro);text-align:center;line-height:1.2;}
+.cajero-tile-codigo{margin-top:1px;font-size:.56rem;font-weight:700;color:var(--gris4);text-align:center;}
+.cajero-seleccionado{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:8px 10px;background:var(--madera-suave);border-radius:8px;}
+.cajero-seleccionado .cajero-avatar{width:30px;height:30px;font-size:.7rem;flex-shrink:0;}
+.cajero-seleccionado .nombre{font-size:.78rem;font-weight:700;color:var(--negro);}
+.cajero-seleccionado .codigo{font-size:.65rem;color:var(--gris4);}
+.cajero-seleccionado button{margin-left:auto;border:none;background:transparent;color:var(--gris4);font-size:.68rem;font-weight:700;cursor:pointer;text-decoration:underline;}
+/* ── Cajeros extra: también por foto, en bloques compactos ── */
+.extra-cajero-block{margin-bottom:12px;padding:10px 10px 8px;background:var(--gris1);border-radius:10px;border:1.5px solid var(--gris2);}
+.extra-cajero-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.extra-cajero-head span{font-size:.7rem;font-weight:700;color:var(--negro);}
+.extra-cajero-head button{border:none;background:transparent;color:#a99;cursor:pointer;font-size:.68rem;font-weight:700;padding:2px 4px;}
+.cajero-search-mini{width:100%;padding:7px 10px;border:1.5px solid var(--gris2);border-radius:7px;font-family:'Inter',sans-serif;font-size:.75rem;background:#fff;color:var(--negro);margin-bottom:8px;box-sizing:border-box;}
+.cajero-search-mini:focus{outline:none;border-color:var(--madera);}
+.cajero-grid-mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 4px;max-height:168px;overflow-y:auto;padding:2px;}
+.cajero-tile-mini{display:flex;flex-direction:column;align-items:center;cursor:pointer;padding:2px;border:none;background:transparent;font-family:'Inter',sans-serif;}
+.cajero-avatar-ring-mini{position:relative;width:40px;height:40px;border-radius:50%;padding:2px;box-sizing:border-box;border:1.5px solid var(--gris2);}
+.cajero-tile-mini.selected .cajero-avatar-ring-mini{border:none;background:var(--madera);box-shadow:0 0 0 2px rgba(124,74,30,.18);}
+.cajero-avatar-mini{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:10px;border:1.5px solid #fff;background-size:cover;background-position:center top;}
+.cajero-check-mini{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:var(--verde);border:1.5px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;line-height:1;}
+.cajero-tile-mini-nombre{margin-top:4px;font-size:.5rem;font-weight:700;color:var(--negro);text-align:center;line-height:1.15;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.extra-cajero-vacio{font-size:.68rem;color:var(--gris4);text-align:center;padding:8px 0;}
 #appScreen{display:none;}
 header{background:var(--negro);padding:0 16px;display:flex;align-items:stretch;justify-content:space-between;border-bottom:4px solid var(--madera);min-height:54px;}
 .hdr-left{display:flex;align-items:center;gap:10px;}
@@ -238,6 +275,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       </div>
       <p style="font-size:.75rem;color:var(--gris4);text-transform:uppercase;letter-spacing:1px;margin-top:4px;">Control de Caja</p>
     </div>
+    <div id="loginStep1">
     <div class="field">
       <label>Punto de Venta</label>
       <select id="selPunto">
@@ -267,39 +305,25 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <input type="date" id="selFecha">
       </div>
     </div>
-    <div class="field">
-      <label>Nombre y Código</label>
-      <select id="selCajero" onchange="onLoginCajeroChange()" style="width:100%;padding:10px 13px;border:1.5px solid var(--gris2);border-radius:7px;font-family:'Inter',sans-serif;font-size:.88rem;background:var(--gris1);color:var(--negro);appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath d=\'M1 1l5 5 5-5\' stroke=\'%238a7a68\' stroke-width=\'1.8\' fill=\'none\' stroke-linecap=\'round\'/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer;">
-        <option value="">— Elige tu nombre —</option>
-        <option value="ADM|ADMINISTRADOR" style="font-weight:700;color:#1d4e89;background:#e8f0fb;">🔑 ADMINISTRADOR</option>
-        <option value="" disabled style="color:#ccc;">────────────────</option>
-        <option value="C7|Andrea Monsalve">Andrea Monsalve (C7)</option>
-        <option value="SUP|Angela Marin">Ángela Marín (Supervisora)</option>
-        <option value="Aux|Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
-        <option value="C1|Daniela Nieto">Daniela Nieto (C1)</option>
-        <option value="C1|Jesika Imbajoa">Jesika Imbajoa (C1)</option>
-        <option value="C2|Jimena Caldas">Jimena Caldas (C2)</option>
-        <option value="C5|Julian Diaz">Julian Diaz (C5)</option>
-        <option value="C2|Karen Ipiales">Karen Ipiales (C2)</option>
-        <option value="C1|Laura Barrera">Laura Barrera (C1)</option>
-        <option value="C3|Leidy Higuera">Leidy Higuera (C3)</option>
-        <option value="C3|Leidy Meneses">Leidy Meneses (C3)</option>
-        <option value="C6|Luz Suarez">Luz Suarez (C6)</option>
-        <option value="C3|Monica Arango">Mónica Arango (C3)</option>
-        <option value="AO2|Monica Cadavid">Mónica Cadavid (AO2)</option>
-        <option value="C2|Natalia Dominguez">Natalia Domínguez (C2)</option>
-        <option value="C2|Sebastian Perez">Sebastian Perez (C2)</option>
-        <option value="C1|Vanessa Gallego">Vanessa Gallego (C1)</option>
-        <option value="C4|Vivian Gonzalez">Vivian Gonzalez (C4)</option>
-        <option value="C3|Yennifer Castillo">Yennifer Castillo (C3)</option>
-        <option value="C2|Yolima Uribe">Yolima Uribe (C2)</option>
-      </select>
+    <button type="button" class="btn-login" id="btnLoginSiguiente">Siguiente →</button>
     </div>
-    <div id="cajerosExtrasLogin"></div>
-    <button type="button" onclick="agregarCajeroLoginExtra()" style="width:100%;padding:7px;background:transparent;border:1.5px dashed var(--gris3);border-radius:7px;color:var(--gris4);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;margin-bottom:10px;">＋ Agregar cajero al turno</button>
-    <div id="cajerosList" style="display:none;"></div>
-    <button class="btn-login" id="btnEntrar">Entrar a mi turno →</button>
-    <div class="admin-link"><button id="btnAdminLogin">⚙ Entrar como Administrador</button></div>
+
+    <div id="loginStep2" style="display:none;">
+      <div class="step2-topbar">
+        <button type="button" id="btnLoginAtras" aria-label="Volver" title="Volver">←</button>
+        <div class="step2-chips" id="step2Chips"></div>
+      </div>
+      <div class="quien-eres-title">¿Quién eres?</div>
+      <div class="quien-eres-sub">Toca tu foto para identificarte</div>
+      <input type="text" id="cajeroSearch" class="cajero-search" placeholder="Buscar por nombre o código…">
+      <div id="cajeroSeleccionadoResumen" class="cajero-seleccionado" style="display:none;"></div>
+      <div id="cajeroGrid" class="cajero-grid"></div>
+      <div id="cajerosExtrasLogin"></div>
+      <button type="button" onclick="agregarCajeroLoginExtra()" style="width:100%;padding:7px;background:transparent;border:1.5px dashed var(--gris3);border-radius:7px;color:var(--gris4);font-family:'Inter',sans-serif;font-size:.78rem;cursor:pointer;margin-bottom:10px;">＋ Agregar cajero al turno</button>
+      <div id="cajerosList" style="display:none;"></div>
+      <button class="btn-login" id="btnEntrar">Entrar a mi turno →</button>
+      <div class="admin-link"><button id="btnAdminLogin">⚙ Entrar como Administrador</button></div>
+    </div>
     <div style="text-align:center;margin-top:14px;font-size:.65rem;color:var(--gris4);opacity:.7;">JOX3 & Anthropic Creative Design</div>
   </div>
 </div>
@@ -555,25 +579,28 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Andrea Monsalve">Andrea Monsalve (C7)</option>
         <option value="Angela Marin">Ángela Marín (Supervisora)</option>
         <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
+        <option value="Audrey Hurtado">Audrey Hurtado (C2)</option>
         <option value="Catalina Tabares">Catalina Tabares (C3) — inactiva</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
-        <option value="Jimena Caldas">Jimena Caldas (C2)</option>
-        <option value="Julian Diaz">Julian Diaz (C5)</option>
+        <option value="Jimena Caldas">Jimena Caldas (C1)</option>
+        <option value="Julian Diaz">Julian Diaz (C5) — inactivo</option>
         <option value="Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="Laura Barrera">Laura Barrera (C1)</option>
-        <option value="Leidy Higuera">Leidy Higuera (C3)</option>
+        <option value="Leidy Higuera">Leidy Higuera (C3) — inactiva</option>
         <option value="Leidy Meneses">Leidy Meneses (C3)</option>
         <option value="Monica Cadavid">Mónica Cadavid (AO2)</option>
         <option value="Luz Suarez">Luz Suarez (C6)</option>
+        <option value="Melany Castillo">Melany Castillo (AO)</option>
         <option value="Milena Ruiz">Milena Ruiz (C4) — inactiva</option>
         <option value="Monica Arango">Mónica Arango (C3)</option>
-        <option value="Natalia Dominguez">Natalia Domínguez (C2)</option>
+        <option value="Natalia Dominguez">Natalia Domínguez (C2) — inactiva</option>
         <option value="Sebastian Perez">Sebastian Perez (C2)</option>
         <option value="Vanessa Gallego">Vanessa Gallego (C1)</option>
         <option value="Vivian Gonzalez">Vivian Gonzalez (C4)</option>
         <option value="Yennifer Castillo">Yennifer Castillo (C3)</option>
         <option value="Yolima Uribe">Yolima Uribe (C2)</option>
+        <option value="Yulieth Martinez">Yulieth Martinez (C3)</option>
       </select>
     </div>
     <button class="btn btn-cerrar" onclick="buscarFaltantes()" style="width:100%;margin-bottom:12px;">🔍 Buscar faltantes</button>
@@ -694,23 +721,23 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Andrea Monsalve">Andrea Monsalve (C7)</option>
         <option value="Angela Marin">Ángela Marín (Supervisora)</option>
         <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
+        <option value="Audrey Hurtado">Audrey Hurtado (C2)</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1)</option>
-        <option value="Jimena Caldas">Jimena Caldas (C2)</option>
-        <option value="Julian Diaz">Julian Diaz (C5)</option>
+        <option value="Jimena Caldas">Jimena Caldas (C1)</option>
         <option value="Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="Laura Barrera">Laura Barrera (C1)</option>
-        <option value="Leidy Higuera">Leidy Higuera (C3)</option>
         <option value="Leidy Meneses">Leidy Meneses (C3)</option>
         <option value="Luz Suarez">Luz Suarez (C6)</option>
+        <option value="Melany Castillo">Melany Castillo (AO)</option>
         <option value="Monica Arango">Mónica Arango (C3)</option>
         <option value="Monica Cadavid">Mónica Cadavid (AO2)</option>
-        <option value="Natalia Dominguez">Natalia Domínguez (C2)</option>
         <option value="Sebastian Perez">Sebastian Perez (C2)</option>
         <option value="Vanessa Gallego">Vanessa Gallego (C1)</option>
         <option value="Vivian Gonzalez">Vivian Gonzalez (C4)</option>
         <option value="Yennifer Castillo">Yennifer Castillo (C3)</option>
         <option value="Yolima Uribe">Yolima Uribe (C2)</option>
+        <option value="Yulieth Martinez">Yulieth Martinez (C3)</option>
       </select>
     </div>
     <div id="editCajerosExtras"></div>
@@ -1173,6 +1200,25 @@ document.getElementById('btnAdminLogin').addEventListener('click', async functio
   }
   else if(v!==null) alert('Clave incorrecta.');
 });
+
+// ── Paso 1 → Paso 2 del login (identificación por foto) ──
+document.getElementById('btnLoginSiguiente').addEventListener('click', function(){
+  var punto=document.getElementById('selPunto').value;
+  var turno=document.getElementById('selTurno').value;
+  var fecha=document.getElementById('selFecha').value;
+  if(!punto){alert('Selecciona el punto de venta.');return;}
+  if(!turno){alert('Selecciona el turno.');return;}
+  if(!fecha){alert('Selecciona la fecha.');return;}
+  irAPasoCajero();
+});
+document.getElementById('btnLoginAtras').addEventListener('click', function(){
+  document.getElementById('loginStep2').style.display='none';
+  document.getElementById('loginStep1').style.display='block';
+});
+document.getElementById('cajeroSearch').addEventListener('input', function(){
+  renderCajeroGrid(this.value);
+});
+
 document.getElementById('btnSalir').addEventListener('click', salir);
 document.getElementById('btnAdminApp').addEventListener('click', async function(){
   if(isAdmin){
@@ -1420,7 +1466,7 @@ function cambiarPuntoTurno(){
 async function entrar(admin){
   var punto=document.getElementById('selPunto').value;
   var turno=document.getElementById('selTurno').value;
-  var cajeroVal=document.getElementById('selCajero').value;
+  var cajeroVal=window._cajeroSeleccionadoVal||'';
   var cajero=cajeroVal?cajeroVal.split('|')[1]||cajeroVal:'';
   var extrasNombres=cajerosLoginExtras.filter(function(v){return v;}).map(function(v){return v.split('|')[1]||v;});
   var cajeroAux=extrasNombres.join(', ');
@@ -3305,7 +3351,7 @@ function renderEditCajerosExtras(){
     div.style.display='flex'; div.style.gap='6px';
     var inp=document.createElement('select');
     inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;cursor:pointer;';
-    var optsAux=[['','— Selecciona cajero —'],['Andrea Monsalve','Andrea Monsalve (C7)'],['Angela Marin','Ángela Marín (Supervisora)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C2)'],['Julian Diaz','Julian Diaz (C5)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Higuera','Leidy Higuera (C3)'],['Leidy Meneses','Leidy Meneses (C3)'],['Luz Suarez','Luz Suarez (C6)'],['Monica Arango','Mónica Arango (C3)'],['Monica Cadavid','Mónica Cadavid (AO2)'],['Natalia Dominguez','Natalia Domínguez (C2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Vivian Gonzalez','Vivian Gonzalez (C4)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C2)']];
+    var optsAux=[['','— Selecciona cajero —'],['Andrea Monsalve','Andrea Monsalve (C7)'],['Angela Marin','Ángela Marín (Supervisora)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Audrey Hurtado','Audrey Hurtado (C2)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jesika Imbajoa','Jesika Imbajoa (C1)'],['Jimena Caldas','Jimena Caldas (C1)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (C3)'],['Luz Suarez','Luz Suarez (C6)'],['Melany Castillo','Melany Castillo (AO)'],['Monica Arango','Mónica Arango (C3)'],['Monica Cadavid','Mónica Cadavid (AO2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vanessa Gallego','Vanessa Gallego (C1)'],['Vivian Gonzalez','Vivian Gonzalez (C4)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C2)'],['Yulieth Martinez','Yulieth Martinez (C3)']];
     optsAux.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];inp.appendChild(opt);});
     inp.value=nombre;
     inp.addEventListener('change',(function(idx){return function(){editCajerosExtras[idx]=this.value;};})(i));
@@ -4543,32 +4589,158 @@ var hoy = new Date().toLocaleDateString('en-CA', {timeZone:'America/Bogota'});
 document.getElementById('selFecha').value = hoy;
 document.getElementById('histFecha') && (document.getElementById('histFecha').value = hoy);
 
+// Carpeta del repo (GitHub Pages) donde van las fotos de perfil de los cajeros.
+// Súbelas ahí con exactamente estos nombres de archivo; si un cajero no tiene
+// foto todavía, la app muestra un círculo con sus iniciales automáticamente.
+var FOTOS_CAJEROS_BASE='foto-cajeros/';
+
 var CAJEROS_LISTA=[
+  {val:'ADM|ADMINISTRADOR',txt:'ADMINISTRADOR'},
   {val:'C7|Andrea Monsalve',txt:'Andrea Monsalve (C7)'},
   {val:'SUP|Angela Marin',txt:'Ángela Marín (Supervisora)'},
   {val:'Aux|Arturo Gutierrez',txt:'Arturo Gutiérrez (Aux)'},
+  {val:'C2|Audrey Hurtado',txt:'Audrey Hurtado (C2)'},
   {val:'C1|Daniela Nieto',txt:'Daniela Nieto (C1)'},
-  {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)'},
-  {val:'C2|Jimena Caldas',txt:'Jimena Caldas (C2)'},
-  {val:'C5|Julian Diaz',txt:'Julian Diaz (C5)'},
+  {val:'C1|Jesika Imbajoa',txt:'Jesika Imbajoa (C1)',foto:'jesika-imbajoa.jpg'},
+  {val:'C1|Jimena Caldas',txt:'Jimena Caldas (C1)',foto:'jimena-caldas.jpg'},
   {val:'C2|Karen Ipiales',txt:'Karen Ipiales (C2)'},
   {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
-  {val:'C3|Leidy Higuera',txt:'Leidy Higuera (C3)'},
-  {val:'C3|Leidy Meneses',txt:'Leidy Meneses (C3)'},
+  {val:'C3|Leidy Meneses',txt:'Leidy Meneses (C3)',foto:'leidy-meneses.jpg'},
   {val:'C6|Luz Suarez',txt:'Luz Suarez (C6)'},
+  {val:'AO|Melany Castillo',txt:'Melany Castillo (AO)'},
   {val:'C3|Monica Arango',txt:'Mónica Arango (C3)'},
   {val:'AO2|Monica Cadavid',txt:'Mónica Cadavid (AO2)'},
-  {val:'C2|Natalia Dominguez',txt:'Natalia Domínguez (C2)'},
   {val:'C2|Sebastian Perez',txt:'Sebastian Perez (C2)'},
   {val:'C1|Vanessa Gallego',txt:'Vanessa Gallego (C1)'},
   {val:'C4|Vivian Gonzalez',txt:'Vivian Gonzalez (C4)'},
   {val:'C3|Yennifer Castillo',txt:'Yennifer Castillo (C3)'},
-  {val:'C2|Yolima Uribe',txt:'Yolima Uribe (C2)'}
+  {val:'C2|Yolima Uribe',txt:'Yolima Uribe (C2)',foto:'yolima-uribe.jpg'},
+  {val:'C3|Yulieth Martinez',txt:'Yulieth Martinez (C3)'}
 ];
 
 var cajerosLoginExtras=[];
 
-function onLoginCajeroChange(){}
+// ── Selector de cajero por foto (paso 2 del login) ──
+var CAJERO_PALETA=['#7c4a1e','#6B4FA0','#B5432E','#1F4D28','#1d4e89','#C9973B','#5a3310','#8a7a68'];
+window._cajeroSeleccionadoVal='';
+
+function inicialesCajero(nombre){
+  var partes=nombre.split(' ').filter(Boolean);
+  var a=partes[0]?partes[0][0]:'';
+  var b=partes[1]?partes[1][0]:'';
+  return (a+b).toUpperCase();
+}
+
+function irAPasoCajero(){
+  document.getElementById('loginStep1').style.display='none';
+  document.getElementById('loginStep2').style.display='block';
+  var pN={autopista:'Autopista del Café',boquia:'Boquia',tebaida:'La Tebaida',km25:'Km 25 Dagua',km25_pan:'Km 25 Panadería',km18:'Km 18 Cali',penon:'El Peñón',colseguros:'Colseguros'}[document.getElementById('selPunto').value]||'';
+  var tN={manana:'☀ Mañana',tarde:'🌙 Tarde',completo:'⬛ Completo'}[document.getElementById('selTurno').value]||'';
+  document.getElementById('step2Chips').innerHTML=
+    '<span class="step2-chip">'+pN+'</span><span class="step2-chip">'+tN+'</span>';
+  document.getElementById('cajeroSearch').value='';
+  renderCajeroGrid('');
+}
+
+function renderCajeroGrid(filtro){
+  var cont=document.getElementById('cajeroGrid');
+  cont.innerHTML='';
+  var q=(filtro||'').trim().toLowerCase();
+  var extrasElegidos=cajerosLoginExtras.filter(Boolean);
+  var lista=CAJEROS_LISTA.filter(function(c){
+    if(extrasElegidos.indexOf(c.val)!==-1) return false;
+    if(!q) return true;
+    return c.txt.toLowerCase().indexOf(q)!==-1;
+  });
+  lista.forEach(function(c){
+    var idx=CAJEROS_LISTA.indexOf(c);
+    var nombre=c.txt.replace(/\s*\([^)]*\)\s*$/,'');
+    var codigo=(c.txt.match(/\(([^)]*)\)/)||[,''])[1];
+    var selected=c.val===window._cajeroSeleccionadoVal;
+    var color=CAJERO_PALETA[idx%CAJERO_PALETA.length];
+
+    var tile=document.createElement('button');
+    tile.type='button';
+    tile.className='cajero-tile'+(selected?' selected':'');
+
+    var ring=document.createElement('div');
+    ring.className='cajero-avatar-ring';
+
+    var avatar=document.createElement('div');
+    avatar.className='cajero-avatar';
+    if(c.foto){
+      avatar.style.backgroundImage="url('"+FOTOS_CAJEROS_BASE+c.foto+"')";
+      avatar.textContent='';
+    } else if(c.val==='ADM|ADMINISTRADOR'){
+      avatar.style.background='#1d4e89';
+      avatar.textContent='🔑';
+    } else {
+      avatar.style.background=color;
+      avatar.textContent=inicialesCajero(nombre);
+    }
+    ring.appendChild(avatar);
+
+    if(selected){
+      var check=document.createElement('div');
+      check.className='cajero-check';
+      check.textContent='✓';
+      ring.appendChild(check);
+    }
+
+    var nombreEl=document.createElement('div');
+    nombreEl.className='cajero-tile-nombre';
+    nombreEl.textContent=nombre;
+    var codigoEl=document.createElement('div');
+    codigoEl.className='cajero-tile-codigo';
+    codigoEl.textContent=codigo;
+
+    tile.appendChild(ring);
+    tile.appendChild(nombreEl);
+    tile.appendChild(codigoEl);
+    tile.addEventListener('click',(function(val){return function(){ seleccionarCajero(val); };})(c.val));
+    cont.appendChild(tile);
+  });
+}
+
+function seleccionarCajero(val){
+  window._cajeroSeleccionadoVal=val;
+  actualizarResumenSeleccion();
+  refrescarSelectorCajeros();
+}
+
+function limpiarSeleccionCajero(){
+  window._cajeroSeleccionadoVal='';
+  actualizarResumenSeleccion();
+  refrescarSelectorCajeros();
+}
+
+// Vuelve a dibujar la grilla principal y las de cajeros extra, para que
+// nadie pueda quedar elegido dos veces a la vez (como principal y como extra).
+function refrescarSelectorCajeros(){
+  var buscadorPrincipal=document.getElementById('cajeroSearch');
+  renderCajeroGrid(buscadorPrincipal?buscadorPrincipal.value:'');
+  renderCajerosLoginExtras();
+}
+
+function actualizarResumenSeleccion(){
+  var box=document.getElementById('cajeroSeleccionadoResumen');
+  var val=window._cajeroSeleccionadoVal;
+  var c=CAJEROS_LISTA.find(function(x){return x.val===val;});
+  if(!c){ box.style.display='none'; box.innerHTML=''; return; }
+  var idx=CAJEROS_LISTA.indexOf(c);
+  var nombre=c.txt.replace(/\s*\([^)]*\)\s*$/,'');
+  var codigo=(c.txt.match(/\(([^)]*)\)/)||[,''])[1];
+  var color=CAJERO_PALETA[idx%CAJERO_PALETA.length];
+  var avatarStyle=c.foto
+    ? "background-image:url('"+FOTOS_CAJEROS_BASE+c.foto+"');"
+    : "background:"+color+";";
+  box.style.display='flex';
+  box.innerHTML=
+    '<div class="cajero-avatar" style="'+avatarStyle+'">'+(c.foto?'':inicialesCajero(nombre))+'</div>'+
+    '<div><div class="nombre">'+nombre+'</div><div class="codigo">'+codigo+'</div></div>'+
+    '<button type="button" id="btnCambiarCajero">Cambiar</button>';
+  document.getElementById('btnCambiarCajero').addEventListener('click', limpiarSeleccionCajero);
+}
 
 function agregarCajeroLoginExtra(){
   cajerosLoginExtras.push('');
@@ -4579,24 +4751,113 @@ function renderCajerosLoginExtras(){
   var cont=document.getElementById('cajerosExtrasLogin');
   cont.innerHTML='';
   cajerosLoginExtras.forEach(function(val,i){
-    var wrap=document.createElement('div');
-    wrap.style.cssText='display:flex;gap:6px;margin-bottom:8px;align-items:center;';
-    var sel=document.createElement('select');
-    sel.style.cssText='flex:1;padding:10px 13px;border:1.5px solid var(--gris2);border-radius:7px;font-family:Inter,sans-serif;font-size:.88rem;background:var(--gris1);color:var(--negro);';
-    sel.innerHTML='<option value="">— Elige cajero —</option>';
-    CAJEROS_LISTA.forEach(function(c){
-      var opt=document.createElement('option');
-      opt.value=c.val; opt.textContent=c.txt;
-      if(c.val===val) opt.selected=true;
-      sel.appendChild(opt);
-    });
-    sel.addEventListener('change',(function(idx){return function(){cajerosLoginExtras[idx]=this.value;};})(i));
+    var block=document.createElement('div');
+    block.className='extra-cajero-block';
+
+    var head=document.createElement('div');
+    head.className='extra-cajero-head';
+    var label=document.createElement('span');
+    label.textContent='Cajero extra '+(i+1);
     var btnX=document.createElement('button');
-    btnX.type='button'; btnX.textContent='✕';
-    btnX.style.cssText='padding:8px 12px;border:1.5px solid var(--gris2);border-radius:7px;background:transparent;color:#aaa;cursor:pointer;font-size:.85rem;flex-shrink:0;';
-    btnX.addEventListener('click',(function(idx){return function(){cajerosLoginExtras.splice(idx,1);renderCajerosLoginExtras();};})(i));
-    wrap.appendChild(sel); wrap.appendChild(btnX);
-    cont.appendChild(wrap);
+    btnX.type='button';
+    btnX.textContent='✕ Quitar';
+    btnX.addEventListener('click',(function(idx){return function(){
+      cajerosLoginExtras.splice(idx,1);
+      refrescarSelectorCajeros();
+    };})(i));
+    head.appendChild(label);
+    head.appendChild(btnX);
+    block.appendChild(head);
+
+    var search=document.createElement('input');
+    search.type='text';
+    search.className='cajero-search-mini';
+    search.placeholder='Buscar por nombre o código…';
+    search.addEventListener('input',(function(idx){return function(){ renderCajeroGridExtra(idx,this.value); };})(i));
+    block.appendChild(search);
+
+    var grid=document.createElement('div');
+    grid.className='cajero-grid-mini';
+    grid.id='cajeroGridExtra'+i;
+    block.appendChild(grid);
+
+    cont.appendChild(block);
+    renderCajeroGridExtra(i,'');
+  });
+}
+
+// Personas que no deben aparecer en la grilla del cajero extra #index:
+// el cajero principal y quien ya haya sido elegido en otro cajero extra.
+function personasExcluidasPara(index){
+  var excl=[];
+  if(window._cajeroSeleccionadoVal) excl.push(window._cajeroSeleccionadoVal);
+  cajerosLoginExtras.forEach(function(v,i){ if(i!==index && v) excl.push(v); });
+  return excl;
+}
+
+function renderCajeroGridExtra(index,filtro){
+  var cont=document.getElementById('cajeroGridExtra'+index);
+  if(!cont) return;
+  cont.innerHTML='';
+  var q=(filtro||'').trim().toLowerCase();
+  var excluidos=personasExcluidasPara(index);
+  var seleccionado=cajerosLoginExtras[index];
+  var lista=CAJEROS_LISTA.filter(function(c){
+    if(c.val==='ADM|ADMINISTRADOR') return false;
+    if(excluidos.indexOf(c.val)!==-1) return false;
+    if(!q) return true;
+    return c.txt.toLowerCase().indexOf(q)!==-1;
+  });
+
+  if(!lista.length){
+    var vacio=document.createElement('div');
+    vacio.className='extra-cajero-vacio';
+    vacio.textContent='Sin resultados.';
+    cont.appendChild(vacio);
+    return;
+  }
+
+  lista.forEach(function(c){
+    var idx=CAJEROS_LISTA.indexOf(c);
+    var nombre=c.txt.replace(/\s*\([^)]*\)\s*$/,'');
+    var color=CAJERO_PALETA[idx%CAJERO_PALETA.length];
+    var selected=c.val===seleccionado;
+
+    var tile=document.createElement('button');
+    tile.type='button';
+    tile.className='cajero-tile-mini'+(selected?' selected':'');
+
+    var ring=document.createElement('div');
+    ring.className='cajero-avatar-ring-mini';
+
+    var avatar=document.createElement('div');
+    avatar.className='cajero-avatar-mini';
+    if(c.foto){
+      avatar.style.backgroundImage="url('"+FOTOS_CAJEROS_BASE+c.foto+"')";
+    } else {
+      avatar.style.background=color;
+      avatar.textContent=inicialesCajero(nombre);
+    }
+    ring.appendChild(avatar);
+
+    if(selected){
+      var check=document.createElement('div');
+      check.className='cajero-check-mini';
+      check.textContent='✓';
+      ring.appendChild(check);
+    }
+
+    var nombreEl=document.createElement('div');
+    nombreEl.className='cajero-tile-mini-nombre';
+    nombreEl.textContent=nombre.split(' ')[0];
+
+    tile.appendChild(ring);
+    tile.appendChild(nombreEl);
+    tile.addEventListener('click',(function(idx2,val){return function(){
+      cajerosLoginExtras[idx2]=(cajerosLoginExtras[idx2]===val)?'':val;
+      refrescarSelectorCajeros();
+    };})(index,c.val));
+    cont.appendChild(tile);
   });
 }
 </script>
