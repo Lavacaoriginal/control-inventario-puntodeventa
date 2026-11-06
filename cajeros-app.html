@@ -2467,21 +2467,26 @@ function recalc(){
   var dif=ent-ef;
   entregaFinal=entregas.some(function(x){return x.confirmada&&x.esFinal;})||false;
   var mostrar=isAdmin||entregaFinal;
-  document.getElementById('rTotalVentas').textContent=mostrar?fmt(tv):'—';
+  // Si hay SOBRANTE, el cajero (no admin) no ve el monto ni los datos que permitirían deducirlo
+  // (total ventas y efectivo a entregar). El monto real llega solo al grupo de Telegram.
+  var ocultaSob=(!isAdmin&&ent>0&&dif>0);
+  document.getElementById('rTotalVentas').textContent=(mostrar&&!ocultaSob)?fmt(tv):'—';
   document.getElementById('rGastos').textContent=fmt(gas);
   document.getElementById('rDatafono').textContent=fmt(dat);
   document.getElementById('rTransferencia').textContent=fmt(tra);
   document.getElementById('rDescuentos').textContent=fmt(desc);
   document.getElementById('rRappi').textContent=rappiTotal>0?fmt(rappiTotal):'$0';
-  document.getElementById('rEfectivo').textContent=mostrar?fmt(ef):'—';
+  document.getElementById('rEfectivo').textContent=(mostrar&&!ocultaSob)?fmt(ef):'—';
   var rEnt=document.getElementById('rEntregado');
   var rDif=document.getElementById('rDiferencia');
   if(ent>0){
     rEnt.textContent=fmt(ent);
     if(mostrar){
-      if(dif===0){rDif.textContent='✔ Cuadra';rDif.className='value val-ok';}
+      rDif.style.fontSize='';
+      if(dif===0){rDif.textContent='✔ Cuadra perfecto';rDif.className='value val-ok';}
       else if(dif<0){rDif.textContent='Falta '+fmt(Math.abs(dif));rDif.className='value val-falta';}
-      else{rDif.textContent='Sobran '+fmt(dif);rDif.className='value val-sobra';}
+      else if(isAdmin){rDif.textContent='Sobran '+fmt(dif);rDif.className='value val-sobra';}
+      else{rDif.textContent='⚠ Revisar con el supervisor';rDif.className='value val-sobra';rDif.style.fontSize='.78rem';}
     } else {
       rDif.textContent='— marcar entrega final para ver resultado';
       rDif.className='value'; rDif.style.fontSize='.72rem';
@@ -2878,17 +2883,18 @@ function abrirCierre(){
   var pN={autopista:'Autopista del Café, Circasia',boquia:'Boquia, Salento',tebaida:'La Tebaida (Herradura)',km25:'Km 25, Dagua (Principal)',km25_pan:'Km 25 Panadería',km18:'Km 18, Cali',penon:'El Peñón, Cali',colseguros:'Colseguros (Autopista)'}[sesion.punto];
   var tN=sesion.turno==='manana'?'☀ Mañana':sesion.turno==='tarde'?'🌙 Tarde':'⬛ Completo';
   var nota=document.getElementById('inNota').value;
-  var difTxt=dif===0?'✔ Cuadra exacto':dif<0?'⚠ Falta '+fmt(Math.abs(dif)):'⚠ Sobran '+fmt(dif);
+  var ocultaSob=(!isAdmin&&dif>0);
+  var difTxt=dif===0?'✔ Cuadra perfecto':dif<0?'⚠ Falta '+fmt(Math.abs(dif)):(isAdmin?'⚠ Sobran '+fmt(dif):'⚠ Revisar con el supervisor');
   var difCol=dif===0?'#2d6a2d':dif<0?'#b02020':'#7a4a00';
   document.getElementById('cierreResumen').textContent=pN+' · '+tN+' · '+sesion.fecha+' · '+sesion.cajero;
   var det='<div style="background:var(--gris1);border-radius:6px;padding:11px;font-size:.82rem;">'
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Total ventas</span><b>'+fmt(tv)+'</b></div>'
+    +(ocultaSob?'':'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Total ventas</span><b>'+fmt(tv)+'</b></div>')
     +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Gastos</span><b>'+fmt(gas)+'</b></div>'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Datáfono</span><b>'+fmt(dat)+'</b></div>'
     +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Transferencias</span><b>'+fmt(tra)+'</b></div>'
     +(desc>0?'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Descuentos</span><b>'+fmt(desc)+'</b></div>':'')
     +(rappiTotal>0?'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>🛵 Rappi</span><b style="color:#c0392b;">'+fmt(rappiTotal)+'</b></div>':'')
-    +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;border-top:1px solid var(--gris2);padding-top:5px;"><span><b>Efectivo a entregar</b></span><b style="color:var(--madera)">'+fmt(ef)+'</b></div>'
+    +(ocultaSob?'':'<div style="display:flex;justify-content:space-between;margin-bottom:5px;border-top:1px solid var(--gris2);padding-top:5px;"><span><b>Efectivo a entregar</b></span><b style="color:var(--madera)">'+fmt(ef)+'</b></div>')
     +'<div style="display:flex;justify-content:space-between;margin-bottom:5px;"><span>Total entregado</span><b>'+fmt(ent)+'</b></div>'
     +'<div style="display:flex;justify-content:space-between;padding:6px 0;background:'+(dif===0?'#f0fff0':dif<0?'#fff0f0':'#fff8e0')+';border-radius:4px;padding:5px 8px;margin-top:3px;"><span><b>Diferencia</b></span><b style="color:'+difCol+'">'+difTxt+'</b></div>'
     +(nota?'<div style="margin-top:7px;font-style:italic;color:var(--gris4);font-size:.78rem;">📝 '+nota+'</div>':'')
