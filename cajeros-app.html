@@ -121,7 +121,7 @@ header{background:var(--negro);padding:0 16px;display:flex;align-items:stretch;j
 #syncStatus.ok{color:#4caf50;background:rgba(76,175,80,.12);border:1px solid rgba(76,175,80,.3);}
 #syncStatus.err{color:#ff5252;background:rgba(255,82,82,.12);border:1px solid rgba(255,82,82,.3);}
 #syncStatus.sync{color:#ffa726;background:rgba(255,167,38,.12);border:1px solid rgba(255,167,38,.3);}
-.main{padding:14px 16px 110px;}
+.main{padding:14px 16px 120px;}
 .sec-title{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
 .pill{font-size:.58rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;padding:2px 7px;border-radius:3px;}
 .pill-inv{background:#3a2000;color:#d4a050;}
@@ -261,6 +261,116 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 .ajuste-table td{padding:5px 6px;border-bottom:1px solid var(--gris2);}
 .ajuste-table td.prod-col{font-weight:500;}
 .ajuste-table input{width:70px;padding:4px 6px;border:1.5px solid var(--gris2);border-radius:4px;font-size:.82rem;text-align:center;}
+
+/* Control de neveras */
+.nev-row{border:1px solid var(--gris2);border-radius:8px;padding:8px 10px;margin-bottom:8px;background:#fff;}
+.nev-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;}
+.nev-name{font-weight:700;font-size:.84rem;}
+.nev-del{background:transparent;border:none;color:#c0392b;font-size:.95rem;cursor:pointer;padding:2px 6px;}
+.nev-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
+.nev-col{min-width:0;}
+.nev-col label{display:block;font-size:.62rem;font-weight:700;color:var(--gris4);margin-bottom:3px;text-transform:uppercase;letter-spacing:.2px;}
+.nev-step{display:flex;align-items:stretch;gap:4px;}
+.nev-b{flex:0 0 32px;border:1.5px solid var(--gris3);background:var(--gris1);border-radius:6px;font-size:1.15rem;font-weight:800;color:var(--madera);cursor:pointer;line-height:1;padding:0;}
+.nev-b:active{background:var(--gris2);}
+.nev-b:disabled{opacity:.4;cursor:default;}
+.nev-in{flex:1 1 0;min-width:0;width:0;box-sizing:border-box;padding:8px 2px;border:1.5px solid var(--gris3);border-radius:6px;font-size:.98rem;font-weight:700;text-align:center;font-family:'Inter',sans-serif;}
+.nev-in.ok{border-color:#2d8a2d;background:#f3fbf3;color:#1a4a1a;}
+.nev-in.warn{border-color:#e6a817;background:#fff8e0;color:#7a5000;}
+.nev-in.crit{border-color:#c0392b;background:#ffe0e0;color:#7a0000;}
+.nev-in:disabled{background:#f0f0f0;color:#777;}
+.nev-msg{font-size:.66rem;margin-top:3px;min-height:.9em;font-weight:600;}
+.nev-msg.ok{color:#2d8a2d;}
+.nev-msg.warn{color:#9a6a00;}
+.nev-msg.crit{color:#c0392b;}
+.nev-aviso{background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:6px;padding:6px 9px;font-size:.72rem;margin-bottom:8px;}
+.nev-nota{font-size:.7rem;color:var(--gris4);margin:2px 2px 8px;}
+.nev-leyenda{display:flex;gap:8px;flex-wrap:wrap;font-size:.66rem;margin:0 2px 8px;color:#444;}
+.nev-leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px;vertical-align:middle;}
+/* ==V2-BEGIN== menú desplegable, tarjetas oscuras y labores */
+.dock{position:fixed;bottom:0;left:0;right:0;background:#fffdf9;border-top:1px solid var(--gris2);padding:10px 14px calc(14px + env(safe-area-inset-bottom));display:flex;gap:10px;z-index:50;box-shadow:0 -6px 18px rgba(27,22,18,.08);}
+.dock-menu{flex:0 0 auto;min-height:52px;padding:0 18px;border:1.5px solid var(--madera);border-radius:16px;background:#fffdf9;color:var(--madera);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.dock-menu svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.dock .btn-cerrar{flex:1;min-height:52px;border-radius:16px;font-size:1rem;font-weight:700;}
+.menu-scrim{display:none;position:fixed;inset:0;background:rgba(27,22,18,.5);z-index:989;}
+.menu-scrim.open{display:block;}
+.menu-sheet{position:fixed;left:0;right:0;bottom:0;max-height:84vh;overflow-y:auto;background:#fffdf9;border-radius:26px 26px 0 0;padding:10px 16px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(27,22,18,.25);z-index:990;transform:translateY(105%);visibility:hidden;transition:transform .25s ease,visibility .25s;}
+.menu-sheet.open{transform:translateY(0);visibility:visible;}
+.menu-handle{width:44px;height:5px;border-radius:3px;background:#cdbfa6;margin:4px auto 12px;}
+.menu-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.menu-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;}
+.menu-x{width:44px;height:44px;border:none;border-radius:12px;background:var(--gris1);color:#1b1612;font-size:1.1rem;cursor:pointer;}
+.menu-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.menu-grid .btn{position:relative;flex:none;flex-direction:column;gap:7px;min-height:92px;padding:10px 4px;border:1px solid var(--gris2)!important;border-radius:16px;background:#f7f2ea!important;color:#1b1612!important;font-size:.78rem;font-weight:600;line-height:1.2;text-align:center;white-space:normal;}
+.menu-grid .btn .mi{font-size:1.55rem;line-height:1;}
+.menu-grid .btn:active{transform:scale(.97);}
+.menu-grid .btn.hot{background:#1f1a15!important;border-color:#1f1a15!important;color:#f3ece1!important;}
+.menu-pill{position:absolute;top:6px;right:6px;background:#e3b85a;color:#1b1612;font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:999px;}
+.menu-sec{display:flex;align-items:center;gap:10px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5e4d3b;margin:18px 0 10px;}
+.menu-sec::after{content:'';flex:1;height:1px;background:var(--dorado);}
+.dcard{background:#1f1a15;border:1px solid #3b3027;border-radius:20px;color:#f3ece1;padding:16px;margin-bottom:14px;}
+.hero-top{display:flex;align-items:center;gap:16px;}
+.hero-ring{position:relative;width:72px;height:72px;flex:0 0 auto;}
+.hero-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem;}
+.hero-t{font-family:'Playfair Display',serif;font-weight:700;font-size:1.12rem;}
+.hero-list{display:flex;flex-direction:column;gap:7px;margin-top:12px;font-size:.82rem;}
+.hero-list div{display:flex;align-items:flex-start;gap:8px;line-height:1.35;}
+.hero-list .ok{color:#cdbda5;} .hero-list .no{color:#ffd98a;font-weight:600;}
+.hero-warn{display:flex;align-items:flex-start;gap:8px;background:#2f2514;border:1px solid #6b5220;border-radius:12px;padding:9px 12px;margin-top:12px;font-size:.8rem;line-height:1.35;color:#ffd98a;}
+.dc-h{font-family:'Playfair Display',serif;font-weight:700;font-size:1.05rem;margin-bottom:10px;}
+.dbar-l{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:5px;}
+.dbar{height:8px;border-radius:4px;background:#3b3027;overflow:hidden;margin-bottom:12px;}
+.dbar>i{display:block;height:100%;border-radius:4px;}
+.dbtn{min-height:48px;padding:0 18px;border-radius:14px;font-family:'Inter',sans-serif;font-size:.92rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:none;width:100%;}
+.dbtn:disabled{cursor:not-allowed;}
+/* Neveras en tarjeta oscura con medidor */
+#neverasCardWrap{background:#1f1a15;border:1px solid #3b3027;border-radius:20px;color:#f3ece1;box-shadow:none;}
+#neverasCardWrap .nev-nota,#neverasCardWrap .nev-leyenda{color:#cdbda5;}
+#neverasCardWrap .nev-row{background:#2a231c;border-color:#3b3027;border-radius:16px;padding:12px;}
+#neverasCardWrap .nev-name{color:#f3ece1;font-size:.95rem;}
+#neverasCardWrap .nev-del{color:#ff8a7d;min-width:44px;min-height:44px;font-size:1.1rem;}
+#neverasCardWrap .nev-col label{color:#cdbda5;text-align:center;font-size:.72rem;}
+#neverasCardWrap .nev-g{display:flex;flex-direction:column;align-items:center;gap:6px;}
+#neverasCardWrap .nev-ring{position:relative;width:104px;height:104px;}
+#neverasCardWrap .nev-in{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:70px;height:40px;padding:0;border:none;background:transparent;color:#f3ece1;font-size:1.25rem;font-weight:700;-moz-appearance:textfield;}
+#neverasCardWrap .nev-in::-webkit-outer-spin-button,#neverasCardWrap .nev-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+#neverasCardWrap .nev-in.ok,#neverasCardWrap .nev-in.warn,#neverasCardWrap .nev-in.crit{background:transparent;border:none;color:#f3ece1;}
+#neverasCardWrap .nev-in:disabled{background:transparent;color:#a89880;}
+#neverasCardWrap .nev-btns{display:flex;gap:8px;}
+#neverasCardWrap .nev-b{flex:none;width:44px;height:44px;border-radius:13px;border:1px solid #4a3d31;background:#2a231c;color:#f3ece1;font-size:1.3rem;}
+#neverasCardWrap .nev-b:active{background:#352c23;}
+#neverasCardWrap .nev-msg{text-align:center;font-size:.72rem;margin-top:0;border:1px solid transparent;padding:2px 10px;border-radius:999px;min-height:0;}
+#neverasCardWrap .nev-msg.ok{color:#5fd38a;border-color:#5fd38a;}
+#neverasCardWrap .nev-msg.warn{color:#ffc247;border-color:#ffc247;}
+#neverasCardWrap .nev-msg.crit{color:#ff8a7d;border-color:#ff8a7d;}
+#neverasCardWrap .btn-add-entry{background:transparent;border:1.5px dashed #6b5a48;color:#e3d6c1;min-height:44px;font-size:.85rem;border-radius:14px;}
+/* Pantalla de labores */
+.labPanel{display:none;position:fixed;inset:0;z-index:995;background:var(--gris1);overflow-y:auto;}
+.labPanel.open{display:block;}
+.labHead{position:sticky;top:0;z-index:3;background:#1b1612;border-bottom:3px solid var(--dorado);padding:12px 14px 12px 8px;display:flex;align-items:center;gap:8px;}
+.labHead .lh-back{width:48px;height:48px;border:none;border-radius:14px;background:transparent;color:#fff;font-size:1.7rem;cursor:pointer;}
+.labHead .lh-t{font-family:'Playfair Display',serif;font-weight:900;font-size:1.15rem;color:#fff;line-height:1.1;}
+.labHead .lh-s{font-size:.75rem;color:#d9c9ad;margin-top:3px;}
+.labHead .lh-c{margin-left:auto;background:var(--dorado);color:#1b1612;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;}
+.labBody{padding:16px 16px 40px;max-width:640px;margin:0 auto;}
+.lab-in{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid #4a3d31;background:#2a231c;color:#f3ece1;font-size:16px;font-family:'Inter',sans-serif;}
+.lab-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;}
+.lab-chip{min-height:44px;padding:0 14px;border-radius:999px;font-size:.82rem;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;}
+.lab-seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;background:#e3d8c5;padding:4px;border-radius:16px;margin-bottom:14px;}
+.lab-seg button{min-height:44px;border:none;border-radius:12px;font-size:.72rem;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;padding:0 2px;}
+.lab-grp{background:#fffdf9;border:1px solid var(--gris2);border-radius:18px;padding:6px 12px 8px;margin-bottom:14px;}
+.lab-gh{display:flex;align-items:center;gap:8px;padding:8px 0;}
+.lab-gh .gn{flex:1;min-width:0;font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;}
+.lab-gh .gs{font-size:.72rem;color:#5e4d3b;font-family:'Inter',sans-serif;font-weight:500;display:block;margin-top:1px;}
+.lab-gh .gc{width:44px;text-align:center;font-size:.68rem;font-weight:700;}
+.lab-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #efe6d6;}
+.lab-row .ln{flex:1;min-width:0;font-size:.86rem;font-weight:600;line-height:1.25;}
+.lab-row .ls{font-size:.72rem;color:#5e4d3b;margin-top:2px;font-weight:500;}
+.lchk{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;padding:0;flex:0 0 auto;cursor:pointer;font-size:1.3rem;font-weight:800;line-height:1;}
+.lchk:disabled{cursor:not-allowed;}
+.lchk svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
+/* ==V2-END== */
+/* Precios por mayor */
 </style>
 </head>
 <body>
@@ -349,6 +459,8 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </header>
 
   <div class="main">
+    <div class="dcard" id="cierreHero" style="display:none;"></div>
+    <div class="dcard" id="labCard" style="display:none;"></div>
     <div class="sec-title">Inventario del Turno <span class="pill pill-inv">Productos</span></div>
     <div class="table-wrap">
       <table>
@@ -376,6 +488,15 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
           </tr>
         </tfoot>
       </table>
+    </div>
+
+    <div id="neverasSec" style="display:none;">
+      <div class="sec-title">🌡 Control de neveras <span class="pill pill-res" id="neverasPill">Obligatorio para cerrar</span></div>
+      <div class="resumen-card" id="neverasCardWrap">
+        <div class="nev-nota">Anota la temperatura que encontraste al recibir el turno y la que dejas al entregarlo. Usa ＋ y − o escribe el valor. Si tienes más neveras, agrégalas. Sin estos datos no se puede cerrar el turno.</div>
+        <div class="nev-leyenda"><span><i style="background:#2d8a2d"></i>0 a 6 °C ideal</span><span><i style="background:#e6a817"></i>6,1 a 10 °C fuera de rango</span><span><i style="background:#c0392b"></i>más de 10 °C problema</span></div>
+        <div id="neverasCard"></div>
+      </div>
     </div>
 
     <div class="sec-title">Resumen de Caja <span class="pill pill-res">Cierre del Turno</span></div>
@@ -487,22 +608,37 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
     </div>
   </div>
 
-  <div class="action-bar" style="overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;">
-    <button class="btn btn-admin" id="btnAdminApp" style="flex-shrink:0;">⚙ Admin</button>
-    <button class="btn" style="background:#3a1a4a;color:#d0a0f0;display:none;flex-shrink:0;" id="btnCambiarPunto" title="Cambiar de punto de venta o turno sin salir (solo superadmin)">🔀 Cambiar punto</button>
-    <button class="btn" style="background:#1a2a3a;color:#7ab0e0;display:none;flex-shrink:0;" id="btnDashboard">📊 Dashboard</button>
-    <button class="btn" style="background:#1a3a2a;color:#7dbb9d;display:none;flex-shrink:0;" id="btnHistorial">📋 Historial</button>
-    <button class="btn" style="background:#0a2a0a;color:#5dff5d;display:none;flex-shrink:0;" id="btnResumen">📊 Mensual</button>
-    <button class="btn" style="background:#2a1a0a;color:#c8a050;display:none;flex-shrink:0;" id="btnPapelera">🗑 Papelera</button>
-    <button class="btn" style="background:#3a0a0a;color:#e88;display:none;flex-shrink:0;" id="btnFaltantes">⚠ Faltantes</button>
-    <button class="btn btn-imprimir" id="btnImprimir" style="display:none;flex-shrink:0;">🖨 Imprimir</button>
-    <button class="btn" id="btnAplicarRec" style="background:#1a4a1a;color:#a8f0b0;flex-shrink:0;" title="Copia los promedios recomendados a la columna Pedido">✅ Aplicar Recom.</button>
-    <button class="btn" id="btnImprimirPedido" style="background:#5a2d82;color:#fff;flex-shrink:0;">📦 Pedido</button>
-    <button class="btn" id="btnRecargar" onclick="recargarInventario()" style="background:#1a3a50;color:#7ab8d4;flex-shrink:0;" title="Recargar inventario desde la base de datos">🔄 Recargar</button>
+  <div class="dock">
+    <button type="button" class="dock-menu" id="btnMenu" aria-label="Abrir menú de opciones"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>Menú</button>
     <button class="btn btn-cerrar" id="btnCerrar" style="flex-shrink:0;">📅 Cerrar Turno</button>
   </div>
+  <div class="menu-scrim" id="menuScrim"></div>
+  <div class="menu-sheet" id="menuSheet" role="dialog" aria-label="Opciones">
+    <div class="menu-handle"></div>
+    <div class="menu-head"><div class="menu-title">Opciones</div><button type="button" class="menu-x" id="menuX" aria-label="Cerrar menú">✕</button></div>
+    <div class="menu-grid">
+      <button type="button" class="btn hot" id="btnLabores" onclick="labAbrir()"><span class="menu-pill" id="menuLabBadge" style="display:none;"></span><span class="mi">📋</span>Labores</button>
+      <button class="btn" id="btnAplicarRec" title="Copia los promedios recomendados a la columna Pedido"><span class="mi">✅</span>Aplicar recomendado</button>
+      <button class="btn" id="btnImprimirPedido"><span class="mi">📦</span>Pedido</button>
+      <button class="btn btn-admin" id="btnAdminApp"><span class="mi">⚙</span>Admin</button>
+      <button class="btn" id="btnRecargar" onclick="recargarInventario()" title="Recargar inventario desde la base de datos"><span class="mi">🔄</span>Recargar</button>
+    </div>
+    <div id="menuAdminSec" style="display:none;">
+      <div class="menu-sec">Administración</div>
+      <div class="menu-grid">
+        <button type="button" class="btn" id="btnEditarLabores" onclick="labAbrir(true)" style="display:none;"><span class="mi">✏</span>Editar labores</button>
+        <button class="btn" style="display:none;" id="btnCambiarPunto" title="Cambiar de punto de venta o turno sin salir (solo superadmin)"><span class="mi">🔀</span>Cambiar punto</button>
+        <button class="btn" style="display:none;" id="btnDashboard"><span class="mi">📊</span>Dashboard</button>
+        <button class="btn" style="display:none;" id="btnHistorial"><span class="mi">📋</span>Historial</button>
+        <button class="btn" style="display:none;" id="btnResumen"><span class="mi">📅</span>Mensual</button>
+        <button class="btn" style="display:none;" id="btnPapelera"><span class="mi">🗑</span>Papelera</button>
+        <button class="btn" style="display:none;" id="btnFaltantes"><span class="mi">⚠</span>Faltantes</button>
+        <button class="btn btn-imprimir" id="btnImprimir" style="display:none;"><span class="mi">🖨</span>Imprimir</button>
+      </div>
+    </div>
+  </div>
   <!-- FAB agregar producto (solo admin) -->
-  <button id="fabAddProd" onclick="fabAgregarProducto()" style="display:none;position:fixed;bottom:70px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--madera);color:white;border:none;font-size:1.4rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:60;align-items:center;justify-content:center;">＋</button>
+  <button id="fabAddProd" onclick="fabAgregarProducto()" style="display:none;position:fixed;bottom:88px;right:16px;width:48px;height:48px;border-radius:50%;background:var(--madera);color:white;border:none;font-size:1.4rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:60;align-items:center;justify-content:center;">＋</button>
 </div>
 
 <!-- MODAL ADMIN -->
@@ -834,6 +970,25 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </div>
 </div>
 
+<div class="labPanel" id="labPanel" aria-label="Labores del turno">
+  <div class="labHead"><button type="button" class="lh-back" onclick="labCerrar()" aria-label="Volver">‹</button>
+    <div><div class="lh-t" id="labTitulo">Labores del turno</div><div class="lh-s" id="labSub"></div></div>
+    <span class="lh-c" id="labCont"></span></div>
+  <div class="labBody" id="labBody"></div>
+</div>
+
+<div class="overlay" id="labPrintModal">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="labPrintCerrar()">✕</button>
+    <div class="modal-title">🖨 Imprimir labores</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+      <button type="button" class="btn" onclick="labImprimir('turno')" style="flex:none;flex-direction:column;align-items:flex-start;min-height:64px;padding:10px 14px;background:#fffdf9;border:1.5px solid var(--madera);color:#1b1612;font-size:.9rem;"><span>Este turno</span><span style="font-weight:500;font-size:.75rem;color:#5e4d3b;">Con lo marcado hasta ahora, la hora y quién confirmó.</span></button>
+      <button type="button" class="btn" onclick="labImprimir('semana')" style="flex:none;flex-direction:column;align-items:flex-start;min-height:64px;padding:10px 14px;background:#fffdf9;border:1.5px solid var(--gris3);color:#1b1612;font-size:.9rem;"><span>Hoja en blanco de la semana</span><span style="font-weight:500;font-size:.75rem;color:#5e4d3b;">Para llenar a mano, como la hoja de ahora.</span></button>
+      <button type="button" class="btn" onclick="labPrintCerrar()" style="flex:none;min-height:48px;background:#eee;color:#333;">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="cierreModal">
   <div class="modal modal-sm">
     <button class="modal-x" id="cierreX">✕</button>
@@ -1040,7 +1195,8 @@ function enviarResumenCierre(){
       if(dif2===0) return '\u2705 *Cuadra perfecto*';
       if(dif2<0) return '\u26A0\uFE0F *Falta: $'+Math.abs(dif2).toLocaleString('es-CO')+'*';
       return '\uD83D\uDFE2 *Sobran: $'+dif2.toLocaleString('es-CO')+'*';
-    })();
+    })()
+    +tempTelegramTxt();
   tgEnviar(msg);
 }
 // Claves de acceso — ofuscadas (partidas + base64) para que no aparezcan en texto plano
@@ -1057,6 +1213,7 @@ var REGION_PUNTOS = {
   quindio: ['autopista','boquia','tebaida'],
   valle: ['km25','km25_pan','km18','penon','colseguros']
 };
+// ── CONFIGURACIÓN: VENTA AL POR MAYOR ───────────────────────────────
 var adminRegion = null; // null = acceso total; 'quindio' | 'valle' = restringido a esa zona
 function regionDeClave(clave){
   if(clave===PASS_ADMIN_QUINDIO) return 'quindio';
@@ -1367,6 +1524,7 @@ function showAdminUI(){
   if(btnC&&!window._turnoCerrado) btnC.style.display='flex';
   renderEntries('entregas');
   buildTable();
+  try{ labRefrescar(); }catch(e){}
   // Timer 5 minutos
   clearInterval(adminTimer);
   // Preguntar duración de sesión
@@ -1383,6 +1541,7 @@ function showAdminUI(){
       isAdmin=false;
       isSuperAdmin=false;
       adminRegion=null;
+      try{ labRefrescar(); }catch(e){}
       var b=document.getElementById('adminBadge');
       if(b){b.style.display='none'; b.textContent='🔑 Admin';}
       var bH=document.getElementById('btnHistorial');
@@ -1512,7 +1671,8 @@ function salir(){
   clearTimeout(saveTimer);
 
   function limpiarUI(){
-    sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false;
+    sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false; labList=[]; labCat=[]; window._labSaved=null;
+    try{ labCerrar(); renderLabCard(); renderCierreHero(); }catch(e){}
     clearInterval(adminTimer);
     clearInterval(syncCheckTimer);
     clearTimeout(saveTimer);
@@ -1642,6 +1802,8 @@ function cargarRecomendados(){
 
 function cargarInventario(){
   setSyncStatus('sync','⟳ Cargando...');
+  probarColumnaTemperaturas();
+  labProbar();
   sbGet('productos_caja','order=orden.asc,id.asc')
     .then(function(prods){
       productos=prods.filter(function(p){return p.name&&p.name.trim();})
@@ -1749,7 +1911,7 @@ function cargarInventario(){
         var dEl0=document.getElementById('inDatafono'); if(dEl0) dEl0.value='';
         var tEl0=document.getElementById('inTransferencia'); if(tEl0) tEl0.value='';
         var descEl0=document.getElementById('inDescuentos'); if(descEl0) descEl0.value='';
-        gastos=[]; entregas=[]; entregaFinal=false;
+        gastos=[]; entregas=[]; entregaFinal=false; nevList=tempBackupLeer()||[]; window._labSaved=null;
         document.getElementById('inNota').value='';
         var nsEl0=document.getElementById('inNotaSig'); if(nsEl0) nsEl0.value='';
         var peEl0=document.getElementById('inPedidoExtra'); if(peEl0) peEl0.value='';
@@ -1772,6 +1934,8 @@ function cargarInventario(){
             return Object.assign({confirmada:false,esFinal:false},e,{confirmada:!!e.confirmada});
           });
           entregaFinal=saved.entrega_final||false;
+          nevList=(Array.isArray(saved.temperaturas)&&saved.temperaturas.length)?saved.temperaturas:(tempBackupLeer()||[]);
+          window._labSaved=Array.isArray(saved.labores)?saved.labores:null;
           // También revisar las entregas individuales por si acaso
           if(!entregaFinal&&saved.entregas_list){
             entregaFinal=saved.entregas_list.some(function(e){return e.esFinal||e.es_final;});
@@ -1893,6 +2057,8 @@ function cargarInventario(){
           if(!hayPendiente) addEntry('entregas');
         }
         renderAllEntries(); recalc();
+        renderNeveras();
+        labCargar();
         cargarRecomendados();
         clearInterval(syncCheckTimer);
         // Verificar cada 30 minutos si el turno fue cerrado por otro dispositivo
@@ -2512,10 +2678,588 @@ function recalc(){
       document.getElementById('sbLblTransferencia').textContent='—';
     }
   }
+  try{ renderCierreHero(); }catch(e){}
 }
 
 // ── GUARDAR ──────────────────────────────────────
 function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(guardar,1200);}
+
+// ==NEV-BEGIN== CONTROL DE NEVERAS Y PRECIOS POR MAYOR
+// Lista de neveras del turno: [{n:1,recibe:4,entrega:5.5}, ...]  (n = número que se ve: "Nevera n")
+var nevList = [];
+var NEV_PASO = 0.5;
+function tempNum(v){
+  if(v===null||v===undefined||v==='') return null;
+  var n=parseFloat(String(v).replace(',','.'));
+  return isNaN(n)?null:n;
+}
+// Estado de una temperatura: ok (0 a 6) · warn (6,1 a 10, o bajo 0) · crit (más de 10)
+function tempEstado(t){
+  if(t===null) return '';
+  if(t>10) return 'crit';
+  if(t>6||t<0) return 'warn';
+  return 'ok';
+}
+function tempMsg(t){
+  var e=tempEstado(t);
+  if(e==='ok') return '✔ Ideal';
+  if(e==='crit') return '🚨 Problema: muy alta';
+  if(e==='warn') return t<0?'⚠ Bajo 0 °C':'⚠ Fuera de rango';
+  return '';
+}
+function tempFmt(t){ return t===null?'—':String(t).replace('.',',')+' °C'; }
+function tgSafeTxt(x){ return String(x||'').replace(/[_*`\[\]]/g,' '); }
+function nevBuscar(n){ for(var i=0;i<nevList.length;i++){ if(nevList[i].n===n) return nevList[i]; } return null; }
+// Respaldo en este dispositivo (por si se recarga la página antes de que exista la columna en la base)
+function tempKey(){ return sesion?('nev_'+sesion.fecha+'_'+sesion.punto+'_'+sesion.turno):null; }
+function tempBackupGuardar(){ try{ var k=tempKey(); if(k) localStorage.setItem(k,JSON.stringify(nevList)); }catch(e){} }
+function tempBackupLeer(){
+  try{
+    var k=tempKey(); var v=k?localStorage.getItem(k):null; var a=v?JSON.parse(v):null;
+    return Array.isArray(a)?a:null;
+  }catch(e){ return null; }
+}
+// Lista de datos que faltan (vacía = todo diligenciado)
+function neverasFaltantes(){
+  var out=[];
+  if(!nevList.length) return ['Registra al menos una nevera'];
+  nevList.forEach(function(nv){
+    if(tempNum(nv.recibe)===null) out.push('Nevera '+nv.n+' — temperatura al recibir turno');
+    if(tempNum(nv.entrega)===null) out.push('Nevera '+nv.n+' — temperatura al entregar turno');
+  });
+  return out;
+}
+// Solo se envían a la base si la columna existe (ver probarColumnaTemperaturas); así el cierre
+// nunca se rompe si todavía no se ha creado la columna.
+function extraTemp(){
+  var o=(window._tempCol===true)?{temperaturas:nevList}:{};
+  if(window._labCol===true&&typeof labList!=='undefined'&&labList.length) o.labores=labList;
+  return o;
+}
+function probarColumnaTemperaturas(){
+  if(window._tempColChecked) return;
+  window._tempColChecked=true;
+  fetch(SB_URL+'/rest/v1/turnos_caja?select=temperaturas&limit=1',{headers:HEADS})
+    .then(function(r){window._tempCol=r.ok; renderNeveras();})
+    .catch(function(){window._tempCol=false; renderNeveras();});
+}
+var NEV_RING_C=2*Math.PI*44;
+function nevRingAttrs(t){
+  var e=tempEstado(t);
+  var col=e==='ok'?'#5fd38a':e==='warn'?'#ffc247':e==='crit'?'#ff8a7d':'#bfae96';
+  var f=(t===null)?0:Math.max(0.04,Math.min(1,t/12));
+  return {col:col,dash:(f*NEV_RING_C).toFixed(1)+' '+NEV_RING_C.toFixed(1)};
+}
+function nevCol(nv,campo,rotulo,bloq){
+  var t=tempNum(nv[campo]);
+  var e=tempEstado(t);
+  var ra=nevRingAttrs(t);
+  return '<div class="nev-col nev-g"><label>'+rotulo+'</label>'
+    +'<div class="nev-ring"><svg viewBox="0 0 100 100" width="104" height="104" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="#3b3027" stroke-width="8"/>'
+    +'<circle id="nevring_'+nv.n+'_'+campo+'" cx="50" cy="50" r="44" fill="none" stroke="'+ra.col+'" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+ra.dash+'" transform="rotate(-90 50 50)"/></svg>'
+    +'<input type="number" step="0.1" inputmode="decimal" class="nev-in'+(e?' '+e:'')+'" id="nev_'+nv.n+'_'+campo+'" value="'+(t===null?'':t)+'" '+(bloq?'disabled ':'')+'oninput="onTempInput('+nv.n+',\''+campo+'\')" placeholder="°C" aria-label="'+rotulo+'"></div>'
+    +'<div class="nev-msg'+(e?' '+e:'')+'" id="nevmsg_'+nv.n+'_'+campo+'">'+tempMsg(t)+'</div>'
+    +'<div class="nev-btns">'
+    +'<button type="button" class="nev-b" '+(bloq?'disabled ':'')+'onclick="tempStep('+nv.n+',\''+campo+'\','+(-NEV_PASO)+')" aria-label="Bajar temperatura">−</button>'
+    +'<button type="button" class="nev-b" '+(bloq?'disabled ':'')+'onclick="tempStep('+nv.n+',\''+campo+'\','+NEV_PASO+')" aria-label="Subir temperatura">＋</button>'
+    +'</div></div>';
+}
+function actualizarPillNeveras(){
+  var pill=document.getElementById('neverasPill'); if(!pill) return;
+  var falt=neverasFaltantes().length;
+  pill.textContent=falt?(falt===1?'Falta 1 dato':'Faltan '+falt+' datos'):'✔ Completo';
+  pill.style.background=falt?'':'#dff3df';
+  try{ renderCierreHero(); }catch(e){}
+}
+function renderNeveras(){
+  var sec=document.getElementById('neverasSec'); if(!sec) return;
+  sec.style.display='';
+  var cerrado=!!window._turnoCerrado;
+  var bloq=cerrado&&!isAdmin;
+  // Turno abierto: siempre arranca con "Nevera 1"
+  if(!nevList.length&&!cerrado) nevList=[{n:1,recibe:null,entrega:null}];
+  var h='';
+  if(window._tempCol===false){
+    h+='<div class="nev-aviso">⚠ El guardado de temperaturas en la base de datos todavía no está activado. Anótalas igual: se envían a Telegram al cerrar y se guardan en este dispositivo, pero otro dispositivo no las verá.</div>';
+  }
+  if(!nevList.length&&cerrado){
+    h+='<div class="nev-nota">Este turno no tiene registro de temperatura.</div>';
+  }
+  nevList.forEach(function(nv){
+    h+='<div class="nev-row"><div class="nev-head"><span class="nev-name">❄ Nevera '+nv.n+'</span>'
+      +(bloq?'':'<button type="button" class="nev-del" onclick="quitarNevera('+nv.n+')" title="Quitar esta nevera">✕</button>')
+      +'</div><div class="nev-cols">'
+      +nevCol(nv,'recibe','Al recibir turno',bloq)
+      +nevCol(nv,'entrega','Al entregar turno',bloq)
+      +'</div></div>';
+  });
+  if(!bloq) h+='<button type="button" class="btn-add-entry" onclick="agregarNevera()">＋ Agregar nevera</button>';
+  document.getElementById('neverasCard').innerHTML=h;
+  actualizarPillNeveras();
+}
+function agregarNevera(){
+  var max=0; nevList.forEach(function(x){ if(x.n>max) max=x.n; });
+  nevList.push({n:max+1,recibe:null,entrega:null});
+  renderNeveras(); tempBackupGuardar(); autoSave();
+}
+function quitarNevera(n){
+  var nv=nevBuscar(n); if(!nv) return;
+  var tieneDatos=tempNum(nv.recibe)!==null||tempNum(nv.entrega)!==null;
+  if(tieneDatos&&!confirm('¿Quitar la Nevera '+n+' y sus temperaturas?')) return;
+  nevList=nevList.filter(function(x){return x.n!==n;});
+  renderNeveras(); tempBackupGuardar(); autoSave();
+}
+// Refresca solo el campo tocado (sin redibujar la tarjeta, para no perder el foco al escribir)
+function nevRefrescarCampo(n,campo){
+  var nv=nevBuscar(n); if(!nv) return;
+  var t=tempNum(nv[campo]); var e=tempEstado(t);
+  var inp=document.getElementById('nev_'+n+'_'+campo);
+  if(inp) inp.className='nev-in'+(e?' '+e:'');
+  var rg=document.getElementById('nevring_'+n+'_'+campo);
+  if(rg){ var ra=nevRingAttrs(t); rg.setAttribute('stroke',ra.col); rg.setAttribute('stroke-dasharray',ra.dash); }
+  var m=document.getElementById('nevmsg_'+n+'_'+campo);
+  if(m){ m.className='nev-msg'+(e?' '+e:''); m.textContent=tempMsg(t); }
+  actualizarPillNeveras();
+}
+function onTempInput(n,campo){
+  var inp=document.getElementById('nev_'+n+'_'+campo); var nv=nevBuscar(n); if(!inp||!nv) return;
+  nv[campo]=tempNum(inp.value);
+  nevRefrescarCampo(n,campo); tempBackupGuardar(); autoSave();
+}
+// Botones ＋ / −. Si el campo está vacío, parte de la otra lectura de la misma nevera (o de 4 °C).
+function tempStep(n,campo,delta){
+  var nv=nevBuscar(n); if(!nv) return;
+  var cur=tempNum(nv[campo]);
+  if(cur===null){
+    var otro=tempNum(nv[campo==='recibe'?'entrega':'recibe']);
+    cur=(otro!==null)?otro:4;
+  }
+  var nuevo=Math.round((cur+delta)*10)/10;
+  nv[campo]=nuevo;
+  var inp=document.getElementById('nev_'+n+'_'+campo); if(inp) inp.value=nuevo;
+  nevRefrescarCampo(n,campo); tempBackupGuardar(); autoSave();
+}
+// Bloque de texto para el mensaje de cierre de Telegram
+function tempTelegramTxt(){
+  if(!nevList.length) return '';
+  var rank={'':0,ok:0,warn:1,crit:2};
+  var ico=['🟢','🟡','🔴'];
+  var peor=0;
+  var out='\n\n🌡 *Neveras:*';
+  nevList.forEach(function(nv){
+    var a=tempNum(nv.recibe), b=tempNum(nv.entrega);
+    var ea=tempEstado(a), eb=tempEstado(b);
+    var r=Math.max(rank[ea],rank[eb]); if(r>peor) peor=r;
+    out+='\n'+ico[r]+' Nevera '+nv.n+': recibe '+tempFmt(a)+(rank[ea]===2?' 🚨':(rank[ea]===1?' ⚠️':''))
+      +' → entrega '+tempFmt(b)+(rank[eb]===2?' 🚨':(rank[eb]===1?' ⚠️':''));
+  });
+  if(peor===2) out+='\n🚨 *Hay neveras con PROBLEMA de temperatura (más de 10 °C)*';
+  else if(peor===1) out+='\n⚠️ *Hay neveras fuera de rango (ideal: 0 a 6 °C)*';
+  return out;
+}
+// Si falta algún dato de temperatura: avisa, lleva a la tarjeta y devuelve true (hay que frenar el cierre)
+function bloquearPorNeveras(){
+  var falt=neverasFaltantes();
+  if(!falt.length) return false;
+  document.getElementById('cierreModal').classList.remove('open');
+  alert('❌ No se puede cerrar el turno.\n\nFalta registrar la temperatura de las neveras:\n\n• '+falt.join('\n• ')+'\n\nCompleta la tarjeta "Control de neveras" y vuelve a intentar.');
+  var sec=document.getElementById('neverasSec');
+  if(sec&&sec.scrollIntoView) sec.scrollIntoView({behavior:'smooth',block:'center'});
+  return true;
+}
+function regionDePunto(){
+  var reg=null;
+  Object.keys(REGION_PUNTOS).forEach(function(r){ if(sesion&&REGION_PUNTOS[r].indexOf(sesion.punto)!==-1) reg=r; });
+  return reg;
+}
+// ==NEV-END==
+// ==LAB-BEGIN== LABORES DEL TURNO · MENÚ DESPLEGABLE · TARJETA DE CIERRE
+var labCat=[];        // catálogo activo (tabla labores_lista)
+var labList=[];       // estado del turno: [{id,g,n,h:'hora'|null,v:{t,by}|null}]
+var labFiltro='todas';
+var labEditando=false;
+var labNuevoGrupo='';
+var labNuevoTxt='';
+var LAB_GRUPOS_BASE=['Aseo y orden','Mercancía y revisiones','Personal e inspecciones','Punto y cierre','Producción y bodega'];
+function labHora(){ return new Date().toLocaleTimeString('es-CO',{timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit'}); }
+function labNombreAdmin(){ return (typeof editorNombre!=='undefined'&&editorNombre&&String(editorNombre).trim())||(isSuperAdmin?'Súper admin':'Admin'); }
+function labKey(){ return sesion?('lab_'+sesion.fecha+'_'+sesion.punto+'_'+sesion.turno):null; }
+function labBackupGuardar(){ try{ var k=labKey(); if(k) localStorage.setItem(k,JSON.stringify(labList)); }catch(e){} }
+function labBackupLeer(){
+  try{ var k=labKey(); var v=k?localStorage.getItem(k):null; var a=v?JSON.parse(v):null; return Array.isArray(a)?a:null; }catch(e){ return null; }
+}
+function labBuscar(id){ for(var i=0;i<labList.length;i++){ if(String(labList[i].id)===String(id)) return labList[i]; } return null; }
+function labConteo(){
+  var h=0,v=0; labList.forEach(function(l){ if(l.h) h++; if(l.v) v++; });
+  return {total:labList.length,h:h,v:v,pend:labList.length-h,porVer:h-v};
+}
+// Solo se envían a la base si la columna existe (así el cierre nunca se rompe)
+function labProbar(){
+  if(window._labColChecked) return;
+  window._labColChecked=true;
+  fetch(SB_URL+'/rest/v1/turnos_caja?select=labores&limit=1',{headers:HEADS})
+    .then(function(r){ window._labCol=r.ok; })
+    .catch(function(){ window._labCol=false; });
+}
+// Carga el catálogo y lo mezcla con lo marcado en este turno
+function labCargar(){
+  var saved=Array.isArray(window._labSaved)?window._labSaved:null;
+  if(!saved) saved=labBackupLeer();
+  var cerrado=!!window._turnoCerrado;
+  function armar(cat){
+    var porId={}; (saved||[]).forEach(function(s){ porId[String(s.id)]=s; });
+    var out=[];
+    if(cerrado){
+      // Turno cerrado: es historia, se muestra tal como quedó
+      out=(saved||[]).map(function(s){ return {id:s.id,g:s.g,n:s.n,h:s.h||null,v:s.v||null}; });
+    } else {
+      var usados={};
+      cat.forEach(function(c){
+        var s=porId[String(c.id)]; usados[String(c.id)]=1;
+        out.push({id:c.id,g:c.grupo,n:c.nombre,h:s?(s.h||null):null,v:s?(s.v||null):null});
+      });
+      // Labores quitadas de la lista que ya tenían marca en este turno: se conservan
+      (saved||[]).forEach(function(s){
+        if(!usados[String(s.id)]&&(s.h||s.v)) out.push({id:s.id,g:s.g,n:s.n,h:s.h||null,v:s.v||null});
+      });
+    }
+    labCat=cat; labList=out;
+    labRefrescar();
+  }
+  sbGet('labores_lista','activo=eq.true&order=orden.asc,id.asc')
+    .then(function(rows){ window._labTbl=true; armar(rows||[]); })
+    .catch(function(){ window._labTbl=false; armar([]); });
+}
+function labRefrescar(){
+  if(!isAdmin) labEditando=false;
+  try{ renderLabCard(); }catch(e){}
+  try{ renderCierreHero(); }catch(e){}
+  var p=document.getElementById('labPanel');
+  if(p&&p.classList.contains('open')) renderLabores();
+}
+function labTocado(){ labBackupGuardar(); labRefrescar(); autoSave(); }
+function labPuedeMarcar(){ return !(window._turnoCerrado&&!isAdmin); }
+function labHacer(id){
+  var l=labBuscar(id); if(!l) return;
+  if(!labPuedeMarcar()) return;
+  if(l.v&&!isAdmin) return;          // ya confirmada por el supervisor: la cajera no la toca
+  if(l.h){ l.h=null; l.v=null; } else { l.h=labHora(); l.v=null; }
+  labTocado();
+}
+function labVerificar(id){
+  if(!isAdmin) return;               // solo admin / súper admin
+  var l=labBuscar(id); if(!l||!l.h) return;
+  l.v=l.v?null:{t:labHora(),by:labNombreAdmin()};
+  labTocado();
+}
+function labConfirmarTodas(){
+  if(!isAdmin) return;
+  var by=labNombreAdmin(), t=labHora();
+  labList.forEach(function(l){ if(l.h&&!l.v) l.v={t:t,by:by}; });
+  labTocado();
+}
+function labFiltrar(f){ labFiltro=f; renderLabores(); }
+function labToggleEdit(){ if(!isAdmin) return; labEditando=!labEditando; renderLabores(); }
+function labSetGrupo(g){
+  var inp=document.getElementById('labNuevoNombre'); if(inp) labNuevoTxt=inp.value;
+  labNuevoGrupo=g; renderLabores();
+}
+function labAgregar(){
+  if(!isAdmin) return;
+  var inp=document.getElementById('labNuevoNombre');
+  var nombre=((inp&&inp.value)||'').trim();
+  if(!nombre){ if(inp) inp.focus(); return; }
+  if(window._labTbl===false){ alert('Todavía no existe la tabla de labores en la base de datos.\nEjecuta el SQL de labores y vuelve a intentar.'); return; }
+  var grupo=labNuevoGrupo||LAB_GRUPOS_BASE[0];
+  var maxO=0; labCat.forEach(function(c){ if((c.orden||0)>maxO) maxO=c.orden; });
+  fetch(SB_URL+'/rest/v1/labores_lista',{
+    method:'POST',
+    headers:Object.assign({},HEADS,{'Prefer':'return=representation'}),
+    body:JSON.stringify({grupo:grupo,nombre:nombre,orden:maxO+1})
+  }).then(function(r){ return r.ok?r.json():r.text().then(function(t){throw new Error(t);}); })
+    .then(function(rows){
+      var c=rows&&rows[0]; if(!c) throw new Error('Sin respuesta de la base de datos');
+      labCat.push(c);
+      labList.push({id:c.id,g:c.grupo,n:c.nombre,h:null,v:null});
+      labNuevoTxt='';
+      labTocado();
+    })
+    .catch(function(e){ alert('No se pudo agregar la labor.\n\n'+e.message); });
+}
+function labQuitar(id){
+  if(!isAdmin) return;
+  var l=labBuscar(id); if(!l) return;
+  if(!confirm('¿Quitar la labor "'+l.n+'" de la lista?\n\nValdrá desde los próximos turnos. Lo ya registrado no se borra.')) return;
+  fetch(SB_URL+'/rest/v1/labores_lista?id=eq.'+encodeURIComponent(id),{
+    method:'PATCH',
+    headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),
+    body:JSON.stringify({activo:false})
+  }).then(function(r){
+    if(!r.ok) return r.text().then(function(t){throw new Error(t);});
+    labCat=labCat.filter(function(c){ return String(c.id)!==String(id); });
+    // Si ya tenía marca en este turno se conserva; si no, desaparece de la lista
+    if(!l.h&&!l.v) labList=labList.filter(function(x){ return String(x.id)!==String(id); });
+    labTocado();
+  }).catch(function(e){ alert('No se pudo quitar la labor.\n\n'+e.message); });
+}
+function labAbrir(editar){
+  var p=document.getElementById('labPanel'); if(!p) return;
+  labEditando=!!(editar&&isAdmin);
+  p.classList.add('open');
+  document.body.style.overflow='hidden';
+  renderLabores();
+  p.scrollTop=0;
+}
+function labCerrar(){
+  var p=document.getElementById('labPanel'); if(p) p.classList.remove('open');
+  document.body.style.overflow='';
+  labEditando=false;
+}
+function labIniciales(n){
+  var p=String(n||'').trim().split(/\s+/); if(!p[0]) return '?';
+  return (p[0].charAt(0)+(p[1]?p[1].charAt(0):'')).toUpperCase();
+}
+var LAB_SVG_CHECK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+var LAB_SVG_LOCK='<svg viewBox="0 0 24 24" aria-hidden="true" style="width:18px;height:18px;stroke-width:2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+function renderLabores(){
+  var body=document.getElementById('labBody'); if(!body) return;
+  var c=labConteo();
+  var sub=document.getElementById('labSub'); if(sub) sub.textContent=document.getElementById('hdrSub').textContent;
+  var tit=document.getElementById('labTitulo'); if(tit) tit.textContent=labEditando?'Editar labores':'Labores del turno';
+  var cont=document.getElementById('labCont'); if(cont) cont.textContent=c.h+'/'+c.total;
+  var cerrado=!!window._turnoCerrado;
+  var h='';
+  var cajero=sesion?(sesion.cajero+(sesion.cajeroAux?' & '+sesion.cajeroAux:'')):'';
+  // Tarjeta de responsables
+  h+='<div class="dcard">';
+  h+='<div style="display:flex;align-items:center;gap:12px;">'
+    +'<div style="width:46px;height:46px;border-radius:50%;background:#e3b85a;color:#1b1612;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;">'+escH(labIniciales(sesion&&sesion.cajero))+'</div>'
+    +'<div style="min-width:0;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Realiza las labores</div>'
+    +'<div style="font-size:1rem;font-weight:700;margin-top:2px;">'+escH(cajero)+'</div></div></div>';
+  h+='<div style="height:1px;background:#3b3027;margin:14px 0;"></div>';
+  if(isAdmin){
+    h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
+      +'<span style="font-size:1.3rem;">🔓</span><div><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Confirmación del supervisor</div>'
+      +'<div style="font-size:.92rem;font-weight:700;margin-top:2px;">Habilitada: ingresaste como '+escH(labNombreAdmin())+'</div></div></div>';
+    var sinPor=(c.porVer===0);
+    h+='<button type="button" class="dbtn" '+(sinPor?'disabled ':'')+'onclick="labConfirmarTodas()" style="background:'+(sinPor?'#3b3027':'#e3b85a')+';color:'+(sinPor?'#bfae96':'#1b1612')+';">'
+      +(sinPor?'No hay labores por confirmar':'Confirmar las '+c.porVer+' labores hechas')+'</button>';
+  } else {
+    h+='<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.3rem;">🔒</span><div>'
+      +'<div style="font-size:.92rem;font-weight:700;">Confirmación del supervisor</div>'
+      +'<div style="font-size:.78rem;color:#cdbda5;line-height:1.4;margin-top:3px;">Bloqueada. El supervisor la confirma al ingresar como admin al inventario. Tú solo marcas «Hecho».</div></div></div>';
+  }
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">'
+    +'<div style="background:#2a231c;border-radius:14px;padding:10px 12px;"><div style="font-size:.72rem;color:#cdbda5;">Hechas</div><div style="font-size:1.3rem;font-weight:700;color:#5fd38a;">'+c.h+'<span style="font-size:.8rem;color:#cdbda5;font-weight:500;"> de '+c.total+'</span></div></div>'
+    +'<div style="background:#2a231c;border-radius:14px;padding:10px 12px;"><div style="font-size:.72rem;color:#cdbda5;">Confirmadas</div><div style="font-size:1.3rem;font-weight:700;color:#e3b85a;">'+c.v+'<span style="font-size:.8rem;color:#cdbda5;font-weight:500;"> de '+c.total+'</span></div></div></div>';
+  h+='<button type="button" class="dbtn" onclick="labPrintAbrir()" style="margin-top:12px;background:transparent;border:1.5px solid #4a3d31;color:#f3ece1;">🖨 Imprimir labores</button>';
+  h+='</div>';
+  if(isAdmin){
+    h+='<button type="button" class="dbtn" onclick="labToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(labEditando?'var(--madera)':'#fffdf9')+';color:'+(labEditando?'#fff':'var(--madera)')+';">'
+      +(labEditando?'Terminar edición':'✏ Agregar o quitar labores')+'</button>';
+  }
+  if(window._labTbl===false){
+    h+='<div style="background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:10px;padding:10px 12px;font-size:.8rem;margin-bottom:14px;">⚠ La lista de labores todavía no está activada en la base de datos (falta ejecutar el SQL de labores).</div>';
+  }
+  if(cerrado&&!c.total){
+    h+='<div style="padding:24px 12px;text-align:center;color:#5e4d3b;">Este turno no tiene labores registradas.</div>';
+  }
+  // Formulario para agregar
+  if(isAdmin&&labEditando){
+    var gs=LAB_GRUPOS_BASE.slice();
+    labList.forEach(function(l){ if(l.g&&gs.indexOf(l.g)===-1) gs.push(l.g); });
+    var sel=labNuevoGrupo||gs[0];
+    h+='<div class="dcard"><div class="dc-h">Agregar una labor</div>'
+      +'<label for="labNuevoNombre" style="font-size:.78rem;color:#cdbda5;">Nombre de la labor</label>'
+      +'<input id="labNuevoNombre" class="lab-in" type="text" maxlength="90" placeholder="Ej.: Revisar extintor" value="'+escH(labNuevoTxt)+'" oninput="labNuevoTxt=this.value" style="margin:6px 0 12px;">'
+      +'<div style="font-size:.78rem;color:#cdbda5;">Grupo</div><div class="lab-chips">';
+    gs.forEach(function(g){
+      var on=(g===sel);
+      h+='<button type="button" class="lab-chip" onclick="labSetGrupo(this.getAttribute(\'data-g\'))" data-g="'+escH(g)+'" style="border:1px solid '+(on?'#e3b85a':'#4a3d31')+';background:'+(on?'#e3b85a':'transparent')+';color:'+(on?'#1b1612':'#e3d6c1')+';">'+escH(g)+'</button>';
+    });
+    h+='</div><button type="button" class="dbtn" onclick="labAgregar()" style="background:#e3b85a;color:#1b1612;">＋ Agregar a la lista</button>'
+      +'<div style="font-size:.74rem;color:#bfae96;line-height:1.4;margin-top:10px;">Los cambios valen desde los próximos turnos. Lo ya registrado en turnos anteriores no se modifica.</div></div>';
+  }
+  // Filtros
+  if(!labEditando&&c.total){
+    var fs=[['todas','Todas'],['pend','Pendientes ('+c.pend+')'],['ver','Sin confirmar ('+c.porVer+')']];
+    h+='<div class="lab-seg">';
+    fs.forEach(function(f){
+      var on=(labFiltro===f[0]);
+      h+='<button type="button" onclick="labFiltrar(\''+f[0]+'\')" style="background:'+(on?'#fffdf9':'transparent')+';color:'+(on?'#7c4a1e':'#4a3d2e')+';">'+f[1]+'</button>';
+    });
+    h+='</div>';
+  }
+  // Grupos y filas
+  var grupos=[], idx={};
+  labList.forEach(function(l){
+    var g=l.g||'Otras';
+    if(idx[g]===undefined){ idx[g]=grupos.length; grupos.push({nombre:g,items:[]}); }
+    grupos[idx[g]].items.push(l);
+  });
+  var hayFilas=false;
+  grupos.forEach(function(g){
+    var hechos=0; g.items.forEach(function(l){ if(l.h) hechos++; });
+    var filas='';
+    g.items.forEach(function(l){
+      var visible=labEditando||labFiltro==='todas'||(labFiltro==='pend'&&!l.h)||(labFiltro==='ver'&&l.h&&!l.v);
+      if(!visible) return;
+      var nota='';
+      if(!labEditando){
+        if(l.h) nota='Hecho a las '+escH(l.h);
+        if(l.v) nota+=' · Confirmó '+escH(l.v.by)+' '+escH(l.v.t);
+      }
+      filas+='<div class="lab-row"><div class="ln">'+escH(l.n)+(nota?'<div class="ls">'+nota+'</div>':'')+'</div>';
+      if(labEditando){
+        filas+='<button type="button" class="lchk" onclick="labQuitar(\''+l.id+'\')" aria-label="Quitar labor de la lista: '+escH(l.n)+'" style="border:2px solid #b3382b;background:#fffdf9;color:#b3382b;">🗑</button>';
+      } else {
+        var hOff=!labPuedeMarcar()||(!!l.v&&!isAdmin);
+        filas+='<button type="button" class="lchk" '+(hOff?'disabled ':'')+'onclick="labHacer(\''+l.id+'\')" aria-label="'+(l.h?'Quitar como hecha: ':'Marcar como hecha: ')+escH(l.n)+'" '
+          +'style="border:2px solid '+(l.h?'#2d6a2d':(hOff?'#d9cdb8':'#7c4a1e'))+';background:'+(l.h?'#2d6a2d':(hOff?'#ece4d6':'#fffdf9'))+';color:#fff;">'+(l.h?LAB_SVG_CHECK:'')+'</button>';
+        var puedeV=isAdmin&&!!l.h;
+        filas+='<button type="button" class="lchk" '+(puedeV?'':'disabled ')+'onclick="labVerificar(\''+l.id+'\')" aria-label="'+(isAdmin?((l.v?'Quitar confirmación: ':'Confirmar como supervisor: ')+escH(l.n)):('Bloqueado, lo confirma el supervisor: '+escH(l.n)))+'" '
+          +'style="border:2px solid '+(l.v?'#c9973b':(puedeV?'#a07325':'#d9cdb8'))+';background:'+(l.v?'#e3b85a':(puedeV?'#fffdf9':'#ece4d6'))+';color:#1b1612;">'
+          +(l.v?LAB_SVG_CHECK:(isAdmin?'':'<span style="color:#8a7a64;display:flex;">'+LAB_SVG_LOCK+'</span>'))+'</button>';
+      }
+      filas+='</div>';
+    });
+    if(!filas) return;
+    hayFilas=true;
+    h+='<section class="lab-grp"><div class="lab-gh"><div class="gn">'+escH(g.nombre)+'<span class="gs">'+(labEditando?(g.items.length+' labores'):(hechos+' de '+g.items.length+' hechas'))+'</span></div>'
+      +(labEditando?'':'<div class="gc" style="color:#1d4d1d;">Hecho</div><div class="gc" style="color:#6b4a00;">Super.</div>')+'</div>'+filas+'</section>';
+  });
+  if(!hayFilas&&c.total&&!labEditando) h+='<div style="padding:24px 12px;text-align:center;color:#5e4d3b;font-size:.9rem;">No hay labores en esta lista.</div>';
+  body.innerHTML=h;
+}
+// Tarjeta en la pantalla principal
+function renderLabCard(){
+  var el=document.getElementById('labCard'); if(!el) return;
+  if(!sesion||(!labList.length&&window._labTbl!==false)){ el.style.display='none'; return; }
+  el.style.display='';
+  if(!labList.length){
+    el.innerHTML='<div class="dc-h">Labores del turno</div><div style="font-size:.8rem;color:#cdbda5;">Todavía no están activadas en la base de datos.</div>';
+    return;
+  }
+  var c=labConteo();
+  var pH=(c.h/c.total*100).toFixed(1), pV=(c.v/c.total*100).toFixed(1);
+  el.innerHTML='<div class="dc-h">Labores del turno</div>'
+    +'<div class="dbar-l"><span>Hechas por la cajera</span><b>'+c.h+' de '+c.total+'</b></div><div class="dbar"><i style="width:'+pH+'%;background:#5fd38a;"></i></div>'
+    +'<div class="dbar-l"><span>Confirmadas por el supervisor</span><b>'+c.v+' de '+c.total+'</b></div><div class="dbar" style="margin-bottom:6px;"><i style="width:'+pV+'%;background:#e3b85a;"></i></div>'
+    +'<div style="font-size:.72rem;color:#cdbda5;margin-bottom:12px;">🔒 '+(isAdmin?'Confirma: '+escH(labNombreAdmin()):'Las confirma el supervisor (ingresa como admin)')+'</div>'
+    +'<button type="button" class="dbtn" onclick="labAbrir()" style="background:#e3b85a;color:#1b1612;">Abrir labores ›</button>';
+}
+// Tarjeta "Antes de cerrar el turno" (solo informa; los bloqueos siguen en abrirCierre)
+function renderCierreHero(){
+  var el=document.getElementById('cierreHero'); if(!el) return;
+  if(!sesion||window._turnoCerrado||!invRows||!invRows.length){ el.style.display='none'; return; }
+  var pasos=[];
+  var sinFinal=invRows.filter(function(r){
+    var mov=(r.ant||0)>0||(r.entrante||0)>0||r.disponible>0;
+    return mov&&(r.inv_final===null||r.inv_final===undefined||r.inv_final==='');
+  }).length;
+  pasos.push({ok:sinFinal===0,txt:sinFinal===0?'Inventario final completo':('Falta el inventario final de '+sinFinal+(sinFinal===1?' producto':' productos'))});
+  var nf=neverasFaltantes().length;
+  pasos.push({ok:nf===0,txt:nf===0?'Temperaturas de neveras completas':('Faltan '+nf+(nf===1?' dato':' datos')+' de temperatura en neveras')});
+  var ent=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
+  pasos.push({ok:ent>0,txt:ent>0?'Entrega de dinero confirmada':'Falta registrar y confirmar la entrega de dinero'});
+  var dEl=document.getElementById('inDatafono'), tEl=document.getElementById('inTransferencia');
+  var dat=parseFloat(dEl?dEl.value:0)||0, tra=parseFloat(tEl?tEl.value:0)||0;
+  var cD=document.getElementById('chkConfDatafono'), cT=document.getElementById('chkConfTransferencia');
+  if(dat>0) pasos.push({ok:!!(cD&&cD.checked),txt:(cD&&cD.checked)?'Datáfono confirmado':'Datáfono pendiente de confirmar por un admin'});
+  if(tra>0) pasos.push({ok:!!(cT&&cT.checked),txt:(cT&&cT.checked)?'Transferencia confirmada':'Transferencia pendiente de confirmar por un admin'});
+  var hechos=pasos.filter(function(p){return p.ok;}).length, falt=pasos.length-hechos;
+  var comp=2*Math.PI*30;
+  var col=falt===0?'#5fd38a':'#ffc247';
+  var c=labConteo();
+  var h='<div class="hero-top"><div class="hero-ring"><svg viewBox="0 0 72 72" width="72" height="72" aria-hidden="true">'
+    +'<circle cx="36" cy="36" r="30" fill="none" stroke="#3b3027" stroke-width="7"/>'
+    +'<circle cx="36" cy="36" r="30" fill="none" stroke="'+col+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(hechos/pasos.length*comp).toFixed(1)+' '+comp.toFixed(1)+'" transform="rotate(-90 36 36)"/></svg>'
+    +'<div class="hero-num">'+hechos+'/'+pasos.length+'</div></div>'
+    +'<div><div class="hero-t">'+(falt===0?'Listo para cerrar':(falt===1?'Falta 1 paso':'Faltan '+falt+' pasos'))+'</div>'
+    +'<div style="font-size:.8rem;color:#cdbda5;margin-top:4px;">Antes de cerrar el turno</div></div></div>';
+  h+='<div class="hero-list">';
+  pasos.forEach(function(p){ h+='<div class="'+(p.ok?'ok':'no')+'"><span>'+(p.ok?'✔':'⚠')+'</span><span>'+escH(p.txt)+'</span></div>'; });
+  h+='</div>';
+  if(c.total&&c.pend>0){
+    h+='<div class="hero-warn"><span>⚠</span><span>Quedan '+c.pend+' labores pendientes. No bloquea el cierre; quedarán registradas como pendientes.</span></div>';
+  }
+  el.innerHTML=h;
+  el.style.display='';
+}
+// Aviso (no bloquea) dentro de la ventana "¿Cerrar el turno?"
+function labCierreHtml(){
+  var c=labConteo();
+  if(!c.total) return '';
+  if(c.pend>0) return '<div style="margin-top:8px;background:#fdf0d2;border:1px solid #e2c27a;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#5e3a00;line-height:1.4;">⚠ Quedan <b>'+c.pend+'</b> labores pendientes. No bloquea el cierre: quedarán registradas como pendientes.</div>';
+  return '<div style="margin-top:8px;background:#f0fff0;border:1px solid #9ccf9c;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#1d4d1d;">✔ Todas las labores están hechas.</div>';
+}
+// ── Imprimir labores ──
+function labPrintAbrir(){ document.getElementById('labPrintModal').classList.add('open'); }
+function labPrintCerrar(){ document.getElementById('labPrintModal').classList.remove('open'); }
+function labImprimir(modo){
+  labPrintCerrar();
+  var punto=(document.getElementById('hdrSub').textContent||'').split(' · ')[0];
+  var items=labList.length?labList:labCat.map(function(c){return {id:c.id,g:c.grupo,n:c.nombre,h:null,v:null};});
+  var css,body='';
+  if(modo==='semana'){
+    css='@page{size:letter landscape;margin:6mm}body{font-family:Arial,sans-serif;margin:0;color:#000}'
+      +'table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #222;padding:0 2px;font-size:6pt;line-height:1;height:3.1mm;overflow:hidden;white-space:nowrap}'
+      +'th{background:#eee;font-size:6pt;height:4mm}td.n{text-align:left;font-weight:bold;text-transform:uppercase}.t{font-size:8pt;font-weight:bold;text-align:center;padding:2px;height:auto}';
+    var dias=['LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO','DOMINGO'];
+    body+='<table><tr><td class="t" colspan="22">SEMANA DEL DÍA ________ MES ____________ AÑO ______ HASTA EL DÍA ________ MES ____________ AÑO ______</td></tr>'
+      +'<tr><td class="t" colspan="22">LOCAL PUNTO DE VENTA '+escH(String(punto).toUpperCase())+'</td></tr>';
+    body+='<tr><th rowspan="2" style="width:30%">LABORES SUPERVISIÓN DIARIAS</th>';
+    dias.forEach(function(d){ body+='<th colspan="3">'+d+'</th>'; });
+    body+='</tr><tr>';
+    dias.forEach(function(){ body+='<th>D/HORA</th><th>SUPER</th><th>CAJA</th>'; });
+    body+='</tr>';
+    items.forEach(function(l){
+      body+='<tr><td class="n">'+escH(l.n)+'</td>';
+      for(var i=0;i<21;i++) body+='<td></td>';
+      body+='</tr>';
+    });
+    body+='</table>';
+  } else {
+    css='@page{size:letter portrait;margin:12mm}body{font-family:Arial,sans-serif;font-size:10pt;color:#000}h1{font-size:14pt;margin:0 0 2px}.s{font-size:9pt;color:#444;margin-bottom:8px}'
+      +'table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:3px 5px;font-size:8.5pt;text-align:left}th{background:#eee}.g td{background:#ddd;font-weight:bold}.f{display:flex;gap:30px;margin-top:26px}.f div{flex:1;border-top:1px solid #000;padding-top:4px;font-size:9pt}';
+    body+='<h1>Labores del turno · La Vaca Original</h1><div class="s">'+escH(punto)+' · '+escH(sesion?sesion.fecha:'')+' · '+escH(sesion?sesion.turno:'')+' · Cajero: '+escH(sesion?sesion.cajero:'')+'</div>';
+    body+='<table><thead><tr><th>Labor</th><th style="width:60px">Hecho</th><th style="width:130px">Confirmó</th></tr></thead><tbody>';
+    var last=null;
+    items.forEach(function(l){
+      if(l.g!==last){ body+='<tr class="g"><td colspan="3">'+escH(l.g||'')+'</td></tr>'; last=l.g; }
+      body+='<tr><td>'+escH(l.n)+'</td><td>'+escH(l.h||'')+'</td><td>'+(l.v?escH(l.v.by)+' '+escH(l.v.t):'')+'</td></tr>';
+    });
+    body+='</tbody></table><div class="f"><div>Firma cajero: '+escH(sesion?sesion.cajero:'')+'</div><div>Firma supervisor</div></div>';
+  }
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Labores</title><style>'+css+'</style></head><body>'+body+'</body></html>';
+  var w=window.open('','_blank','width=1000,height=800');
+  if(!w){ alert('⚠ El navegador bloqueó la ventana emergente.\nActiva los popups para este sitio e intenta de nuevo.'); return; }
+  w.document.write(html); w.document.close();
+  setTimeout(function(){ w.print(); },400);
+}
+// ── Menú desplegable ──
+function menuAbrir(){
+  var c=labConteo();
+  var b=document.getElementById('menuLabBadge');
+  if(b){ b.textContent=c.total?(c.h+'/'+c.total):''; b.style.display=c.total?'':'none'; }
+  var be=document.getElementById('btnEditarLabores'); if(be) be.style.display=isAdmin?'flex':'none';
+  var ids=['btnEditarLabores','btnCambiarPunto','btnDashboard','btnHistorial','btnResumen','btnPapelera','btnFaltantes','btnImprimir'];
+  var alguno=ids.some(function(id){ var e=document.getElementById(id); return e&&e.style.display!=='none'; });
+  document.getElementById('menuAdminSec').style.display=alguno?'':'none';
+  document.getElementById('menuSheet').classList.add('open');
+  document.getElementById('menuScrim').classList.add('open');
+}
+function menuCerrar(){
+  document.getElementById('menuSheet').classList.remove('open');
+  document.getElementById('menuScrim').classList.remove('open');
+}
+document.getElementById('btnMenu').addEventListener('click',menuAbrir);
+document.getElementById('menuScrim').addEventListener('click',menuCerrar);
+document.getElementById('menuX').addEventListener('click',menuCerrar);
+document.getElementById('menuSheet').addEventListener('click',function(e){
+  var t=e.target; while(t&&t!==this){ if(t.tagName==='BUTTON'&&t.closest('.menu-grid')){ setTimeout(menuCerrar,0); return; } t=t.parentNode; }
+});
+// ==LAB-END==
 
 function recargarInventario(){
   if(!sesion) return;
@@ -2554,7 +3298,7 @@ function guardar(){
   return fetch(patchUrl,{
     method:'PATCH',
     headers:Object.assign({},HEADS,{'Prefer':'return=minimal,count=exact'}),
-    body:JSON.stringify({
+    body:JSON.stringify(Object.assign({
       cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
       snapshot:snap,gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:!!e.esFinal,confirmada:!!e.confirmada};}),
 
@@ -2571,7 +3315,7 @@ function guardar(){
     pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
       entrega_final:entregaFinal,
       updated_at:new Date().toISOString()
-    })
+    },extraTemp()))
   }).then(function(r){
     if(!r.ok) return r.text().then(function(t){throw new Error(t);});
     // Verificar si actualizó alguna fila
@@ -2581,7 +3325,7 @@ function guardar(){
     if(cr==='*/0'){
       // Puede ser turno nuevo (aún no existe) o turno cerrado por otro dispositivo
       // Intentar insertar nuevo turno
-      return sbUpsert('turnos_caja',{
+      return sbUpsert('turnos_caja',Object.assign({
         turno_key:key,punto:sesion.punto,turno:sesion.turno,fecha:sesion.fecha,
         cajero:sesion.cajero,cajero_aux:sesion.cajeroAux||'',
         snapshot:snap,gastos_list:gastos,entregas_list:entregas.map(function(e){return {desc:e.desc,valor:e.valor,hora:e.hora,esFinal:!!e.esFinal,confirmada:!!e.confirmada};}),
@@ -2598,7 +3342,7 @@ function guardar(){
         nota_siguiente:document.getElementById('inNotaSig')?document.getElementById('inNotaSig').value:'',
     pedido_extra:document.getElementById('inPedidoExtra')?document.getElementById('inPedidoExtra').value:'',
         entrega_final:entregaFinal,updated_at:new Date().toISOString()
-      }).then(function(res){
+      },extraTemp())).then(function(res){
         // Si el upsert tampoco hace nada (conflicto con cerrado:true), detectar cierre externo
         if(res&&res.length===0){
           sbGet('turnos_caja','turno_key=eq.'+key+'&select=cerrado&limit=1').then(function(arr){
@@ -2823,6 +3567,8 @@ function saveAdmin(){
 
 // ── CIERRE ───────────────────────────────────────
 function abrirCierre(){
+  // Control de neveras obligatorio (si el punto lo usa)
+  if(bloquearPorNeveras()) return;
   // Validar Inv.Final no excede disponible
   var errores=invRows.filter(function(r){
     return r.inv_final!==null&&r.inv_final!==undefined&&r.inv_final>r.disponible;
@@ -2899,7 +3645,7 @@ function abrirCierre(){
     +'<div style="display:flex;justify-content:space-between;padding:6px 0;background:'+(dif===0?'#f0fff0':dif<0?'#fff0f0':'#fff8e0')+';border-radius:4px;padding:5px 8px;margin-top:3px;"><span><b>Diferencia</b></span><b style="color:'+difCol+'">'+difTxt+'</b></div>'
     +(nota?'<div style="margin-top:7px;font-style:italic;color:var(--gris4);font-size:.78rem;">📝 '+nota+'</div>':'')
     +'</div>';
-  document.getElementById('cierreDetalle').innerHTML=det;
+  document.getElementById('cierreDetalle').innerHTML=det+labCierreHtml();
   document.getElementById('cierreModal').classList.add('open');
 }
 
@@ -3076,6 +3822,7 @@ function confirmarCierre(){
     alert('❌ No se puede cerrar.\n\nFaltan inventarios finales en:\n\n'+listaConf+'\n\nCierra el modal y completa el conteo antes de continuar.');
     return;
   }
+  if(bloquearPorNeveras()) return;
   var entConf=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   if(entConf<=0){alert('❌ Registra al menos una entrega de dinero CONFIRMADA antes de cerrar.');return;}
   // Si quien cierra es admin y el cajero sigue siendo ADMINISTRADOR,
@@ -3122,6 +3869,7 @@ function confirmarCierre(){
     entrega_final:entregaFinal||entregas.some(function(e){return e.confirmada&&e.esFinal;}),
     cerrado:true,updated_at:new Date().toISOString()
   };
+  Object.assign(payload,extraTemp());
   mostrarOverlayCierre(1);
   enviarResumenCierre();
   enviarInventarioTxtTelegram();
