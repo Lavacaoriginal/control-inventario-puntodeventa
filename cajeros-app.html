@@ -623,8 +623,9 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
     <div class="menu-head"><div class="menu-title">Opciones</div><button type="button" class="menu-x" id="menuX" aria-label="Cerrar menú">✕</button></div>
     <div class="menu-grid">
       <button type="button" class="btn hot" id="btnLabores" onclick="labAbrir()"><span class="menu-pill" id="menuLabBadge" style="display:none;"></span><span class="mi">📋</span>Labores</button>
+      <button type="button" class="btn" id="btnSupervisor" onclick="supAbrirModal()" style="border:1.5px solid var(--dorado);"><span class="menu-pill" id="menuSupBadge" style="display:none;">activo</span><span class="mi">🛡</span>Supervisor</button>
       <button type="button" class="btn" id="btnLimpieza" onclick="limAbrir()"><span class="menu-pill" id="menuLimBadge" style="display:none;"></span><span class="mi">🧼</span>Limpieza</button>
-      <button type="button" class="btn" id="btnHerramientas" onclick="herAbrir()"><span class="menu-pill" id="menuHerBadge" style="display:none;"></span><span class="mi">🔧</span>Herramientas</button>
+      <button type="button" class="btn" id="btnHerramientas" onclick="herAbrir()"><span class="menu-pill" id="menuHerBadge" style="display:none;"></span><span class="mi">🧰</span>Inventario de activos</button>
       <button type="button" class="btn hot" id="btnNeveras" onclick="nevAbrir()"><span class="menu-pill" id="menuNevBadge" style="display:none;"></span><span class="mi">🌡</span>Neveras</button>
       <button class="btn" id="btnAplicarRec" title="Copia los promedios recomendados a la columna Pedido"><span class="mi">✅</span>Aplicar recomendado</button>
       <button class="btn" id="btnImprimirPedido"><span class="mi">📦</span>Pedido</button>
@@ -996,15 +997,29 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
   </div>
 </div>
 
+<div class="overlay" id="supModal">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="supCerrarModal()">✕</button>
+    <div class="modal-title">🛡 Ingreso de supervisor</div>
+    <div style="font-size:.82rem;color:#5e4d3b;margin:8px 0 12px;">Con tu nombre y la contraseña revisas labores y limpieza. Tu nombre queda en cada revisión.</div>
+    <label for="supNombre" style="font-size:.78rem;color:#5e4d3b;">Tu nombre</label>
+    <input id="supNombre" type="text" maxlength="40" autocomplete="off" placeholder="Nombre y apellido" style="width:100%;min-height:48px;padding:0 12px;font-size:1rem;border:1.5px solid var(--gris3);border-radius:12px;margin:4px 0 10px;">
+    <label for="supPin" style="font-size:.78rem;color:#5e4d3b;">Contraseña</label>
+    <input id="supPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" placeholder="6 dígitos" onkeydown="if(event.key==='Enter')supEntrar()" style="width:100%;min-height:52px;text-align:center;letter-spacing:.5em;font-size:1.4rem;border:1.5px solid var(--gris3);border-radius:12px;margin-top:4px;">
+    <div id="supErr" style="color:#b02020;font-size:.8rem;min-height:18px;margin-top:6px;"></div>
+    <button type="button" class="btn" onclick="supEntrar()" style="flex:none;width:100%;min-height:48px;margin-top:8px;background:var(--madera);color:#fff;">Entrar como supervisor</button>
+  </div>
+</div>
+
 <div class="labPanel" id="limPanel" aria-label="Limpieza y desinfección">
   <div class="labHead"><button type="button" class="lh-back" onclick="limCerrar()" aria-label="Volver">‹</button>
     <div><div class="lh-t">🧼 Limpieza y desinfección</div><div class="lh-s" id="limSub"></div></div><span class="lh-c" id="limCont"></span></div>
   <div class="labBody" id="limBody"></div>
 </div>
 
-<div class="labPanel" id="herPanel" aria-label="Herramientas de trabajo">
+<div class="labPanel" id="herPanel" aria-label="Inventario de activos">
   <div class="labHead"><button type="button" class="lh-back" onclick="herCerrar()" aria-label="Volver">‹</button>
-    <div><div class="lh-t" id="herTitulo">🔧 Herramientas</div><div class="lh-s" id="herSub"></div></div><span class="lh-c" id="herCont"></span></div>
+    <div><div class="lh-t" id="herTitulo">Inventario de activos</div><div class="lh-s" id="herSub"></div></div><span class="lh-c" id="herCont"></span></div>
   <div class="labBody" id="herBody"></div>
 </div>
 
@@ -1722,7 +1737,7 @@ function salir(){
 
   function limpiarUI(){
     sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false; labList=[]; labCat=[]; window._labSaved=null; window._limSaved=null; window._herSaved=null; herList=[]; herCat=[]; limData={items:{},obs:''};
-    try{ labCerrar(); nevCerrar(); limCerrar(); herCerrar(); renderLabCard(); renderCierreHero(); }catch(e){}
+    try{ supSalir(); labCerrar(); nevCerrar(); limCerrar(); herCerrar(); renderLabCard(); renderCierreHero(); }catch(e){}
     clearInterval(adminTimer);
     clearInterval(syncCheckTimer);
     clearTimeout(saveTimer);
@@ -2929,6 +2944,59 @@ function regionDePunto(){
 }
 // ==NEV-END==
 // ==LAB-BEGIN== LABORES DEL TURNO · MENÚ DESPLEGABLE · TARJETA DE CIERRE
+// ==SUP-BEGIN== ACCESO DE SUPERVISOR (contraseña de 6 dígitos; solo revisa labores y limpieza)
+var supNombre='';
+var isSupervisor=false, supTimer=null, supSecs=0, supFails=0, supBloqHasta=0;
+var SUP_MIN=10;
+var _sp=['MTgy','MDI2'];
+function puedeRevisar(){ return !!(isAdmin||isSupervisor); }
+function labRevisor(){ return isAdmin?labNombreAdmin():(supNombre||'Supervisor'); }
+function supRefrescar(){
+  try{ labRefrescar(); }catch(e){}
+  try{ limRefrescar(); }catch(e){}
+  try{ renderLabCard(); }catch(e){}
+}
+function supBanner(){
+  if(!isSupervisor||isAdmin) return '';
+  return '<div class="dcard" style="display:flex;align-items:center;gap:10px;padding:12px 16px;"><span style="font-size:1.4rem;">🛡</span><div style="flex:1;min-width:0;"><div style="font-weight:700;">Supervisor: '+escH(supNombre)+'</div><div style="font-size:.76rem;color:#cdbda5;">Se cierra sola en '+Math.max(1,Math.ceil(supSecs/60))+' min. Solo revisa labores y limpieza.</div></div>'
+    +'<button type="button" onclick="supSalir()" style="min-height:40px;padding:0 12px;border-radius:12px;border:1px solid #4a3d31;background:transparent;color:#f3ece1;font-weight:700;cursor:pointer;">Salir</button></div>';
+}
+function supAbrirModal(){
+  if(isSupervisor){ if(confirm('¿Cerrar la sesión de supervisor?')) supSalir(); return; }
+  var m=document.getElementById('supModal'); if(!m) return;
+  document.getElementById('supPin').value=''; document.getElementById('supErr').textContent='';
+  try{ document.getElementById('supNombre').value=localStorage.getItem('sup_nombre')||''; }catch(e){}
+  m.classList.add('open');
+  setTimeout(function(){ var i=document.getElementById(document.getElementById('supNombre').value?'supPin':'supNombre'); if(i) i.focus(); },150);
+}
+function supCerrarModal(){ var m=document.getElementById('supModal'); if(m) m.classList.remove('open'); }
+function supEntrar(){
+  var inp=document.getElementById('supPin'), err=document.getElementById('supErr');
+  var v=(inp.value||'').replace(/\D/g,'');
+  var nom=(document.getElementById('supNombre').value||'').replace(/\s+/g,' ').trim();
+  var ahora=Date.now();
+  if(nom.length<3){ err.textContent='Escribe tu nombre completo.'; return; }
+  if(ahora<supBloqHasta){ err.textContent='Demasiados intentos. Espera '+Math.ceil((supBloqHasta-ahora)/1000)+' s.'; return; }
+  if(v.length!==6){ err.textContent='Escribe los 6 dígitos.'; return; }
+  var ok=false; try{ ok=(v===atob(_sp.join(''))); }catch(e){}
+  if(!ok){
+    supFails++; inp.value='';
+    if(supFails>=5){ supBloqHasta=ahora+60000; supFails=0; err.textContent='Demasiados intentos. Espera 60 s.'; }
+    else err.textContent='Contraseña incorrecta.';
+    return;
+  }
+  supFails=0; supNombre=nom; try{ localStorage.setItem('sup_nombre',nom); }catch(e){}
+  isSupervisor=true; supSecs=SUP_MIN*60;
+  clearInterval(supTimer);
+  supTimer=setInterval(function(){ supSecs--; if(supSecs<=0) supSalir(); },1000);
+  supCerrarModal(); try{ menuCerrar(); }catch(e){}
+  supRefrescar();
+}
+function supSalir(){
+  isSupervisor=false; supNombre=''; clearInterval(supTimer); supTimer=null; supSecs=0;
+  supRefrescar();
+}
+// ==SUP-END==
 var labCat=[];        // catálogo activo (tabla labores_lista)
 var labList=[];       // estado del turno: [{id,g,n,h:'hora'|null,v:{t,by}|null}]
 var labFiltro='todas';
@@ -3003,14 +3071,14 @@ function labHacer(id){
   labTocado();
 }
 function labVerificar(id){
-  if(!isAdmin) return;               // solo admin / súper admin
+  if(!puedeRevisar()) return;        // supervisor (con contraseña), admin o súper admin
   var l=labBuscar(id); if(!l||!l.h) return;
-  l.v=l.v?null:{t:labHora(),by:labNombreAdmin()};
+  l.v=l.v?null:{t:labHora(),by:labRevisor()};
   labTocado();
 }
 function labConfirmarTodas(){
-  if(!isAdmin) return;
-  var by=labNombreAdmin(), t=labHora();
+  if(!puedeRevisar()) return;
+  var by=labRevisor(), t=labHora();
   labList.forEach(function(l){ if(l.h&&!l.v) l.v={t:t,by:by}; });
   labTocado();
 }
@@ -3095,7 +3163,7 @@ function renderLabores(){
   var tit=document.getElementById('labTitulo'); if(tit) tit.textContent=labEditando?'Editar labores':'Labores del turno';
   var cont=document.getElementById('labCont'); if(cont) cont.textContent=c.h+'/'+c.total;
   var cerrado=!!window._turnoCerrado;
-  var h='';
+  var h=supBanner();
   var cajero=sesion?(sesion.cajero+(sesion.cajeroAux?' & '+sesion.cajeroAux:'')):'';
   // Tarjeta de responsables
   h+='<div class="dcard">';
@@ -3104,17 +3172,17 @@ function renderLabores(){
     +'<div style="min-width:0;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Realiza las labores</div>'
     +'<div style="font-size:1rem;font-weight:700;margin-top:2px;">'+escH(cajero)+'</div></div></div>';
   h+='<div style="height:1px;background:#3b3027;margin:14px 0;"></div>';
-  if(isAdmin){
+  if(puedeRevisar()){
     h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">'
       +'<span style="font-size:1.3rem;">🔓</span><div><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Confirmación del supervisor</div>'
-      +'<div style="font-size:.92rem;font-weight:700;margin-top:2px;">Habilitada: ingresaste como '+escH(labNombreAdmin())+'</div></div></div>';
+      +'<div style="font-size:.92rem;font-weight:700;margin-top:2px;">Habilitada: '+(isAdmin?'ingresaste como '+escH(labNombreAdmin()):'sesión de supervisor')+'</div></div></div>';
     var sinPor=(c.porVer===0);
     h+='<button type="button" class="dbtn" '+(sinPor?'disabled ':'')+'onclick="labConfirmarTodas()" style="background:'+(sinPor?'#3b3027':'#e3b85a')+';color:'+(sinPor?'#bfae96':'#1b1612')+';">'
       +(sinPor?'No hay labores por confirmar':'Confirmar las '+c.porVer+' labores hechas')+'</button>';
   } else {
     h+='<div style="display:flex;align-items:flex-start;gap:10px;"><span style="font-size:1.3rem;">🔒</span><div>'
       +'<div style="font-size:.92rem;font-weight:700;">Confirmación del supervisor</div>'
-      +'<div style="font-size:.78rem;color:#cdbda5;line-height:1.4;margin-top:3px;">Bloqueada. El supervisor la confirma al ingresar como admin al inventario. Tú solo marcas «Hecho».</div></div></div>';
+      +'<div style="font-size:.78rem;color:#cdbda5;line-height:1.4;margin-top:3px;">Bloqueada. La confirma el supervisor con su contraseña (Menú → Supervisor). Tú solo marcas «Hecho».</div></div></div>';
   }
   h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">'
     +'<div style="background:#2a231c;border-radius:14px;padding:10px 12px;"><div style="font-size:.72rem;color:#cdbda5;">Hechas</div><div style="font-size:1.3rem;font-weight:700;color:#5fd38a;">'+c.h+'<span style="font-size:.8rem;color:#cdbda5;font-weight:500;"> de '+c.total+'</span></div></div>'
@@ -3183,10 +3251,10 @@ function renderLabores(){
         var hOff=!labPuedeMarcar()||(!!l.v&&!isAdmin);
         filas+='<button type="button" class="lchk" '+(hOff?'disabled ':'')+'onclick="labHacer(\''+l.id+'\')" aria-label="'+(l.h?'Quitar como hecha: ':'Marcar como hecha: ')+escH(l.n)+'" '
           +'style="border:2px solid '+(l.h?'#2d6a2d':(hOff?'#d9cdb8':'#7c4a1e'))+';background:'+(l.h?'#2d6a2d':(hOff?'#ece4d6':'#fffdf9'))+';color:#fff;">'+(l.h?LAB_SVG_CHECK:'')+'</button>';
-        var puedeV=isAdmin&&!!l.h;
-        filas+='<button type="button" class="lchk" '+(puedeV?'':'disabled ')+'onclick="labVerificar(\''+l.id+'\')" aria-label="'+(isAdmin?((l.v?'Quitar confirmación: ':'Confirmar como supervisor: ')+escH(l.n)):('Bloqueado, lo confirma el supervisor: '+escH(l.n)))+'" '
+        var puedeV=puedeRevisar()&&!!l.h;
+        filas+='<button type="button" class="lchk" '+(puedeV?'':'disabled ')+'onclick="labVerificar(\''+l.id+'\')" aria-label="'+(puedeRevisar()?((l.v?'Quitar confirmación: ':'Confirmar como supervisor: ')+escH(l.n)):('Bloqueado, lo confirma el supervisor: '+escH(l.n)))+'" '
           +'style="border:2px solid '+(l.v?'#c9973b':(puedeV?'#a07325':'#d9cdb8'))+';background:'+(l.v?'#e3b85a':(puedeV?'#fffdf9':'#ece4d6'))+';color:#1b1612;">'
-          +(l.v?LAB_SVG_CHECK:(isAdmin?'':'<span style="color:#8a7a64;display:flex;">'+LAB_SVG_LOCK+'</span>'))+'</button>';
+          +(l.v?LAB_SVG_CHECK:(puedeRevisar()?'':'<span style="color:#8a7a64;display:flex;">'+LAB_SVG_LOCK+'</span>'))+'</button>';
       }
       filas+='</div>';
     });
@@ -3212,7 +3280,7 @@ function renderLabCard(){
   el.innerHTML='<div class="dc-h">Labores del turno</div>'
     +'<div class="dbar-l"><span>Hechas por la cajera</span><b>'+c.h+' de '+c.total+'</b></div><div class="dbar"><i style="width:'+pH+'%;background:#5fd38a;"></i></div>'
     +'<div class="dbar-l"><span>Confirmadas por el supervisor</span><b>'+c.v+' de '+c.total+'</b></div><div class="dbar" style="margin-bottom:6px;"><i style="width:'+pV+'%;background:#e3b85a;"></i></div>'
-    +'<div style="font-size:.72rem;color:#cdbda5;margin-bottom:12px;">🔒 '+(isAdmin?'Confirma: '+escH(labNombreAdmin()):'Las confirma el supervisor (ingresa como admin)')+'</div>'
+    +'<div style="font-size:.72rem;color:#cdbda5;margin-bottom:12px;">🔒 '+(puedeRevisar()?'Confirma: '+escH(labRevisor()):'Las confirma el supervisor (Menú → Supervisor)')+'</div>'
     +'<button type="button" class="dbtn" onclick="labAbrir()" style="background:#e3b85a;color:#1b1612;">Abrir labores ›</button>';
 }
 // Tarjeta "Antes de cerrar el turno" (solo informa; los bloqueos siguen en abrirCierre)
@@ -3227,7 +3295,7 @@ function renderCierreHero(){
   pasos.push({ok:sinFinal===0,txt:sinFinal===0?'Inventario final completo':('Falta el inventario final de '+sinFinal+(sinFinal===1?' producto':' productos'))});
   var nf=neverasFaltantes().length;
   pasos.push({ok:nf===0,go:'nevAbrir()',txt:nf===0?'Temperaturas de neveras completas':('Faltan '+nf+(nf===1?' dato':' datos')+' de temperatura en neveras')});
-  if(herList.length){ var hp2=herProblemas(); var hn2=hp2.vac.length+hp2.dif.length; pasos.push({ok:hn2===0,go:'herAbrir()',txt:hn2===0?'Herramientas de trabajo cuadran':(hp2.dif.length?('Herramientas: '+hp2.dif.length+' sin cuadrar, requiere novedad de un admin'):('Falta contar '+hp2.vac.length+(hp2.vac.length===1?' herramienta':' herramientas')))}); }
+  if(herList.length){ var hp2=herProblemas(); var hn2=hp2.vac.length+hp2.dif.length; pasos.push({ok:hn2===0,go:'herAbrir()',txt:hn2===0?'Inventario de activos cuadra':(hp2.dif.length?('Activos: '+hp2.dif.length+' sin cuadrar, requiere novedad de un admin'):('Falta contar '+hp2.vac.length+(hp2.vac.length===1?' activo':' activos')))}); }
   var ent=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   pasos.push({ok:ent>0,txt:ent>0?'Entrega de dinero confirmada':'Falta registrar y confirmar la entrega de dinero'});
   var dEl=document.getElementById('inDatafono'), tEl=document.getElementById('inTransferencia');
@@ -3312,6 +3380,7 @@ function menuAbrir(){
   var c=labConteo();
   var b=document.getElementById('menuLabBadge');
   if(b){ b.textContent=c.total?(c.h+'/'+c.total):''; b.style.display=c.total?'':'none'; }
+  var sb=document.getElementById('menuSupBadge'); if(sb) sb.style.display=isSupervisor?'':'none';
   var lb=document.getElementById('menuLimBadge'); if(lb){ var lc=limConteo(); lb.textContent=lc.h+'/'+lc.total; lb.style.display=''; }
   var hb=document.getElementById('menuHerBadge'); if(hb){ if(herList.length){ var hp=herProblemas(); var hn=hp.vac.length+hp.dif.length; hb.textContent=hn?(hn+' por revisar'):'✔'; hb.style.display=''; } else hb.style.display='none'; }
   var nb=document.getElementById('menuNevBadge');
@@ -3347,7 +3416,7 @@ var limData={items:{},obs:''};   // items: {clave:{h:hora,by:cajero}}
 function limKey(){ return sesion?('lim_'+sesion.fecha+'_'+sesion.punto+'_'+sesion.turno):null; }
 function limBackupGuardar(){ try{ var k=limKey(); if(k) localStorage.setItem(k,JSON.stringify(limData)); }catch(e){} }
 function limBackupLeer(){ try{ var k=limKey(); var v=k?localStorage.getItem(k):null; var o=v?JSON.parse(v):null; return (o&&o.items)?o:null; }catch(e){ return null; } }
-function limConteo(){ var h=0; LIM_ITEMS.forEach(function(i){ if(limData.items[i.k]) h++; }); return {total:LIM_ITEMS.length,h:h,pend:LIM_ITEMS.length-h}; }
+function limConteo(){ var h=0,v=0; LIM_ITEMS.forEach(function(i){ var d=limData.items[i.k]; if(d){ h++; if(d.v) v++; } }); return {total:LIM_ITEMS.length,h:h,v:v,pend:LIM_ITEMS.length-h,porVer:h-v}; }
 function limCargar(){
   var s=(window._limSaved&&window._limSaved.items)?window._limSaved:limBackupLeer();
   limData=s?{items:s.items||{},obs:s.obs||''}:{items:{},obs:''};
@@ -3357,8 +3426,20 @@ function limPuedeMarcar(){ return !(window._turnoCerrado&&!isAdmin); }
 function limTocado(){ limBackupGuardar(); limRefrescar(); autoSave(); }
 function limMarcar(k){
   if(!limPuedeMarcar()) return;
-  if(limData.items[k]) delete limData.items[k];
+  if(limData.items[k]){ if(limData.items[k].v&&!isAdmin) return; delete limData.items[k]; }
   else limData.items[k]={h:labHora(),by:(sesion&&sesion.cajero)||''};
+  limTocado();
+}
+function limVerificar(k){
+  if(!puedeRevisar()) return;
+  var d=limData.items[k]; if(!d) return;
+  d.v=d.v?null:{t:labHora(),by:labRevisor()};
+  limTocado();
+}
+function limConfirmarTodas(){
+  if(!puedeRevisar()) return;
+  var t=labHora(), by=labRevisor();
+  LIM_ITEMS.forEach(function(i){ var d=limData.items[i.k]; if(d&&!d.v) d.v={t:t,by:by}; });
   limTocado();
 }
 function limObs(v){ limData.obs=v; limBackupGuardar(); autoSave(); }
@@ -3375,22 +3456,27 @@ function renderLimpieza(){
   document.getElementById('limSub').textContent=document.getElementById('hdrSub').textContent;
   document.getElementById('limCont').textContent=c.h+'/'+c.total;
   var off=!limPuedeMarcar();
-  var h='<div class="dcard"><div style="display:flex;align-items:center;gap:12px;">'
+  var rev=puedeRevisar();
+  var h=supBanner()+'<div class="dcard"><div style="display:flex;align-items:center;gap:12px;">'
     +'<div style="width:46px;height:46px;border-radius:50%;background:#e3b85a;color:#1b1612;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;">'+escH(labIniciales(sesion&&sesion.cajero))+'</div>'
     +'<div style="min-width:0;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Firma quien realiza la función</div>'
     +'<div style="font-size:1rem;font-weight:700;margin-top:2px;">'+escH(sesion?sesion.cajero:'')+'</div></div></div>'
     +'<div class="dbar-l" style="margin-top:14px;"><span>Realizado este turno</span><b>'+c.h+' de '+c.total+'</b></div><div class="dbar"><i style="width:'+(c.h/c.total*100).toFixed(1)+'%;background:#5fd38a;"></i></div>'
-    +'<div style="font-size:.74rem;color:#cdbda5;margin-top:8px;">Al tocar una casilla queda tu nombre y la hora. No bloquea el cierre; si algo queda sin hacer, se avisa.</div>'
+    +'<div class="dbar-l"><span>Revisado por el supervisor</span><b>'+c.v+' de '+c.total+'</b></div><div class="dbar"><i style="width:'+(c.v/c.total*100).toFixed(1)+'%;background:#e3b85a;"></i></div>'
+    +'<div style="font-size:.74rem;color:#cdbda5;margin-top:8px;">'+(rev?'Revisa con la casilla «Super.» lo que el cajero marcó como hecho.':'Al tocar una casilla queda tu nombre y la hora. La casilla «Super.» la revisa el supervisor (Menú → Supervisor). No bloquea el cierre.')+'</div>'
+    +(rev?'<button type="button" class="dbtn" '+(c.porVer===0?'disabled ':'')+'onclick="limConfirmarTodas()" style="margin-top:10px;background:'+(c.porVer===0?'#3b3027':'#e3b85a')+';color:'+(c.porVer===0?'#bfae96':'#1b1612')+';">'+(c.porVer===0?'No hay ítems por revisar':'Revisar los '+c.porVer+' ítems hechos')+'</button>':'')
     +'<button type="button" class="dbtn" onclick="limPrintAbrir()" style="margin-top:12px;background:transparent;border:1.5px solid #4a3d31;color:#f3ece1;">🖨 Imprimir planilla</button></div>';
   var grupos=[]; LIM_ITEMS.forEach(function(i){ if(grupos.indexOf(i.g)===-1) grupos.push(i.g); });
   grupos.forEach(function(g){
     var its=LIM_ITEMS.filter(function(i){return i.g===g;});
     var hechos=its.filter(function(i){return limData.items[i.k];}).length;
-    h+='<section class="lab-grp"><div class="lab-gh"><div class="gn">'+escH(g)+'<span class="gs">'+hechos+' de '+its.length+' hechos</span></div><div class="gc" style="color:#1d4d1d;">Hecho</div></div>';
+    h+='<section class="lab-grp"><div class="lab-gh"><div class="gn">'+escH(g)+'<span class="gs">'+hechos+' de '+its.length+' hechos</span></div><div class="gc" style="color:#1d4d1d;">Hecho</div><div class="gc" style="color:#6b4a00;">Super.</div></div>';
     its.forEach(function(i){
       var d=limData.items[i.k];
-      h+='<div class="lab-row"><div class="ln">'+escH(i.n)+(d?'<div class="ls">'+escH(d.h)+' · '+escH(d.by)+'</div>':'')+'</div>'
-        +'<button type="button" class="lchk" '+(off?'disabled ':'')+'onclick="limMarcar(\''+i.k+'\')" aria-label="'+(d?'Quitar: ':'Marcar como hecho: ')+escH(i.n)+'" style="border:2px solid '+(d?'#2d6a2d':(off?'#d9cdb8':'#7c4a1e'))+';background:'+(d?'#2d6a2d':(off?'#ece4d6':'#fffdf9'))+';color:#fff;">'+(d?LAB_SVG_CHECK:'')+'</button></div>';
+      h+='<div class="lab-row"><div class="ln">'+escH(i.n)+(d?'<div class="ls">'+escH(d.h)+' · '+escH(d.by)+(d.v?' · Revisó '+escH(d.v.by)+' '+escH(d.v.t):'')+'</div>':'')+'</div>'
+        +'<button type="button" class="lchk" '+(off?'disabled ':'')+'onclick="limMarcar(\''+i.k+'\')" aria-label="'+(d?'Quitar: ':'Marcar como hecho: ')+escH(i.n)+'" style="border:2px solid '+(d?'#2d6a2d':(off?'#d9cdb8':'#7c4a1e'))+';background:'+(d?'#2d6a2d':(off?'#ece4d6':'#fffdf9'))+';color:#fff;">'+(d?LAB_SVG_CHECK:'')+'</button>'
+        +(function(){ var pv=rev&&!!d; return '<button type="button" class="lchk" '+(pv?'':'disabled ')+'onclick="limVerificar(\''+i.k+'\')" aria-label="'+(rev?((d&&d.v?'Quitar revisión: ':'Revisar: ')+escH(i.n)):('Bloqueado, lo revisa el supervisor: '+escH(i.n)))+'" style="border:2px solid '+(d&&d.v?'#c9973b':(pv?'#a07325':'#d9cdb8'))+';background:'+(d&&d.v?'#e3b85a':(pv?'#fffdf9':'#ece4d6'))+';color:#1b1612;">'+(d&&d.v?LAB_SVG_CHECK:(rev?'':'<span style="color:#8a7a64;display:flex;">'+LAB_SVG_LOCK+'</span>'))+'</button>'; })()
+        +'</div>';
     });
     h+='</section>';
   });
@@ -3421,12 +3507,12 @@ function limImprimir(modo){
     body+='<tr><td class="l" colspan="14" style="height:22mm;vertical-align:top;"><b>OBSERVACIÓN GENERAL:</b></td></tr></table>';
   } else {
     css='@page{size:letter portrait;margin:12mm}body{font-family:Arial,sans-serif;font-size:10pt;color:#000}h1{font-size:14pt;margin:0 0 2px}.s{font-size:9pt;color:#444;margin-bottom:8px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:4px 6px;font-size:9pt;text-align:left}th{background:#eee}.g td{background:#ddd;font-weight:bold}';
-    body+='<h1>Control de limpieza y desinfección · La Vaca Original</h1><div class="s">'+escH(punto)+' · '+escH(sesion?sesion.fecha:'')+' · '+escH(sesion?sesion.turno:'')+' · '+escH(sesion?sesion.cajero:'')+'</div><table><thead><tr><th>Ítem</th><th style="width:70px">Hora</th><th style="width:150px">Firma</th></tr></thead><tbody>';
+    body+='<h1>Control de limpieza y desinfección · La Vaca Original</h1><div class="s">'+escH(punto)+' · '+escH(sesion?sesion.fecha:'')+' · '+escH(sesion?sesion.turno:'')+' · '+escH(sesion?sesion.cajero:'')+'</div><table><thead><tr><th>Ítem</th><th style="width:60px">Hora</th><th style="width:120px">Firma</th><th style="width:130px">Revisó</th></tr></thead><tbody>';
     var last=null;
     LIM_ITEMS.forEach(function(i){
-      if(i.g!==last){ body+='<tr class="g"><td colspan="3">'+escH(i.g)+'</td></tr>'; last=i.g; }
+      if(i.g!==last){ body+='<tr class="g"><td colspan="4">'+escH(i.g)+'</td></tr>'; last=i.g; }
       var d=limData.items[i.k];
-      body+='<tr><td>'+escH(i.n)+'</td><td>'+(d?escH(d.h):'')+'</td><td>'+(d?escH(d.by):'')+'</td></tr>';
+      body+='<tr><td>'+escH(i.n)+'</td><td>'+(d?escH(d.h):'')+'</td><td>'+(d?escH(d.by):'')+'</td><td>'+(d&&d.v?escH(d.v.by)+' '+escH(d.v.t):'')+'</td></tr>';
     });
     body+='</tbody></table><p><b>Observación general:</b> '+escH(limData.obs||'')+'</p>';
   }
@@ -3553,7 +3639,7 @@ function herAgregar(){
   var cant=parseInt((document.getElementById('herNuevoCant')||{}).value,10);
   if(!nom){ document.getElementById('herNuevoNombre').focus(); return; }
   if(isNaN(cant)||cant<0) cant=1;
-  if(window._herTbl===false){ alert('Todavía no existe la tabla de herramientas en la base de datos.\nEjecuta el SQL de herramientas y vuelve a intentar.'); return; }
+  if(window._herTbl===false){ alert('Todavía no existe la tabla de activos en la base de datos.\nEjecuta el SQL de activos y vuelve a intentar.'); return; }
   var maxO=0; herCat.forEach(function(c){ if((c.orden||0)>maxO) maxO=c.orden; });
   var todos=document.getElementById('herNuevoTodos').checked;
   fetch(SB_URL+'/rest/v1/herramientas_lista',{method:'POST',headers:Object.assign({},HEADS,{'Prefer':'return=representation'}),
@@ -3563,7 +3649,7 @@ function herAgregar(){
     var c=rows&&rows[0]; if(!c) throw new Error('Sin respuesta de la base de datos');
     herCat.push(c); herList.push({id:c.id,n:c.nombre,esp:c.cantidad,rec:null,ent:null,nov:null});
     herNuevoNombre=''; herNuevoCant='1'; herTocado();
-  }).catch(function(e){ alert('No se pudo agregar la herramienta.\n\n'+e.message); });
+  }).catch(function(e){ alert('No se pudo agregar el activo.\n\n'+e.message); });
 }
 function herQuitar(id){
   if(!isAdmin) return; var h=herBuscar(id); if(!h) return;
@@ -3574,7 +3660,7 @@ function herQuitar(id){
     herCat=herCat.filter(function(c){ return String(c.id)!==String(id); });
     if(herNum(h.rec)===null&&herNum(h.ent)===null&&!h.nov) herList=herList.filter(function(x){ return String(x.id)!==String(id); });
     herTocado();
-  }).catch(function(e){ alert('No se pudo quitar la herramienta.\n\n'+e.message); });
+  }).catch(function(e){ alert('No se pudo quitar el activo.\n\n'+e.message); });
 }
 function herStepper(id,campo,val,off){
   return '<div class="her-st"><button type="button" class="her-b" '+(off?'disabled ':'')+'onclick="herStep(\''+id+'\',\''+campo+'\',-1)" aria-label="Restar">−</button>'
@@ -3584,20 +3670,20 @@ function herStepper(id,campo,val,off){
 function renderHerramientas(){
   var body=document.getElementById('herBody'); if(!body) return;
   document.getElementById('herSub').textContent=document.getElementById('hdrSub').textContent;
-  document.getElementById('herTitulo').textContent=herEditando?'Editar herramientas':'🔧 Herramientas';
+  document.getElementById('herTitulo').textContent=herEditando?'Editar activos':'Inventario de activos';
   document.getElementById('herCont').textContent=herResumen();
   var h='<div class="dcard"><div style="font-size:.84rem;color:#cdbda5;line-height:1.45;">Cuenta lo que <b style="color:#f3ece1;">recibes</b> al empezar y lo que <b style="color:#f3ece1;">entregas</b> al terminar. Debe ser lo mismo. Si falta o sobra algo, un admin debe registrar la novedad para poder cerrar el turno, y quien responde es <b style="color:#f3ece1;">'+escH(sesion?sesion.cajero:'')+'</b>.</div></div>';
-  if(isAdmin) h+='<button type="button" class="dbtn" onclick="herToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(herEditando?'var(--madera)':'#fffdf9')+';color:'+(herEditando?'#fff':'var(--madera)')+';">'+(herEditando?'Terminar edición':'✏ Agregar o quitar herramientas')+'</button>';
-  if(window._herTbl===false) h+='<div style="background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:10px;padding:10px 12px;font-size:.8rem;margin-bottom:14px;">⚠ La lista de herramientas todavía no está activada en la base de datos (falta ejecutar el SQL).</div>';
+  if(isAdmin) h+='<button type="button" class="dbtn" onclick="herToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(herEditando?'var(--madera)':'#fffdf9')+';color:'+(herEditando?'#fff':'var(--madera)')+';">'+(herEditando?'Terminar edición':'✏ Agregar o quitar activos')+'</button>';
+  if(window._herTbl===false) h+='<div style="background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:10px;padding:10px 12px;font-size:.8rem;margin-bottom:14px;">⚠ La lista de activos todavía no está activada en la base de datos (falta ejecutar el SQL).</div>';
   if(isAdmin&&herEditando){
-    h+='<div class="dcard"><div class="dc-h">Agregar una herramienta</div>'
+    h+='<div class="dcard"><div class="dc-h">Agregar un activo</div>'
       +'<label for="herNuevoNombre" style="font-size:.78rem;color:#cdbda5;">Nombre</label><input id="herNuevoNombre" class="lab-in" type="text" maxlength="80" placeholder="Ej.: Tenaza de pan" value="'+escH(herNuevoNombre)+'" oninput="herNuevoNombre=this.value" style="margin:6px 0 12px;">'
       +'<label for="herNuevoCant" style="font-size:.78rem;color:#cdbda5;">Cantidad que debe haber</label><input id="herNuevoCant" class="lab-in" type="number" inputmode="numeric" min="0" value="'+escH(herNuevoCant)+'" oninput="herNuevoCant=this.value" style="margin:6px 0 12px;">'
       +'<label style="display:flex;align-items:center;gap:10px;font-size:.85rem;margin-bottom:12px;"><input type="checkbox" id="herNuevoTodos" '+(herNuevoTodos?'checked ':'')+'onchange="herNuevoTodos=this.checked" style="width:22px;height:22px;"> Para todos los puntos (si no, solo este punto)</label>'
       +'<button type="button" class="dbtn" onclick="herAgregar()" style="background:#e3b85a;color:#1b1612;">＋ Agregar a la lista</button></div>';
   }
   if(!herList.length){
-    h+='<div style="padding:24px 12px;text-align:center;color:#5e4d3b;font-size:.9rem;">'+(window._turnoCerrado?'Este turno no tiene herramientas registradas.':'Todavía no hay herramientas en la lista de este punto.'+(isAdmin?'<br>Usa «Agregar o quitar herramientas».':'<br>Un admin debe cargarlas.'))+'</div>';
+    h+='<div style="padding:24px 12px;text-align:center;color:#5e4d3b;font-size:.9rem;">'+(window._turnoCerrado?'Este turno no tiene activos registrados.':'Todavía no hay activos en la lista de este punto.'+(isAdmin?'<br>Usa «Agregar o quitar activos».':'<br>Un admin debe cargarlas.'))+'</div>';
   }
   herList.forEach(function(it){
     var id=String(it.id), off=!herPuedeEditar(it), m=herMsg(it);
@@ -3625,9 +3711,9 @@ function bloquearPorHerramientas(){
   var p=herProblemas();
   if(!p.vac.length&&!p.dif.length) return false;
   document.getElementById('cierreModal').classList.remove('open');
-  var msg='❌ No se puede cerrar el turno.\n\nHerramientas de trabajo:\n';
+  var msg='❌ No se puede cerrar el turno.\n\nInventario de activos:\n';
   if(p.vac.length) msg+='\nFalta contar (recibo/entrego):\n• '+p.vac.map(function(h){return h.n;}).join('\n• ')+'\n';
-  if(p.dif.length) msg+='\nNo cuadran (recibido ≠ entregado):\n• '+p.dif.map(function(h){var d=herDif(h);return h.n+' ('+(d<0?'falta ':'sobra ')+Math.abs(d)+')';}).join('\n• ')+'\n\nUn administrador debe registrar la novedad (Menú → Herramientas) para poder cerrar.';
+  if(p.dif.length) msg+='\nNo cuadran (recibido ≠ entregado):\n• '+p.dif.map(function(h){var d=herDif(h);return h.n+' ('+(d<0?'falta ':'sobra ')+Math.abs(d)+')';}).join('\n• ')+'\n\nUn administrador debe registrar la novedad (Menú → Inventario de activos) para poder cerrar.';
   alert(msg);
   herAbrir();
   return true;
@@ -3635,14 +3721,14 @@ function bloquearPorHerramientas(){
 function herCierreHtml(){
   if(!herList.length) return '';
   var nov=herList.filter(function(h){return h.nov;});
-  if(!nov.length) return '<div style="margin-top:8px;background:#f0fff0;border:1px solid #9ccf9c;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#1d4d1d;">✔ Herramientas de trabajo completas.</div>';
-  return '<div style="margin-top:8px;background:#fff0f0;border:1px solid #e0a0a0;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#7a1f1f;line-height:1.4;"><b>🔧 Novedades de herramientas</b>'
+  if(!nov.length) return '<div style="margin-top:8px;background:#f0fff0;border:1px solid #9ccf9c;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#1d4d1d;">✔ Inventario de activos completo.</div>';
+  return '<div style="margin-top:8px;background:#fff0f0;border:1px solid #e0a0a0;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#7a1f1f;line-height:1.4;"><b>🔧 Novedades de activos</b>'
     +nov.map(function(h){return '<div>• '+escH(h.n)+': '+escH(h.nov.tipo)+' '+Math.abs(h.nov.dif)+' · responde '+escH(h.nov.resp||'')+(h.nov.valor?' · $'+Number(h.nov.valor).toLocaleString('es-CO'):'')+'</div>';}).join('')+'</div>';
 }
 function herTelegramTxt(){
   var nov=herList.filter(function(h){return h.nov;});
   if(!nov.length) return '';
-  return '\n\n🔧 *Novedades de herramientas:*\n'+nov.map(function(h){return '• '+h.n+': '+h.nov.tipo+' '+Math.abs(h.nov.dif)+' · responde '+(h.nov.resp||'')+(h.nov.valor?' · $'+Number(h.nov.valor).toLocaleString('es-CO'):'');}).join('\n');
+  return '\n\n🔧 *Novedades de activos:*\n'+nov.map(function(h){return '• '+h.n+': '+h.nov.tipo+' '+Math.abs(h.nov.dif)+' · responde '+(h.nov.resp||'')+(h.nov.valor?' · $'+Number(h.nov.valor).toLocaleString('es-CO'):'');}).join('\n');
 }
 function hlProbar(){
   if(window._hlColChecked) return; window._hlColChecked=true;
