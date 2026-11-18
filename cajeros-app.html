@@ -351,7 +351,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 .labHead .lh-back{width:48px;height:48px;border:none;border-radius:14px;background:transparent;color:#fff;font-size:1.7rem;cursor:pointer;}
 .labHead .lh-t{font-family:'Playfair Display',serif;font-weight:900;font-size:1.15rem;color:#fff;line-height:1.1;}
 .labHead .lh-s{font-size:.75rem;color:#d9c9ad;margin-top:3px;}
-.labHead .lh-c{margin-left:auto;background:var(--dorado);color:#1b1612;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;}
+.labHead .lh-c{margin-left:auto;white-space:nowrap;flex:none;background:var(--dorado);color:#1b1612;font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:999px;}
 .labBody{padding:16px 16px 40px;max-width:640px;margin:0 auto;}
 .lab-in{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid #4a3d31;background:#2a231c;color:#f3ece1;font-size:16px;font-family:'Inter',sans-serif;}
 .lab-chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;}
@@ -370,6 +370,20 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
 .lchk:disabled{cursor:not-allowed;}
 .lchk svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}
 /* ==V2-END== */
+/* ==V3-BEGIN== */
+.her-card{background:#fffdf9;border:1px solid var(--gris2);border-radius:18px;padding:12px;margin-bottom:12px;}
+.her-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.her-l{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5e4d3b;text-align:center;margin-bottom:4px;}
+.her-st{display:flex;align-items:center;gap:4px;justify-content:center;}
+.her-b{flex:none;width:40px;height:44px;border-radius:12px;border:1px solid #cdbfa8;background:#f3ece1;color:#1b1612;font-size:1.25rem;cursor:pointer;padding:0;}
+.her-b:disabled{opacity:.45;cursor:not-allowed;}
+.her-in{width:100%;min-width:0;height:44px;text-align:center;font-size:1.1rem;font-weight:700;border:1px solid #cdbfa8;border-radius:12px;background:#fff;color:#1b1612;font-family:'Inter',sans-serif;-moz-appearance:textfield;}
+.her-in::-webkit-outer-spin-button,.her-in::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.her-in:disabled{background:#ece4d6;color:#8a7a64;}
+.her-msg{font-size:.74rem;font-weight:700;border:1px solid;border-radius:999px;padding:3px 10px;background:#1f1a15;}
+.her-nb{min-height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--madera);background:#fffdf9;color:var(--madera);font-size:.8rem;font-weight:700;cursor:pointer;}
+.her-nov{margin-top:10px;background:#fdf0d2;border:1px solid #e2c27a;border-radius:10px;padding:8px 10px;font-size:.78rem;color:#5e3a00;line-height:1.4;}
+/* ==V3-END== */
 /* Precios por mayor */
 </style>
 </head>
@@ -609,6 +623,8 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
     <div class="menu-head"><div class="menu-title">Opciones</div><button type="button" class="menu-x" id="menuX" aria-label="Cerrar menú">✕</button></div>
     <div class="menu-grid">
       <button type="button" class="btn hot" id="btnLabores" onclick="labAbrir()"><span class="menu-pill" id="menuLabBadge" style="display:none;"></span><span class="mi">📋</span>Labores</button>
+      <button type="button" class="btn" id="btnLimpieza" onclick="limAbrir()"><span class="menu-pill" id="menuLimBadge" style="display:none;"></span><span class="mi">🧼</span>Limpieza</button>
+      <button type="button" class="btn" id="btnHerramientas" onclick="herAbrir()"><span class="menu-pill" id="menuHerBadge" style="display:none;"></span><span class="mi">🔧</span>Herramientas</button>
       <button type="button" class="btn hot" id="btnNeveras" onclick="nevAbrir()"><span class="menu-pill" id="menuNevBadge" style="display:none;"></span><span class="mi">🌡</span>Neveras</button>
       <button class="btn" id="btnAplicarRec" title="Copia los promedios recomendados a la columna Pedido"><span class="mi">✅</span>Aplicar recomendado</button>
       <button class="btn" id="btnImprimirPedido"><span class="mi">📦</span>Pedido</button>
@@ -711,6 +727,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Audrey Hurtado">Audrey Hurtado (C2)</option>
         <option value="Catalina Tabares">Catalina Tabares (C3) — inactiva</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
+        <option value="Diana Gil">Diana Gil (C1)</option>
         <option value="Jesika Imbajoa">Jesika Imbajoa (C1) — inactiva</option>
         <option value="Jimena Caldas">Jimena Caldas (C1)</option>
         <option value="Julian Diaz">Julian Diaz (C5) — inactivo</option>
@@ -853,6 +870,7 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
         <option value="Arturo Gutierrez">Arturo Gutiérrez (Aux)</option>
         <option value="Audrey Hurtado">Audrey Hurtado (C2)</option>
         <option value="Daniela Nieto">Daniela Nieto (C1)</option>
+        <option value="Diana Gil">Diana Gil (C1)</option>
         <option value="Jimena Caldas">Jimena Caldas (C1)</option>
         <option value="Karen Ipiales">Karen Ipiales (C2)</option>
         <option value="Laura Barrera">Laura Barrera (C1)</option>
@@ -975,6 +993,30 @@ tr.drag-over{background:#e8f4fd!important;outline:2px dashed var(--madera);}
       </div>
     </div>
 
+  </div>
+</div>
+
+<div class="labPanel" id="limPanel" aria-label="Limpieza y desinfección">
+  <div class="labHead"><button type="button" class="lh-back" onclick="limCerrar()" aria-label="Volver">‹</button>
+    <div><div class="lh-t">🧼 Limpieza y desinfección</div><div class="lh-s" id="limSub"></div></div><span class="lh-c" id="limCont"></span></div>
+  <div class="labBody" id="limBody"></div>
+</div>
+
+<div class="labPanel" id="herPanel" aria-label="Herramientas de trabajo">
+  <div class="labHead"><button type="button" class="lh-back" onclick="herCerrar()" aria-label="Volver">‹</button>
+    <div><div class="lh-t" id="herTitulo">🔧 Herramientas</div><div class="lh-s" id="herSub"></div></div><span class="lh-c" id="herCont"></span></div>
+  <div class="labBody" id="herBody"></div>
+</div>
+
+<div class="overlay" id="limPrintModal">
+  <div class="modal modal-sm">
+    <button class="modal-x" onclick="limPrintCerrar()">✕</button>
+    <div class="modal-title">🖨 Imprimir planilla de limpieza</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+      <button type="button" class="btn" onclick="limImprimir('turno')" style="flex:none;flex-direction:column;align-items:flex-start;min-height:64px;padding:10px 14px;background:#fffdf9;border:1.5px solid var(--madera);color:#1b1612;font-size:.9rem;"><span>Este turno</span><span style="font-weight:500;font-size:.75rem;color:#5e4d3b;">Con lo marcado, hora y firma.</span></button>
+      <button type="button" class="btn" onclick="limImprimir('semana')" style="flex:none;flex-direction:column;align-items:flex-start;min-height:64px;padding:10px 14px;background:#fffdf9;border:1.5px solid var(--gris3);color:#1b1612;font-size:.9rem;"><span>Planilla en blanco de la semana</span><span style="font-weight:500;font-size:.75rem;color:#5e4d3b;">Igual a la hoja de papel (L a D).</span></button>
+      <button type="button" class="btn" onclick="limPrintCerrar()" style="flex:none;min-height:48px;background:#eee;color:#333;">Cancelar</button>
+    </div>
   </div>
 </div>
 
@@ -1204,7 +1246,7 @@ function enviarResumenCierre(){
       if(dif2<0) return '\u26A0\uFE0F *Falta: $'+Math.abs(dif2).toLocaleString('es-CO')+'*';
       return '\uD83D\uDFE2 *Sobran: $'+dif2.toLocaleString('es-CO')+'*';
     })()
-    +tempTelegramTxt();
+    +tempTelegramTxt()+herTelegramTxt();
   tgEnviar(msg);
 }
 // Claves de acceso — ofuscadas (partidas + base64) para que no aparezcan en texto plano
@@ -1679,8 +1721,8 @@ function salir(){
   clearTimeout(saveTimer);
 
   function limpiarUI(){
-    sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false; labList=[]; labCat=[]; window._labSaved=null;
-    try{ labCerrar(); nevCerrar(); renderLabCard(); renderCierreHero(); }catch(e){}
+    sesion=null; isAdmin=false; isSuperAdmin=false; adminRegion=null; _cerrando=false; invRows=[]; gastos=[]; entregas=[]; entregaFinal=false; window._turnoCerrado=false; labList=[]; labCat=[]; window._labSaved=null; window._limSaved=null; window._herSaved=null; herList=[]; herCat=[]; limData={items:{},obs:''};
+    try{ labCerrar(); nevCerrar(); limCerrar(); herCerrar(); renderLabCard(); renderCierreHero(); }catch(e){}
     clearInterval(adminTimer);
     clearInterval(syncCheckTimer);
     clearTimeout(saveTimer);
@@ -1812,6 +1854,7 @@ function cargarInventario(){
   setSyncStatus('sync','⟳ Cargando...');
   probarColumnaTemperaturas();
   labProbar();
+  hlProbar();
   sbGet('productos_caja','order=orden.asc,id.asc')
     .then(function(prods){
       productos=prods.filter(function(p){return p.name&&p.name.trim();})
@@ -1919,7 +1962,7 @@ function cargarInventario(){
         var dEl0=document.getElementById('inDatafono'); if(dEl0) dEl0.value='';
         var tEl0=document.getElementById('inTransferencia'); if(tEl0) tEl0.value='';
         var descEl0=document.getElementById('inDescuentos'); if(descEl0) descEl0.value='';
-        gastos=[]; entregas=[]; entregaFinal=false; nevList=tempBackupLeer()||[]; window._labSaved=null;
+        gastos=[]; entregas=[]; entregaFinal=false; nevList=tempBackupLeer()||[]; window._labSaved=null; window._limSaved=null; window._herSaved=null;
         document.getElementById('inNota').value='';
         var nsEl0=document.getElementById('inNotaSig'); if(nsEl0) nsEl0.value='';
         var peEl0=document.getElementById('inPedidoExtra'); if(peEl0) peEl0.value='';
@@ -1944,6 +1987,8 @@ function cargarInventario(){
           entregaFinal=saved.entrega_final||false;
           nevList=(Array.isArray(saved.temperaturas)&&saved.temperaturas.length)?saved.temperaturas:(tempBackupLeer()||[]);
           window._labSaved=Array.isArray(saved.labores)?saved.labores:null;
+          window._limSaved=(saved.limpieza&&saved.limpieza.items)?saved.limpieza:null;
+          window._herSaved=Array.isArray(saved.herramientas)?saved.herramientas:null;
           // También revisar las entregas individuales por si acaso
           if(!entregaFinal&&saved.entregas_list){
             entregaFinal=saved.entregas_list.some(function(e){return e.esFinal||e.es_final;});
@@ -2067,6 +2112,8 @@ function cargarInventario(){
         renderAllEntries(); recalc();
         renderNeveras();
         labCargar();
+        limCargar();
+        herCargar();
         cargarRecomendados();
         clearInterval(syncCheckTimer);
         // Verificar cada 30 minutos si el turno fue cerrado por otro dispositivo
@@ -2742,6 +2789,7 @@ function neverasFaltantes(){
 function extraTemp(){
   var o=(window._tempCol===true)?{temperaturas:nevList}:{};
   if(window._labCol===true&&typeof labList!=='undefined'&&labList.length) o.labores=labList;
+  if(window._hlCol===true&&typeof limData!=='undefined'){ o.limpieza=limData; if(herList.length) o.herramientas=herList; }
   return o;
 }
 function probarColumnaTemperaturas(){
@@ -2941,6 +2989,7 @@ function labRefrescar(){
   if(!isAdmin) labEditando=false;
   try{ renderLabCard(); }catch(e){}
   try{ renderCierreHero(); }catch(e){}
+  try{ limRefrescar(); herRefrescar(); }catch(e){}
   var p=document.getElementById('labPanel');
   if(p&&p.classList.contains('open')) renderLabores();
 }
@@ -3178,6 +3227,7 @@ function renderCierreHero(){
   pasos.push({ok:sinFinal===0,txt:sinFinal===0?'Inventario final completo':('Falta el inventario final de '+sinFinal+(sinFinal===1?' producto':' productos'))});
   var nf=neverasFaltantes().length;
   pasos.push({ok:nf===0,go:'nevAbrir()',txt:nf===0?'Temperaturas de neveras completas':('Faltan '+nf+(nf===1?' dato':' datos')+' de temperatura en neveras')});
+  if(herList.length){ var hp2=herProblemas(); var hn2=hp2.vac.length+hp2.dif.length; pasos.push({ok:hn2===0,go:'herAbrir()',txt:hn2===0?'Herramientas de trabajo cuadran':(hp2.dif.length?('Herramientas: '+hp2.dif.length+' sin cuadrar, requiere novedad de un admin'):('Falta contar '+hp2.vac.length+(hp2.vac.length===1?' herramienta':' herramientas')))}); }
   var ent=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   pasos.push({ok:ent>0,txt:ent>0?'Entrega de dinero confirmada':'Falta registrar y confirmar la entrega de dinero'});
   var dEl=document.getElementById('inDatafono'), tEl=document.getElementById('inTransferencia');
@@ -3198,6 +3248,8 @@ function renderCierreHero(){
   h+='<div class="hero-list">';
   pasos.forEach(function(p){ h+='<div class="'+(p.ok?'ok':'no')+'"'+(p.go&&!p.ok?' onclick="'+p.go+'" style="cursor:pointer;text-decoration:underline;"':'')+'><span>'+(p.ok?'✔':'⚠')+'</span><span>'+escH(p.txt)+'</span></div>'; });
   h+='</div>';
+  var lc2=limConteo();
+  if(lc2.pend>0) h+='<div class="hero-warn"><span>⚠</span><span>Planilla de limpieza: '+lc2.pend+' ítems sin marcar. No bloquea el cierre.</span></div>';
   if(c.total&&c.pend>0){
     h+='<div class="hero-warn"><span>⚠</span><span>Quedan '+c.pend+' labores pendientes. No bloquea el cierre; quedarán registradas como pendientes.</span></div>';
   }
@@ -3260,6 +3312,8 @@ function menuAbrir(){
   var c=labConteo();
   var b=document.getElementById('menuLabBadge');
   if(b){ b.textContent=c.total?(c.h+'/'+c.total):''; b.style.display=c.total?'':'none'; }
+  var lb=document.getElementById('menuLimBadge'); if(lb){ var lc=limConteo(); lb.textContent=lc.h+'/'+lc.total; lb.style.display=''; }
+  var hb=document.getElementById('menuHerBadge'); if(hb){ if(herList.length){ var hp=herProblemas(); var hn=hp.vac.length+hp.dif.length; hb.textContent=hn?(hn+' por revisar'):'✔'; hb.style.display=''; } else hb.style.display='none'; }
   var nb=document.getElementById('menuNevBadge');
   if(nb){ var nf=neverasFaltantes().length; nb.textContent=nf?(nf+' por llenar'):'✔'; nb.style.display=''; }
   var be=document.getElementById('btnEditarLabores'); if(be) be.style.display=isAdmin?'flex':'none';
@@ -3280,6 +3334,321 @@ document.getElementById('menuSheet').addEventListener('click',function(e){
   var t=e.target; while(t&&t!==this){ if(t.tagName==='BUTTON'&&t.closest('.menu-grid')){ setTimeout(menuCerrar,0); return; } t=t.parentNode; }
 });
 // ==LAB-END==
+// ==HL-BEGIN== LIMPIEZA Y DESINFECCIÓN + HERRAMIENTAS DE TRABAJO
+var LIM_ITEMS=[
+  {k:'pisos',n:'Pisos',g:'Limpieza y desinfección'},{k:'paredes',n:'Paredes',g:'Limpieza y desinfección'},
+  {k:'techos',n:'Techos',g:'Limpieza y desinfección'},{k:'sanitarios',n:'Sanitarios',g:'Limpieza y desinfección'},
+  {k:'lavamanos',n:'Lavamanos',g:'Limpieza y desinfección'},{k:'espejos',n:'Espejos',g:'Limpieza y desinfección'},
+  {k:'papeleras',n:'Papeleras',g:'Limpieza y desinfección'},
+  {k:'alcohol',n:'Alcohol',g:'Insumos de baño repuestos'},{k:'papel_h',n:'Papel higiénico',g:'Insumos de baño repuestos'},
+  {k:'jabon',n:'Jabón de manos',g:'Insumos de baño repuestos'},{k:'papel_t',n:'Papel toalla',g:'Insumos de baño repuestos'}
+];
+var limData={items:{},obs:''};   // items: {clave:{h:hora,by:cajero}}
+function limKey(){ return sesion?('lim_'+sesion.fecha+'_'+sesion.punto+'_'+sesion.turno):null; }
+function limBackupGuardar(){ try{ var k=limKey(); if(k) localStorage.setItem(k,JSON.stringify(limData)); }catch(e){} }
+function limBackupLeer(){ try{ var k=limKey(); var v=k?localStorage.getItem(k):null; var o=v?JSON.parse(v):null; return (o&&o.items)?o:null; }catch(e){ return null; } }
+function limConteo(){ var h=0; LIM_ITEMS.forEach(function(i){ if(limData.items[i.k]) h++; }); return {total:LIM_ITEMS.length,h:h,pend:LIM_ITEMS.length-h}; }
+function limCargar(){
+  var s=(window._limSaved&&window._limSaved.items)?window._limSaved:limBackupLeer();
+  limData=s?{items:s.items||{},obs:s.obs||''}:{items:{},obs:''};
+  limRefrescar();
+}
+function limPuedeMarcar(){ return !(window._turnoCerrado&&!isAdmin); }
+function limTocado(){ limBackupGuardar(); limRefrescar(); autoSave(); }
+function limMarcar(k){
+  if(!limPuedeMarcar()) return;
+  if(limData.items[k]) delete limData.items[k];
+  else limData.items[k]={h:labHora(),by:(sesion&&sesion.cajero)||''};
+  limTocado();
+}
+function limObs(v){ limData.obs=v; limBackupGuardar(); autoSave(); }
+function limAbrir(){ var p=document.getElementById('limPanel'); if(!p) return; p.classList.add('open'); document.body.style.overflow='hidden'; renderLimpieza(); p.scrollTop=0; }
+function limCerrar(){ var p=document.getElementById('limPanel'); if(p) p.classList.remove('open'); if(!document.querySelector('.labPanel.open')) document.body.style.overflow=''; limRefrescar(); }
+function limRefrescar(){
+  var p=document.getElementById('limPanel');
+  if(p&&p.classList.contains('open')) renderLimpieza();
+  try{ renderCierreHero(); }catch(e){}
+}
+function renderLimpieza(){
+  var body=document.getElementById('limBody'); if(!body) return;
+  var c=limConteo();
+  document.getElementById('limSub').textContent=document.getElementById('hdrSub').textContent;
+  document.getElementById('limCont').textContent=c.h+'/'+c.total;
+  var off=!limPuedeMarcar();
+  var h='<div class="dcard"><div style="display:flex;align-items:center;gap:12px;">'
+    +'<div style="width:46px;height:46px;border-radius:50%;background:#e3b85a;color:#1b1612;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;">'+escH(labIniciales(sesion&&sesion.cajero))+'</div>'
+    +'<div style="min-width:0;"><div style="font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#bfae96;">Firma quien realiza la función</div>'
+    +'<div style="font-size:1rem;font-weight:700;margin-top:2px;">'+escH(sesion?sesion.cajero:'')+'</div></div></div>'
+    +'<div class="dbar-l" style="margin-top:14px;"><span>Realizado este turno</span><b>'+c.h+' de '+c.total+'</b></div><div class="dbar"><i style="width:'+(c.h/c.total*100).toFixed(1)+'%;background:#5fd38a;"></i></div>'
+    +'<div style="font-size:.74rem;color:#cdbda5;margin-top:8px;">Al tocar una casilla queda tu nombre y la hora. No bloquea el cierre; si algo queda sin hacer, se avisa.</div>'
+    +'<button type="button" class="dbtn" onclick="limPrintAbrir()" style="margin-top:12px;background:transparent;border:1.5px solid #4a3d31;color:#f3ece1;">🖨 Imprimir planilla</button></div>';
+  var grupos=[]; LIM_ITEMS.forEach(function(i){ if(grupos.indexOf(i.g)===-1) grupos.push(i.g); });
+  grupos.forEach(function(g){
+    var its=LIM_ITEMS.filter(function(i){return i.g===g;});
+    var hechos=its.filter(function(i){return limData.items[i.k];}).length;
+    h+='<section class="lab-grp"><div class="lab-gh"><div class="gn">'+escH(g)+'<span class="gs">'+hechos+' de '+its.length+' hechos</span></div><div class="gc" style="color:#1d4d1d;">Hecho</div></div>';
+    its.forEach(function(i){
+      var d=limData.items[i.k];
+      h+='<div class="lab-row"><div class="ln">'+escH(i.n)+(d?'<div class="ls">'+escH(d.h)+' · '+escH(d.by)+'</div>':'')+'</div>'
+        +'<button type="button" class="lchk" '+(off?'disabled ':'')+'onclick="limMarcar(\''+i.k+'\')" aria-label="'+(d?'Quitar: ':'Marcar como hecho: ')+escH(i.n)+'" style="border:2px solid '+(d?'#2d6a2d':(off?'#d9cdb8':'#7c4a1e'))+';background:'+(d?'#2d6a2d':(off?'#ece4d6':'#fffdf9'))+';color:#fff;">'+(d?LAB_SVG_CHECK:'')+'</button></div>';
+    });
+    h+='</section>';
+  });
+  h+='<div class="lab-grp"><div class="lab-gh"><div class="gn">Observación general</div></div>'
+    +'<textarea class="lab-in" id="limObsTxt" rows="3" '+(off?'disabled ':'')+'placeholder="Novedades de limpieza (opcional)" oninput="limObs(this.value)" style="min-height:84px;padding:10px 14px;background:#fffdf9;color:#1b1612;border-color:var(--gris2);">'+escH(limData.obs||'')+'</textarea></div>';
+  body.innerHTML=h;
+}
+function limCierreHtml(){
+  var c=limConteo();
+  if(c.pend>0) return '<div style="margin-top:8px;background:#fdf0d2;border:1px solid #e2c27a;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#5e3a00;line-height:1.4;">⚠ Planilla de limpieza: quedan <b>'+c.pend+'</b> ítems sin marcar. No bloquea el cierre.</div>';
+  return '<div style="margin-top:8px;background:#f0fff0;border:1px solid #9ccf9c;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#1d4d1d;">✔ Planilla de limpieza completa.</div>';
+}
+function limPrintAbrir(){ document.getElementById('limPrintModal').classList.add('open'); }
+function limPrintCerrar(){ document.getElementById('limPrintModal').classList.remove('open'); }
+function limImprimir(modo){
+  limPrintCerrar();
+  var punto=(document.getElementById('hdrSub').textContent||'').split(' · ')[0];
+  var css,body='';
+  if(modo==='semana'){
+    css='@page{size:letter landscape;margin:8mm}body{font-family:Arial,sans-serif;margin:0;color:#000}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #222;padding:1px 2px;font-size:7pt;text-align:center}th{background:#eee;height:9mm}td{height:9mm}.t{font-size:9pt;font-weight:bold;text-align:center;height:auto;padding:3px}.l{text-align:left}';
+    body+='<table><tr><td class="t l" colspan="14">PLANILLA DE SEGUIMIENTO PARA EL CONTROL DE LIMPIEZA Y DESINFECCIÓN</td></tr>'
+      +'<tr><td class="l" colspan="5">EMPRESA: LA VACA ORIGINAL</td><td class="l" colspan="3">NIT:</td><td class="l" colspan="3">PISO N°:</td><td class="l" colspan="3">LOCAL: '+escH(String(punto).toUpperCase())+'</td></tr>'
+      +'<tr><td class="l" colspan="7">FECHA DE INICIO:  DÍA ____  MES ________  AÑO ______</td><td class="l" colspan="7">FECHA DE TÉRMINO:  DÍA ____  MES ________  AÑO ______</td></tr>';
+    body+='<tr><th style="width:6%">DÍA</th><th style="width:11%">FECHA Y HORA</th>';
+    LIM_ITEMS.forEach(function(i){ body+='<th>'+escH(i.n.toUpperCase())+'</th>'; });
+    body+='<th style="width:14%">FIRMA QUIEN REALIZA LA FUNCIÓN</th></tr>';
+    ['L','M','M','J','V','S','D'].forEach(function(d){ body+='<tr><td><b>'+d+'</b></td>'+new Array(LIM_ITEMS.length+2).join('<td></td>')+'<td></td></tr>'; });
+    body+='<tr><td class="l" colspan="14" style="height:22mm;vertical-align:top;"><b>OBSERVACIÓN GENERAL:</b></td></tr></table>';
+  } else {
+    css='@page{size:letter portrait;margin:12mm}body{font-family:Arial,sans-serif;font-size:10pt;color:#000}h1{font-size:14pt;margin:0 0 2px}.s{font-size:9pt;color:#444;margin-bottom:8px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #444;padding:4px 6px;font-size:9pt;text-align:left}th{background:#eee}.g td{background:#ddd;font-weight:bold}';
+    body+='<h1>Control de limpieza y desinfección · La Vaca Original</h1><div class="s">'+escH(punto)+' · '+escH(sesion?sesion.fecha:'')+' · '+escH(sesion?sesion.turno:'')+' · '+escH(sesion?sesion.cajero:'')+'</div><table><thead><tr><th>Ítem</th><th style="width:70px">Hora</th><th style="width:150px">Firma</th></tr></thead><tbody>';
+    var last=null;
+    LIM_ITEMS.forEach(function(i){
+      if(i.g!==last){ body+='<tr class="g"><td colspan="3">'+escH(i.g)+'</td></tr>'; last=i.g; }
+      var d=limData.items[i.k];
+      body+='<tr><td>'+escH(i.n)+'</td><td>'+(d?escH(d.h):'')+'</td><td>'+(d?escH(d.by):'')+'</td></tr>';
+    });
+    body+='</tbody></table><p><b>Observación general:</b> '+escH(limData.obs||'')+'</p>';
+  }
+  var w=window.open('','_blank','width=1000,height=800');
+  if(!w){ alert('⚠ El navegador bloqueó la ventana emergente.\nActiva los popups para este sitio e intenta de nuevo.'); return; }
+  w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Limpieza</title><style>'+css+'</style></head><body>'+body+'</body></html>'); w.document.close();
+  setTimeout(function(){ w.print(); },400);
+}
+
+// ── HERRAMIENTAS DE TRABAJO ──
+// Cada turno: cuenta lo que recibe y lo que entrega. Si no coincide, solo un admin
+// puede registrar la novedad (nota + valor) para poder cerrar; el faltante lo asume quien cerró el turno.
+var herCat=[];      // catálogo (herramientas_lista) del punto
+var herList=[];     // estado del turno: [{id,n,esp,rec,ent,nov}]
+var herEditando=false, herNuevoNombre='', herNuevoCant='1', herNuevoTodos=true;
+function herKey(){ return sesion?('her_'+sesion.fecha+'_'+sesion.punto+'_'+sesion.turno):null; }
+function herBackupGuardar(){ try{ var k=herKey(); if(k) localStorage.setItem(k,JSON.stringify(herList)); }catch(e){} }
+function herBackupLeer(){ try{ var k=herKey(); var v=k?localStorage.getItem(k):null; var a=v?JSON.parse(v):null; return Array.isArray(a)?a:null; }catch(e){ return null; } }
+function herBuscar(id){ for(var i=0;i<herList.length;i++){ if(String(herList[i].id)===String(id)) return herList[i]; } return null; }
+function herNum(v){ return (v===null||v===undefined||v==='')?null:(isNaN(Number(v))?null:Number(v)); }
+function herDif(h){ var r=herNum(h.rec), e=herNum(h.ent); return (r===null||e===null)?null:(e-r); }
+// Estado de una fila: 'vacio' falta contar | 'ok' cuadra | 'nov' diferencia con novedad vigente | 'dif' diferencia sin novedad
+function herEstado(h){
+  var r=herNum(h.rec), e=herNum(h.ent);
+  if(r===null||e===null) return 'vacio';
+  var d=e-r; if(d===0) return 'ok';
+  return (h.nov&&h.nov.dif===d)?'nov':'dif';
+}
+function herProblemas(){
+  var vac=[],dif=[];
+  herList.forEach(function(h){ var s=herEstado(h); if(s==='vacio') vac.push(h); else if(s==='dif') dif.push(h); });
+  return {vac:vac,dif:dif};
+}
+function herCargar(){
+  var saved=Array.isArray(window._herSaved)?window._herSaved:herBackupLeer();
+  var cerrado=!!window._turnoCerrado;
+  var pto=sesion?sesion.punto:'';
+  function armar(cat){
+    var porId={}; (saved||[]).forEach(function(s){ porId[String(s.id)]=s; });
+    var out=[];
+    if(cerrado){ out=(saved||[]).slice(); }
+    else {
+      var usados={};
+      cat.forEach(function(c){
+        usados[String(c.id)]=1; var s=porId[String(c.id)];
+        out.push({id:c.id,n:c.nombre,esp:c.cantidad,rec:s?s.rec:null,ent:s?s.ent:null,nov:s?(s.nov||null):null});
+      });
+      (saved||[]).forEach(function(s){ if(!usados[String(s.id)]&&(herNum(s.rec)!==null||herNum(s.ent)!==null||s.nov)) out.push(s); });
+    }
+    herCat=cat; herList=out; herRefrescar();
+  }
+  sbGet('herramientas_lista','activo=eq.true&or=(punto.is.null,punto.eq.'+encodeURIComponent(pto)+')&order=orden.asc,id.asc')
+    .then(function(rows){ window._herTbl=true; armar(rows||[]); })
+    .catch(function(){ window._herTbl=false; armar([]); });
+}
+function herPuedeEditar(h){
+  if(window._turnoCerrado&&!isAdmin) return false;
+  if(h&&h.nov&&!isAdmin) return false;   // con novedad registrada la cajera ya no cambia el conteo
+  return true;
+}
+function herTocado(){ herBackupGuardar(); herRefrescar(); autoSave(); }
+function herSet(id,campo,val){
+  var h=herBuscar(id); if(!h||!herPuedeEditar(h)) return;
+  var v=herNum(val); if(v!==null&&v<0) v=0;
+  h[campo]=v;
+  herBackupGuardar(); autoSave();
+  // actualizar solo el estado de la fila para no perder el foco al escribir
+  herPintarFila(id);
+  try{ renderCierreHero(); }catch(e){}
+  var c=document.getElementById('herCont'); if(c) c.textContent=herResumen();
+}
+function herStep(id,campo,paso){
+  var h=herBuscar(id); if(!h||!herPuedeEditar(h)) return;
+  var base=herNum(h[campo]);
+  if(base===null){ base=(campo==='ent'&&herNum(h.rec)!==null)?herNum(h.rec):(herNum(h.esp)||0); if(paso!==0) { /* primer toque parte de la referencia */ paso=0; } }
+  h[campo]=Math.max(0,base+paso);
+  herTocado();
+}
+function herResumen(){ var p=herProblemas(); var n=p.vac.length+p.dif.length; return n?(n+' por revisar'):'✔ Completo'; }
+function herMsg(h){
+  var s=herEstado(h), d=herDif(h);
+  if(s==='vacio') return {c:'#bfae96',t:'Falta contar'};
+  if(s==='ok') return {c:'#5fd38a',t:'✔ Cuadra'};
+  var t=d<0?('Falta '+Math.abs(d)):('Sobra '+d);
+  if(s==='nov') return {c:'#ffc247',t:'⚠ '+t+' · novedad registrada'};
+  return {c:'#ff8a7d',t:'🚨 '+t+' · requiere novedad de un admin'};
+}
+function herPintarFila(id){
+  var h=herBuscar(id); if(!h) return;
+  var el=document.getElementById('herMsg_'+id); if(!el) return;
+  var m=herMsg(h); el.style.color=m.c; el.style.borderColor=m.c; el.textContent=m.t;
+  var b=document.getElementById('herNovBtn_'+id); if(b) b.style.display=(isAdmin&&herEstado(h)==='dif')?'':'none';
+}
+function herAbrir(){ var p=document.getElementById('herPanel'); if(!p) return; herEditando=false; p.classList.add('open'); document.body.style.overflow='hidden'; renderHerramientas(); p.scrollTop=0; }
+function herCerrar(){ var p=document.getElementById('herPanel'); if(p) p.classList.remove('open'); if(!document.querySelector('.labPanel.open')) document.body.style.overflow=''; herEditando=false; try{ renderCierreHero(); }catch(e){} }
+function herRefrescar(){
+  if(!isAdmin) herEditando=false;
+  var p=document.getElementById('herPanel');
+  if(p&&p.classList.contains('open')){ var ae=document.activeElement; if(!(ae&&ae.tagName==='INPUT'&&p.contains(ae))) renderHerramientas(); }
+  try{ renderCierreHero(); }catch(e){}
+}
+function herNovedad(id){
+  if(!isAdmin) return;
+  var h=herBuscar(id); if(!h) return;
+  var d=herDif(h); if(d===null||d===0) return;
+  var nota=prompt((d<0?'Faltan ':'Sobran ')+Math.abs(d)+' de «'+h.n+'».\nResponde: '+(sesion?sesion.cajero:'')+'\n\nEscribe la nota de novedad (qué pasó):','');
+  if(nota===null) return; nota=nota.trim();
+  if(!nota){ alert('La nota de novedad es obligatoria.'); return; }
+  var vTxt=prompt('Valor en pesos que asume el cajero (solo números).\nDéjalo vacío si lo definirás en el informe:','');
+  if(vTxt===null) return;
+  var valor=parseFloat(String(vTxt).replace(/[^\d.]/g,''))||0;
+  h.nov={dif:d,tipo:d<0?'falta':'sobra',nota:nota,valor:valor,by:labNombreAdmin(),t:labHora(),resp:(sesion?sesion.cajero+(sesion.cajeroAux?' & '+sesion.cajeroAux:''):'')};
+  herTocado();
+}
+function herQuitarNovedad(id){
+  if(!isAdmin) return; var h=herBuscar(id); if(!h||!h.nov) return;
+  if(!confirm('¿Quitar la novedad de «'+h.n+'»? El cierre volverá a exigirla.')) return;
+  h.nov=null; herTocado();
+}
+function herToggleEdit(){ if(!isAdmin) return; herEditando=!herEditando; renderHerramientas(); }
+function herAgregar(){
+  if(!isAdmin) return;
+  var nom=((document.getElementById('herNuevoNombre')||{}).value||'').trim();
+  var cant=parseInt((document.getElementById('herNuevoCant')||{}).value,10);
+  if(!nom){ document.getElementById('herNuevoNombre').focus(); return; }
+  if(isNaN(cant)||cant<0) cant=1;
+  if(window._herTbl===false){ alert('Todavía no existe la tabla de herramientas en la base de datos.\nEjecuta el SQL de herramientas y vuelve a intentar.'); return; }
+  var maxO=0; herCat.forEach(function(c){ if((c.orden||0)>maxO) maxO=c.orden; });
+  var todos=document.getElementById('herNuevoTodos').checked;
+  fetch(SB_URL+'/rest/v1/herramientas_lista',{method:'POST',headers:Object.assign({},HEADS,{'Prefer':'return=representation'}),
+    body:JSON.stringify({nombre:nom,cantidad:cant,punto:todos?null:sesion.punto,orden:maxO+1})})
+  .then(function(r){ return r.ok?r.json():r.text().then(function(t){throw new Error(t);}); })
+  .then(function(rows){
+    var c=rows&&rows[0]; if(!c) throw new Error('Sin respuesta de la base de datos');
+    herCat.push(c); herList.push({id:c.id,n:c.nombre,esp:c.cantidad,rec:null,ent:null,nov:null});
+    herNuevoNombre=''; herNuevoCant='1'; herTocado();
+  }).catch(function(e){ alert('No se pudo agregar la herramienta.\n\n'+e.message); });
+}
+function herQuitar(id){
+  if(!isAdmin) return; var h=herBuscar(id); if(!h) return;
+  if(!confirm('¿Quitar «'+h.n+'» de la lista?\n\nValdrá desde los próximos turnos. Lo ya registrado no se borra.')) return;
+  fetch(SB_URL+'/rest/v1/herramientas_lista?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),body:JSON.stringify({activo:false})})
+  .then(function(r){
+    if(!r.ok) return r.text().then(function(t){throw new Error(t);});
+    herCat=herCat.filter(function(c){ return String(c.id)!==String(id); });
+    if(herNum(h.rec)===null&&herNum(h.ent)===null&&!h.nov) herList=herList.filter(function(x){ return String(x.id)!==String(id); });
+    herTocado();
+  }).catch(function(e){ alert('No se pudo quitar la herramienta.\n\n'+e.message); });
+}
+function herStepper(id,campo,val,off){
+  return '<div class="her-st"><button type="button" class="her-b" '+(off?'disabled ':'')+'onclick="herStep(\''+id+'\',\''+campo+'\',-1)" aria-label="Restar">−</button>'
+    +'<input type="number" inputmode="numeric" min="0" step="1" class="her-in" id="her_'+id+'_'+campo+'" value="'+(val===null?'':val)+'" '+(off?'disabled ':'')+'oninput="herSet(\''+id+'\',\''+campo+'\',this.value)" placeholder="0">'
+    +'<button type="button" class="her-b" '+(off?'disabled ':'')+'onclick="herStep(\''+id+'\',\''+campo+'\',1)" aria-label="Sumar">＋</button></div>';
+}
+function renderHerramientas(){
+  var body=document.getElementById('herBody'); if(!body) return;
+  document.getElementById('herSub').textContent=document.getElementById('hdrSub').textContent;
+  document.getElementById('herTitulo').textContent=herEditando?'Editar herramientas':'🔧 Herramientas';
+  document.getElementById('herCont').textContent=herResumen();
+  var h='<div class="dcard"><div style="font-size:.84rem;color:#cdbda5;line-height:1.45;">Cuenta lo que <b style="color:#f3ece1;">recibes</b> al empezar y lo que <b style="color:#f3ece1;">entregas</b> al terminar. Debe ser lo mismo. Si falta o sobra algo, un admin debe registrar la novedad para poder cerrar el turno, y quien responde es <b style="color:#f3ece1;">'+escH(sesion?sesion.cajero:'')+'</b>.</div></div>';
+  if(isAdmin) h+='<button type="button" class="dbtn" onclick="herToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(herEditando?'var(--madera)':'#fffdf9')+';color:'+(herEditando?'#fff':'var(--madera)')+';">'+(herEditando?'Terminar edición':'✏ Agregar o quitar herramientas')+'</button>';
+  if(window._herTbl===false) h+='<div style="background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:10px;padding:10px 12px;font-size:.8rem;margin-bottom:14px;">⚠ La lista de herramientas todavía no está activada en la base de datos (falta ejecutar el SQL).</div>';
+  if(isAdmin&&herEditando){
+    h+='<div class="dcard"><div class="dc-h">Agregar una herramienta</div>'
+      +'<label for="herNuevoNombre" style="font-size:.78rem;color:#cdbda5;">Nombre</label><input id="herNuevoNombre" class="lab-in" type="text" maxlength="80" placeholder="Ej.: Tenaza de pan" value="'+escH(herNuevoNombre)+'" oninput="herNuevoNombre=this.value" style="margin:6px 0 12px;">'
+      +'<label for="herNuevoCant" style="font-size:.78rem;color:#cdbda5;">Cantidad que debe haber</label><input id="herNuevoCant" class="lab-in" type="number" inputmode="numeric" min="0" value="'+escH(herNuevoCant)+'" oninput="herNuevoCant=this.value" style="margin:6px 0 12px;">'
+      +'<label style="display:flex;align-items:center;gap:10px;font-size:.85rem;margin-bottom:12px;"><input type="checkbox" id="herNuevoTodos" '+(herNuevoTodos?'checked ':'')+'onchange="herNuevoTodos=this.checked" style="width:22px;height:22px;"> Para todos los puntos (si no, solo este punto)</label>'
+      +'<button type="button" class="dbtn" onclick="herAgregar()" style="background:#e3b85a;color:#1b1612;">＋ Agregar a la lista</button></div>';
+  }
+  if(!herList.length){
+    h+='<div style="padding:24px 12px;text-align:center;color:#5e4d3b;font-size:.9rem;">'+(window._turnoCerrado?'Este turno no tiene herramientas registradas.':'Todavía no hay herramientas en la lista de este punto.'+(isAdmin?'<br>Usa «Agregar o quitar herramientas».':'<br>Un admin debe cargarlas.'))+'</div>';
+  }
+  herList.forEach(function(it){
+    var id=String(it.id), off=!herPuedeEditar(it), m=herMsg(it);
+    if(herEditando){
+      h+='<div class="her-card" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div style="font-weight:700;">'+escH(it.n)+'</div><div style="font-size:.74rem;color:#5e4d3b;">Debe haber: '+escH(it.esp)+'</div></div>'
+        +'<button type="button" class="lchk" onclick="herQuitar(\''+id+'\')" aria-label="Quitar de la lista: '+escH(it.n)+'" style="border:2px solid #b3382b;background:#fffdf9;color:#b3382b;">🗑</button></div>';
+      return;
+    }
+    h+='<div class="her-card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;"><div style="font-family:\'Playfair Display\',serif;font-weight:700;font-size:1rem;">'+escH(it.n)+'</div><div style="font-size:.74rem;color:#5e4d3b;white-space:nowrap;">Debe haber: <b>'+escH(it.esp)+'</b></div></div>'
+      +'<div class="her-cols"><div><div class="her-l">Recibo</div>'+herStepper(id,'rec',herNum(it.rec),off)+'</div><div><div class="her-l">Entrego</div>'+herStepper(id,'ent',herNum(it.ent),off)+'</div></div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;"><span id="herMsg_'+id+'" class="her-msg" style="color:'+m.c+';border-color:'+m.c+';">'+m.t+'</span>'
+      +'<button type="button" id="herNovBtn_'+id+'" class="her-nb" onclick="herNovedad(\''+id+'\')" style="display:'+((isAdmin&&herEstado(it)==='dif')?'':'none')+';">Registrar novedad</button></div>';
+    if(it.nov){
+      h+='<div class="her-nov"><b>Novedad ('+escH(it.nov.tipo)+' '+Math.abs(it.nov.dif)+')</b> · responde '+escH(it.nov.resp||'')+(it.nov.valor?' · <b>$'+Number(it.nov.valor).toLocaleString('es-CO')+'</b>':'')
+        +'<div>'+escH(it.nov.nota)+'</div><div style="opacity:.75;">'+escH(it.nov.by)+' · '+escH(it.nov.t)+'</div>'
+        +(isAdmin?'<button type="button" class="her-nb" onclick="herQuitarNovedad(\''+id+'\')" style="margin-top:6px;">Quitar novedad</button>':'')+'</div>';
+    }
+    h+='</div>';
+  });
+  body.innerHTML=h;
+}
+// Frena el cierre si falta contar o hay diferencias sin novedad. Devuelve true si hay que frenar.
+function bloquearPorHerramientas(){
+  if(!herList.length) return false;
+  var p=herProblemas();
+  if(!p.vac.length&&!p.dif.length) return false;
+  document.getElementById('cierreModal').classList.remove('open');
+  var msg='❌ No se puede cerrar el turno.\n\nHerramientas de trabajo:\n';
+  if(p.vac.length) msg+='\nFalta contar (recibo/entrego):\n• '+p.vac.map(function(h){return h.n;}).join('\n• ')+'\n';
+  if(p.dif.length) msg+='\nNo cuadran (recibido ≠ entregado):\n• '+p.dif.map(function(h){var d=herDif(h);return h.n+' ('+(d<0?'falta ':'sobra ')+Math.abs(d)+')';}).join('\n• ')+'\n\nUn administrador debe registrar la novedad (Menú → Herramientas) para poder cerrar.';
+  alert(msg);
+  herAbrir();
+  return true;
+}
+function herCierreHtml(){
+  if(!herList.length) return '';
+  var nov=herList.filter(function(h){return h.nov;});
+  if(!nov.length) return '<div style="margin-top:8px;background:#f0fff0;border:1px solid #9ccf9c;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#1d4d1d;">✔ Herramientas de trabajo completas.</div>';
+  return '<div style="margin-top:8px;background:#fff0f0;border:1px solid #e0a0a0;border-radius:6px;padding:8px 10px;font-size:.78rem;color:#7a1f1f;line-height:1.4;"><b>🔧 Novedades de herramientas</b>'
+    +nov.map(function(h){return '<div>• '+escH(h.n)+': '+escH(h.nov.tipo)+' '+Math.abs(h.nov.dif)+' · responde '+escH(h.nov.resp||'')+(h.nov.valor?' · $'+Number(h.nov.valor).toLocaleString('es-CO'):'')+'</div>';}).join('')+'</div>';
+}
+function herTelegramTxt(){
+  var nov=herList.filter(function(h){return h.nov;});
+  if(!nov.length) return '';
+  return '\n\n🔧 *Novedades de herramientas:*\n'+nov.map(function(h){return '• '+h.n+': '+h.nov.tipo+' '+Math.abs(h.nov.dif)+' · responde '+(h.nov.resp||'')+(h.nov.valor?' · $'+Number(h.nov.valor).toLocaleString('es-CO'):'');}).join('\n');
+}
+function hlProbar(){
+  if(window._hlColChecked) return; window._hlColChecked=true;
+  fetch(SB_URL+'/rest/v1/turnos_caja?select=limpieza,herramientas&limit=1',{headers:HEADS}).then(function(r){ window._hlCol=r.ok; }).catch(function(){ window._hlCol=false; });
+}
+// ==HL-END==
 
 function recargarInventario(){
   if(!sesion) return;
@@ -3589,6 +3958,7 @@ function saveAdmin(){
 function abrirCierre(){
   // Control de neveras obligatorio (si el punto lo usa)
   if(bloquearPorNeveras()) return;
+  if(bloquearPorHerramientas()) return;
   // Validar Inv.Final no excede disponible
   var errores=invRows.filter(function(r){
     return r.inv_final!==null&&r.inv_final!==undefined&&r.inv_final>r.disponible;
@@ -3665,7 +4035,7 @@ function abrirCierre(){
     +'<div style="display:flex;justify-content:space-between;padding:6px 0;background:'+(dif===0?'#f0fff0':dif<0?'#fff0f0':'#fff8e0')+';border-radius:4px;padding:5px 8px;margin-top:3px;"><span><b>Diferencia</b></span><b style="color:'+difCol+'">'+difTxt+'</b></div>'
     +(nota?'<div style="margin-top:7px;font-style:italic;color:var(--gris4);font-size:.78rem;">📝 '+nota+'</div>':'')
     +'</div>';
-  document.getElementById('cierreDetalle').innerHTML=det+labCierreHtml();
+  document.getElementById('cierreDetalle').innerHTML=det+herCierreHtml()+labCierreHtml()+limCierreHtml();
   document.getElementById('cierreModal').classList.add('open');
 }
 
@@ -3843,6 +4213,7 @@ function confirmarCierre(){
     return;
   }
   if(bloquearPorNeveras()) return;
+  if(bloquearPorHerramientas()) return;
   var entConf=entregas.filter(function(e){return e.confirmada;}).reduce(function(s,e){return s+(e.valor||0);},0);
   if(entConf<=0){alert('❌ Registra al menos una entrega de dinero CONFIRMADA antes de cerrar.');return;}
   // Si quien cierra es admin y el cajero sigue siendo ADMINISTRADOR,
@@ -4124,7 +4495,7 @@ function renderEditCajerosExtras(){
     div.style.display='flex'; div.style.gap='6px';
     var inp=document.createElement('select');
     inp.style.cssText='flex:1;padding:8px 11px;border:1.5px solid var(--gris2);border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;background:var(--gris1);color:var(--negro);appearance:none;cursor:pointer;';
-    var optsAux=[['','— Selecciona cajero —'],['Andrea Monsalve','Andrea Monsalve (C7)'],['Angela Marin','Ángela Marín (Supervisora)'],['Angie Moncada','Angie Moncada (C3)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Audrey Hurtado','Audrey Hurtado (C2)'],['Daniela Nieto','Daniela Nieto (C1)'],['Jimena Caldas','Jimena Caldas (C1)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (C2)'],['Luz Suarez','Luz Suarez (C6)'],['Melany Castillo','Melany Castillo (AO)'],['Monica Cadavid','Mónica Cadavid (AO2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vivian Gonzalez','Vivian Gonzalez (C4)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C1)'],['Yulieth Martinez','Yulieth Martinez (C3)']];
+    var optsAux=[['','— Selecciona cajero —'],['Andrea Monsalve','Andrea Monsalve (C7)'],['Angela Marin','Ángela Marín (Supervisora)'],['Angie Moncada','Angie Moncada (C3)'],['Arturo Gutierrez','Arturo Gutiérrez (Aux)'],['Audrey Hurtado','Audrey Hurtado (C2)'],['Daniela Nieto','Daniela Nieto (C1)'],['Diana Gil','Diana Gil (C1)'],['Jimena Caldas','Jimena Caldas (C1)'],['Karen Ipiales','Karen Ipiales (C2)'],['Laura Barrera','Laura Barrera (C1)'],['Leidy Meneses','Leidy Meneses (C2)'],['Luz Suarez','Luz Suarez (C6)'],['Melany Castillo','Melany Castillo (AO)'],['Monica Cadavid','Mónica Cadavid (AO2)'],['Sebastian Perez','Sebastian Perez (C2)'],['Vivian Gonzalez','Vivian Gonzalez (C4)'],['Yennifer Castillo','Yennifer Castillo (C3)'],['Yolima Uribe','Yolima Uribe (C1)'],['Yulieth Martinez','Yulieth Martinez (C3)']];
     optsAux.forEach(function(o){var opt=document.createElement('option');opt.value=o[0];opt.textContent=o[1];inp.appendChild(opt);});
     inp.value=nombre;
     inp.addEventListener('change',(function(idx){return function(){editCajerosExtras[idx]=this.value;};})(i));
@@ -5375,6 +5746,7 @@ var CAJEROS_LISTA=[
   {val:'Aux|Arturo Gutierrez',txt:'Arturo Gutiérrez (Aux)'},
   {val:'C2|Audrey Hurtado',txt:'Audrey Hurtado (C2)'},
   {val:'C1|Daniela Nieto',txt:'Daniela Nieto (C1)'},
+  {val:'C1|Diana Gil',txt:'Diana Gil (C1)'},
   {val:'C1|Jimena Caldas',txt:'Jimena Caldas (C1)',foto:'jimena-caldas.jpg'},
   {val:'C2|Karen Ipiales',txt:'Karen Ipiales (C2)'},
   {val:'C1|Laura Barrera',txt:'Laura Barrera (C1)'},
