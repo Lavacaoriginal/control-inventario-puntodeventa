@@ -3609,7 +3609,7 @@ function herPintarFila(id){
 function herAbrir(){ var p=document.getElementById('herPanel'); if(!p) return; herEditando=false; p.classList.add('open'); document.body.style.overflow='hidden'; renderHerramientas(); p.scrollTop=0; }
 function herCerrar(){ var p=document.getElementById('herPanel'); if(p) p.classList.remove('open'); if(!document.querySelector('.labPanel.open')) document.body.style.overflow=''; herEditando=false; try{ renderCierreHero(); }catch(e){} }
 function herRefrescar(){
-  if(!isAdmin) herEditando=false;
+  if(!isSuperAdmin) herEditando=false;
   var p=document.getElementById('herPanel');
   if(p&&p.classList.contains('open')){ var ae=document.activeElement; if(!(ae&&ae.tagName==='INPUT'&&p.contains(ae))) renderHerramientas(); }
   try{ renderCierreHero(); }catch(e){}
@@ -3632,9 +3632,9 @@ function herQuitarNovedad(id){
   if(!confirm('¿Quitar la novedad de «'+h.n+'»? El cierre volverá a exigirla.')) return;
   h.nov=null; herTocado();
 }
-function herToggleEdit(){ if(!isAdmin) return; herEditando=!herEditando; renderHerramientas(); }
+function herToggleEdit(){ if(!isSuperAdmin) return; herEditando=!herEditando; renderHerramientas(); }
 function herAgregar(){
-  if(!isAdmin) return;
+  if(!isSuperAdmin) return;
   var nom=((document.getElementById('herNuevoNombre')||{}).value||'').trim();
   var cant=parseInt((document.getElementById('herNuevoCant')||{}).value,10);
   if(!nom){ document.getElementById('herNuevoNombre').focus(); return; }
@@ -3651,8 +3651,20 @@ function herAgregar(){
     herNuevoNombre=''; herNuevoCant='1'; herTocado();
   }).catch(function(e){ alert('No se pudo agregar el activo.\n\n'+e.message); });
 }
+function herAjustar(id,delta){
+  if(!isSuperAdmin) return;
+  var h=herBuscar(id); if(!h) return;
+  var nuevo=Math.max(0,(parseInt(h.esp,10)||0)+delta);
+  if(nuevo===(parseInt(h.esp,10)||0)) return;
+  fetch(SB_URL+'/rest/v1/herramientas_lista?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),body:JSON.stringify({cantidad:nuevo})})
+  .then(function(r){
+    if(!r.ok) return r.text().then(function(t){throw new Error(t);});
+    h.esp=nuevo; herCat.forEach(function(c){ if(String(c.id)===String(id)) c.cantidad=nuevo; });
+    herTocado();
+  }).catch(function(e){ alert('No se pudo cambiar la cantidad.\n\n'+e.message); });
+}
 function herQuitar(id){
-  if(!isAdmin) return; var h=herBuscar(id); if(!h) return;
+  if(!isSuperAdmin) return; var h=herBuscar(id); if(!h) return;
   if(!confirm('¿Quitar «'+h.n+'» de la lista?\n\nValdrá desde los próximos turnos. Lo ya registrado no se borra.')) return;
   fetch(SB_URL+'/rest/v1/herramientas_lista?id=eq.'+encodeURIComponent(id),{method:'PATCH',headers:Object.assign({},HEADS,{'Prefer':'return=minimal'}),body:JSON.stringify({activo:false})})
   .then(function(r){
@@ -3673,9 +3685,9 @@ function renderHerramientas(){
   document.getElementById('herTitulo').textContent=herEditando?'Editar activos':'Inventario de activos';
   document.getElementById('herCont').textContent=herResumen();
   var h='<div class="dcard"><div style="font-size:.84rem;color:#cdbda5;line-height:1.45;">Cuenta lo que <b style="color:#f3ece1;">recibes</b> al empezar y lo que <b style="color:#f3ece1;">entregas</b> al terminar. Debe ser lo mismo. Si falta o sobra algo, un admin debe registrar la novedad para poder cerrar el turno, y quien responde es <b style="color:#f3ece1;">'+escH(sesion?sesion.cajero:'')+'</b>.</div></div>';
-  if(isAdmin) h+='<button type="button" class="dbtn" onclick="herToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(herEditando?'var(--madera)':'#fffdf9')+';color:'+(herEditando?'#fff':'var(--madera)')+';">'+(herEditando?'Terminar edición':'✏ Agregar o quitar activos')+'</button>';
+  if(isSuperAdmin) h+='<button type="button" class="dbtn" onclick="herToggleEdit()" style="margin-bottom:14px;border:1.5px solid var(--madera);background:'+(herEditando?'var(--madera)':'#fffdf9')+';color:'+(herEditando?'#fff':'var(--madera)')+';">'+(herEditando?'Terminar edición':'✏ Agregar o quitar activos')+'</button>';
   if(window._herTbl===false) h+='<div style="background:#fff8e0;border:1px solid #e6a817;color:#7a5000;border-radius:10px;padding:10px 12px;font-size:.8rem;margin-bottom:14px;">⚠ La lista de activos todavía no está activada en la base de datos (falta ejecutar el SQL).</div>';
-  if(isAdmin&&herEditando){
+  if(isSuperAdmin&&herEditando){
     h+='<div class="dcard"><div class="dc-h">Agregar un activo</div>'
       +'<label for="herNuevoNombre" style="font-size:.78rem;color:#cdbda5;">Nombre</label><input id="herNuevoNombre" class="lab-in" type="text" maxlength="80" placeholder="Ej.: Tenaza de pan" value="'+escH(herNuevoNombre)+'" oninput="herNuevoNombre=this.value" style="margin:6px 0 12px;">'
       +'<label for="herNuevoCant" style="font-size:.78rem;color:#cdbda5;">Cantidad que debe haber</label><input id="herNuevoCant" class="lab-in" type="number" inputmode="numeric" min="0" value="'+escH(herNuevoCant)+'" oninput="herNuevoCant=this.value" style="margin:6px 0 12px;">'
@@ -3688,7 +3700,8 @@ function renderHerramientas(){
   herList.forEach(function(it){
     var id=String(it.id), off=!herPuedeEditar(it), m=herMsg(it);
     if(herEditando){
-      h+='<div class="her-card" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div style="font-weight:700;">'+escH(it.n)+'</div><div style="font-size:.74rem;color:#5e4d3b;">Debe haber: '+escH(it.esp)+'</div></div>'
+      h+='<div class="her-card" style="display:flex;align-items:center;gap:10px;"><div style="flex:1;min-width:0;"><div style="font-weight:700;">'+escH(it.n)+'</div><div style="font-size:.74rem;color:#5e4d3b;">Debe haber</div></div>'
+        +'<div class="her-st" style="flex:none;"><button type="button" class="her-b" onclick="herAjustar(\''+id+'\',-1)" aria-label="Restar uno a la cantidad">−</button><div style="min-width:34px;text-align:center;font-weight:700;font-size:1.05rem;">'+escH(it.esp)+'</div><button type="button" class="her-b" onclick="herAjustar(\''+id+'\',1)" aria-label="Sumar uno a la cantidad">＋</button></div>'
         +'<button type="button" class="lchk" onclick="herQuitar(\''+id+'\')" aria-label="Quitar de la lista: '+escH(it.n)+'" style="border:2px solid #b3382b;background:#fffdf9;color:#b3382b;">🗑</button></div>';
       return;
     }
@@ -3900,7 +3913,7 @@ function renderProdAdmin(){
     precioWrap.style.cssText='display:flex;flex-direction:column;gap:3px;';
     // Precio grupo ABC (Autopista/Boquia/Tebaida)
     var wABC=document.createElement('div'); wABC.style.cssText='display:flex;align-items:center;gap:3px;';
-    var lABC=document.createElement('span'); lABC.textContent='A/B/T $'; lABC.style.cssText='font-size:.62rem;color:#7a3a10;font-weight:700;white-space:nowrap;';
+    var lABC=document.createElement('span'); lABC.textContent='PRECIO QUINDÍO $'; lABC.title='Autopista, Boquia y Tebaida'; lABC.style.cssText='font-size:.62rem;color:#7a3a10;font-weight:700;white-space:nowrap;';
     var inABC=document.createElement('input'); inABC.type='number'; inABC.min='0';
     inABC.value=(p.precios&&p.precios.abc!==undefined&&p.precios.abc!=='')?p.precios.abc:(p.precio||'');
     inABC.placeholder='0'; inABC.style.cssText='width:72px;padding:3px 5px;border:1.5px solid #c8a070;border-radius:4px;font-size:.82rem;text-align:right;background:#fff8f0;';
@@ -3908,7 +3921,7 @@ function renderProdAdmin(){
     wABC.appendChild(lABC); wABC.appendChild(inABC); precioWrap.appendChild(wABC);
     // Precio grupo KPP (KM25/KM18/Peñón/Colseguros)
     var wKPP=document.createElement('div'); wKPP.style.cssText='display:flex;align-items:center;gap:3px;';
-    var lKPP=document.createElement('span'); lKPP.textContent='K/P/C $'; lKPP.style.cssText='font-size:.62rem;color:#1a4a7a;font-weight:700;white-space:nowrap;';
+    var lKPP=document.createElement('span'); lKPP.textContent='PRECIO VALLE $'; lKPP.title='KM 25, KM25 Pan., KM 18, Peñón y Colseguros'; lKPP.style.cssText='font-size:.62rem;color:#1a4a7a;font-weight:700;white-space:nowrap;';
     var inKPP=document.createElement('input'); inKPP.type='number'; inKPP.min='0';
     inKPP.value=(p.precios&&p.precios.kpp!==undefined&&p.precios.kpp!=='')?p.precios.kpp:(p.precio||'');
     inKPP.placeholder='0'; inKPP.style.cssText='width:72px;padding:3px 5px;border:1.5px solid #7090c8;border-radius:4px;font-size:.82rem;text-align:right;background:#f0f4ff;';
@@ -3921,46 +3934,67 @@ function renderProdAdmin(){
       productos=productos.filter(function(x){return x.id!==prod.id;});
       renderProdAdmin();
     };})(p));
-    // Check "todos" + puntos donde aplica
+    // Puntos donde aplica: botón que despliega la lista (Quindío / Valle)
     var puntosWrap=document.createElement('div');
-    puntosWrap.style.cssText='display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;align-items:center;';
-    // Checkbox "Todos"
-    var lblTodos=document.createElement('label');
-    lblTodos.style.cssText='display:flex;align-items:center;gap:2px;font-size:.65rem;cursor:pointer;background:#1a3a1a;color:#7dbb7d;padding:2px 6px;border-radius:3px;border:1px solid #4a8a4a;font-weight:700;';
-    var chkTodos=document.createElement('input'); chkTodos.type='checkbox';
-    var todosActivos=(p.puntos||[]).length===TODOS_PUNTOS.length;
-    chkTodos.checked=todosActivos;
-    chkTodos.addEventListener('change',(function(prod,wrap){return function(){
-      if(this.checked){
-        prod.puntos=TODOS_PUNTOS.map(function(x){return x.id;});
-      } else {
-        prod.puntos=[];
-      }
-      // Actualizar todos los checkboxes individuales
-      wrap.querySelectorAll('input[type=checkbox]').forEach(function(c,i){
-        if(i>0) c.checked=!!this.checked;
-      }.bind(this));
-    };})(p,puntosWrap));
-    lblTodos.appendChild(chkTodos);
-    lblTodos.appendChild(document.createTextNode('✓ Todos'));
-    puntosWrap.appendChild(lblTodos);
-    TODOS_PUNTOS.forEach(function(pt){
-      var lbl=document.createElement('label');
-      lbl.style.cssText='display:flex;align-items:center;gap:2px;font-size:.65rem;cursor:pointer;background:var(--gris1);padding:2px 5px;border-radius:3px;border:1px solid var(--gris2);';
-      var chk=document.createElement('input'); chk.type='checkbox';
-      chk.checked=(p.puntos||[]).indexOf(pt.id)!==-1;
-      chk.addEventListener('change',(function(prod,ptId){return function(){
-        if(!prod.puntos) prod.puntos=[];
-        if(this.checked){
-          if(prod.puntos.indexOf(ptId)===-1) prod.puntos.push(ptId);
-        } else {
-          prod.puntos=prod.puntos.filter(function(x){return x!==ptId;});
-        }
-      };})(p,pt.id));
-      lbl.appendChild(chk);
-      lbl.appendChild(document.createTextNode(pt.label));
-      puntosWrap.appendChild(lbl);
+    puntosWrap.style.cssText='width:100%;margin-top:6px;';
+    var btnPts=document.createElement('button'); btnPts.type='button';
+    btnPts.style.cssText='width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px;padding:0 12px;border:1.5px solid var(--gris3);border-radius:8px;background:#fffdf9;color:#1b1612;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;';
+    var spTxt=document.createElement('span'); var spFl=document.createElement('span'); spFl.textContent='▾';
+    btnPts.appendChild(spTxt); btnPts.appendChild(spFl);
+    var panel=document.createElement('div');
+    panel.style.cssText='display:none;margin-top:6px;border:1px solid var(--gris2);border-radius:8px;background:#fffdf9;padding:8px 10px;';
+    var QUI=['autopista','boquia','tebaida'];
+    var chks={}, grpChks={};
+    function mkLbl(txt,strong){
+      var l=document.createElement('label');
+      l.style.cssText='display:flex;align-items:center;gap:8px;min-height:36px;font-size:.82rem;cursor:pointer;'+(strong?'font-weight:700;':'');
+      return l;
+    }
+    function resumen(prod){
+      var n=(prod.puntos||[]).length, tot=TODOS_PUNTOS.length;
+      if(n===tot) return '📍 Se vende en: todos los puntos';
+      if(n===0) return '📍 Se vende en: ningún punto';
+      var q=(prod.puntos||[]).filter(function(x){return QUI.indexOf(x)!==-1;}).length;
+      return '📍 Se vende en: '+n+' de '+tot+' puntos (Quindío '+q+', Valle '+(n-q)+')';
+    }
+    function sync(prod){
+      spTxt.textContent=resumen(prod);
+      TODOS_PUNTOS.forEach(function(pt){ chks[pt.id].checked=(prod.puntos||[]).indexOf(pt.id)!==-1; });
+      chkTodos.checked=(prod.puntos||[]).length===TODOS_PUNTOS.length;
+      ['qui','val'].forEach(function(g){
+        var ids=TODOS_PUNTOS.filter(function(pt){return (g==='qui')===(QUI.indexOf(pt.id)!==-1);}).map(function(pt){return pt.id;});
+        grpChks[g].checked=ids.every(function(id){return (prod.puntos||[]).indexOf(id)!==-1;});
+      });
+    }
+    function setIds(prod,ids,on){
+      if(!prod.puntos) prod.puntos=[];
+      ids.forEach(function(id){
+        var i=prod.puntos.indexOf(id);
+        if(on&&i===-1) prod.puntos.push(id);
+        if(!on&&i!==-1) prod.puntos.splice(i,1);
+      });
+      sync(prod);
+    }
+    var lblTodos=mkLbl('',true); var chkTodos=document.createElement('input'); chkTodos.type='checkbox';
+    lblTodos.appendChild(chkTodos); lblTodos.appendChild(document.createTextNode('Todos los puntos'));
+    chkTodos.addEventListener('change',(function(prod){return function(){ setIds(prod,TODOS_PUNTOS.map(function(x){return x.id;}),this.checked); };})(p));
+    panel.appendChild(lblTodos);
+    [['qui','QUINDÍO','#7a3a10',true],['val','VALLE','#1a4a7a',false]].forEach(function(g){
+      var ids=TODOS_PUNTOS.filter(function(pt){return g[3]===(QUI.indexOf(pt.id)!==-1);});
+      var h=document.createElement('label'); h.style.cssText='display:flex;align-items:center;gap:8px;min-height:36px;margin-top:6px;padding-top:6px;border-top:1px solid var(--gris2);font-size:.74rem;font-weight:700;letter-spacing:.06em;color:'+g[2]+';cursor:pointer;';
+      var gc=document.createElement('input'); gc.type='checkbox'; grpChks[g[0]]=gc;
+      gc.addEventListener('change',(function(prod,idl){return function(){ setIds(prod,idl,this.checked); };})(p,ids.map(function(x){return x.id;})));
+      h.appendChild(gc); h.appendChild(document.createTextNode('TODO '+g[1])); panel.appendChild(h);
+      ids.forEach(function(pt){
+        var l=mkLbl(); l.style.paddingLeft='26px';
+        var c=document.createElement('input'); c.type='checkbox'; chks[pt.id]=c;
+        c.addEventListener('change',(function(prod,id){return function(){ setIds(prod,[id],this.checked); };})(p,pt.id));
+        l.appendChild(c); l.appendChild(document.createTextNode(pt.label)); panel.appendChild(l);
+      });
     });
+    btnPts.addEventListener('click',function(){ var ab=panel.style.display==='none'; panel.style.display=ab?'block':'none'; spFl.textContent=ab?'▴':'▾'; });
+    puntosWrap.appendChild(btnPts); puntosWrap.appendChild(panel);
+    sync(p);
     row.style.flexDirection='column';
     var topRow=document.createElement('div');
     topRow.style.cssText='display:flex;gap:6px;align-items:center;width:100%;';
